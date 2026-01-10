@@ -11,19 +11,48 @@ class ScannerScreen extends StatefulWidget {
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController();
+  MobileScannerController? _controller;
   bool _isScanning = false;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeScanner();
+  }
+
+  Future<void> _initializeScanner() async {
+    try {
+      _controller = MobileScannerController();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error initializing scanner: $e');
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   Future<void> _handleBarcode(BarcodeCapture capture) async {
-    if (_isScanning) return;
+    if (_isScanning || _controller == null) return;
     
     setState(() => _isScanning = true);
+    if (capture.barcodes.isEmpty) {
+      setState(() => _isScanning = false);
+      return;
+    }
     final barcode = capture.barcodes.first;
     
     if (barcode.rawValue != null) {
@@ -83,11 +112,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized || _controller == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
           MobileScanner(
-            controller: _controller,
+            controller: _controller!,
             onDetect: _handleBarcode,
           ),
           Positioned(

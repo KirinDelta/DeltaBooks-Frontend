@@ -1,3 +1,5 @@
+import 'book.dart';
+
 enum BookStatus { unread, reading, finished }
 
 class UserBook {
