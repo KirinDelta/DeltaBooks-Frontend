@@ -24,16 +24,25 @@ class Invitation {
   });
 
   factory Invitation.fromJson(Map<String, dynamic> json) {
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
     return Invitation(
-      id: json['id'] as int,
-      senderId: json['sender_id'] as int,
-      receiverId: json['receiver_id'] as int,
-      libraryId: json['library_id'] as int,
+      id: parseId(json['id']) ?? 0,
+      senderId: parseId(json['sender_id']) ?? 0,
+      receiverId: parseId(json['receiver_id']) ?? 0,
+      libraryId: parseId(json['library_id']) ?? 0,
       senderEmail: json['sender_email'] as String? ?? '',
       receiverEmail: json['receiver_email'] as String? ?? '',
       libraryName: json['library_name'] as String?,
-      status: json['status'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      status: json['status'] as String? ?? 'pending',
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
           : null,

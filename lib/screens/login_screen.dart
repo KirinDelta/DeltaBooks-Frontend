@@ -39,60 +39,88 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
-      backgroundColor: const Color(0xFFE2E8F0),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.appTitle,
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: const Color(0xFF1A365D),
-                        ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: l10n.email,
-                      border: const OutlineInputBorder(),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.surface,
+            ],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.library_books,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: l10n.password,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.appTitle,
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A365D),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 48),
+                    const SizedBox(height: 32),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: l10n.email,
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
                     ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : Text(_isLogin ? l10n.login : l10n.register),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => setState(() => _isLogin = !_isLogin),
-                    child: Text(_isLogin
-                        ? '${l10n.dontHaveAccount} ${l10n.register}'
-                        : '${l10n.alreadyHaveAccount} ${l10n.login}'),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: l10n.password,
+                        border: const OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : Text(_isLogin ? l10n.login : l10n.register),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => setState(() => _isLogin = !_isLogin),
+                      child: Text(_isLogin
+                          ? '${l10n.dontHaveAccount} ${l10n.register}'
+                          : '${l10n.alreadyHaveAccount} ${l10n.login}'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

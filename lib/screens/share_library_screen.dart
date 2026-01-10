@@ -136,7 +136,7 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.searchUser),
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -192,7 +192,7 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                             icon: const Icon(Icons.add),
                             label: Text(l10n.createLibrary),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A365D),
+                              backgroundColor: Theme.of(context).colorScheme.primary,
                               foregroundColor: Colors.white,
                             ),
                           ),
@@ -322,7 +322,7 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.person, size: 32, color: Color(0xFF1A365D)),
+                          Icon(Icons.person, size: 32, color: Theme.of(context).colorScheme.primary),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -354,9 +354,7 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                         icon: const Icon(Icons.send),
                         label: Text(l10n.sendInvitation),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A365D),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 48),
+                          minimumSize: const Size(double.infinity, 52),
                         ),
                       ),
                     ],

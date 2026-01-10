@@ -359,7 +359,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 },
                 icon: Icon(_showManualInput ? Icons.qr_code_scanner : Icons.keyboard),
                 label: Text(_showManualInput ? l10n.scan : l10n.enterIsbnManually),
-                backgroundColor: const Color(0xFF1A365D),
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),

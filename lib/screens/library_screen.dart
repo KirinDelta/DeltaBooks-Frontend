@@ -99,27 +99,91 @@ class _LibraryScreenState extends State<LibraryScreen> {
         itemBuilder: (context, index) {
         final book = books[index];
         return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: book.coverUrl != null
-                ? Image.network(
-                    book.coverUrl!,
-                    width: 50,
-                    height: 70,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.book),
-                  )
-                : const Icon(Icons.book, size: 50),
-            title: Text(book.title),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(book.author),
-                const SizedBox(height: 4),
-                Text('${l10n.isbn}: ${book.isbn}'),
-                if (book.totalPages > 0)
-                  Text('${l10n.page} ${book.totalPages}'),
-              ],
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              // Could add book details navigation here
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: book.coverUrl != null
+                        ? Image.network(
+                            book.coverUrl!,
+                            width: 60,
+                            height: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 60,
+                              height: 90,
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.book,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                size: 30,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 60,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.book,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              size: 30,
+                            ),
+                          ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          book.title,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          book.author,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${l10n.isbn}: ${book.isbn}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        if (book.totalPages > 0) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '${l10n.page} ${book.totalPages}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

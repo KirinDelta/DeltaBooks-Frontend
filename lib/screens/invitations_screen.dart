@@ -38,8 +38,10 @@ class _InvitationsScreenState extends State<InvitationsScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.invitations),
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -279,7 +281,7 @@ class _InvitationCard extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => _handleAction(context, provider, 'accept'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A365D),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: Text(l10n.accept),

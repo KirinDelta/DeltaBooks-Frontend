@@ -22,14 +22,28 @@ class UserBook {
   });
 
   factory UserBook.fromJson(Map<String, dynamic> json) {
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
+    int? parseInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
     return UserBook(
-      id: json['id'],
-      book: Book.fromJson(json['book']),
-      status: _statusFromString(json['status']),
-      rating: json['rating'],
-      review: json['review'],
-      pricePaid: json['price_paid']?.toDouble(),
-      currentPage: json['current_page'],
+      id: parseId(json['id']) ?? 0,
+      book: Book.fromJson(json['book'] as Map<String, dynamic>),
+      status: _statusFromString(json['status'] as String? ?? 'unread'),
+      rating: parseInt(json['rating']),
+      review: json['review'] as String?,
+      pricePaid: json['price_paid'] != null ? (json['price_paid'] as num).toDouble() : null,
+      currentPage: parseInt(json['current_page']),
     );
   }
 

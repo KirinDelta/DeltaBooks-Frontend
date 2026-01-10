@@ -42,10 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
     
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A365D),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      elevation: 8,
       builder: (context) {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 20),
@@ -63,9 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Text(
                 l10n.selectLibrary,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -80,9 +81,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     final isSelected = selectedLibrary?.id == library.id;
                     
                     return ListTile(
-                      leading: Icon(
-                        isShared ? Icons.people : Icons.library_books,
-                        color: isSelected ? Colors.amber : Colors.white70,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected 
+                              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                              : Theme.of(context).colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          isShared ? Icons.people : Icons.library_books,
+                          color: isSelected 
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 20,
+                        ),
                       ),
                       title: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -91,28 +104,47 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text(
                               library.name,
                               style: TextStyle(
-                                color: isSelected ? Colors.amber : Colors.white,
+                                color: isSelected 
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 16,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (isShared) ...[
                             const SizedBox(width: 8),
-                            Text(
-                              '(Shared)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isSelected ? Colors.amber.shade300 : Colors.white70,
-                                fontStyle: FontStyle.italic,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '(Shared)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
                         ],
                       ),
                       trailing: isSelected
-                          ? const Icon(Icons.check, color: Colors.amber, size: 24)
+                          ? Icon(
+                              Icons.check_circle,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
+                            )
                           : null,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       onTap: () async {
                         Navigator.pop(context);
                         libraryProvider.selectLibrary(library);
@@ -189,8 +221,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         actions: [
           Consumer<LibraryProvider>(
             builder: (context, libraryProvider, _) {

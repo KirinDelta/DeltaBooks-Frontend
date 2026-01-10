@@ -93,25 +93,48 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildStatCard(BuildContext context, String title, String value, IconData icon) {
     return Card(
-      elevation: 4,
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(24.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+            ],
+          ),
+        ),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: const Color(0xFF1A365D)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: const Color(0xFF1A365D),
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

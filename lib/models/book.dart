@@ -18,14 +18,28 @@ class Book {
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
+    int? parsePages(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
     return Book(
-      id: json['id'],
-      isbn: json['isbn'],
-      title: json['title'],
-      author: json['author'],
-      coverUrl: json['cover_url'],
-      totalPages: json['total_pages'],
-      description: json['description'],
+      id: parseId(json['id']) ?? 0,
+      isbn: json['isbn'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      author: json['author'] as String? ?? '',
+      coverUrl: json['cover_url'] as String?,
+      totalPages: parsePages(json['total_pages']) ?? 0,
+      description: json['description'] as String?,
     );
   }
 }
