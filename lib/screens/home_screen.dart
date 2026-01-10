@@ -225,125 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        actions: [
-          Consumer<LibraryProvider>(
-            builder: (context, libraryProvider, _) {
-              return PopupMenuButton<String>(
-                icon: const Icon(Icons.library_books),
-                onSelected: (value) async {
-                  if (value == 'manage') {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LibrariesScreen(),
-                      ),
-                    );
-                    if (mounted) {
-                      await libraryProvider.fetchLibraries();
-                    }
-                  } else if (value == 'invite') {
-                    final selectedLibrary = libraryProvider.selectedLibrary;
-                    if (selectedLibrary != null) {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ShareLibraryScreen(selectedLibrary: selectedLibrary),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.selectLibraryFirst)),
-                      );
-                    }
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'manage',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.settings),
-                        const SizedBox(width: 8),
-                        Text(l10n.myLibraries),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'invite',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.person_add),
-                        const SizedBox(width: 8),
-                        Text(l10n.shareLibrary),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          Consumer<InvitationProvider>(
-            builder: (context, invitationProvider, _) {
-              final pendingCount = invitationProvider.pendingReceivedCount;
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.mail_outline),
-                    tooltip: l10n.invitations,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const InvitationsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (pendingCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '$pendingCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.language),
-            tooltip: l10n.language,
-            onPressed: () {
-              localeProvider.toggleLocale();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: l10n.logout,
-            onPressed: () async {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              await authProvider.logout();
-            },
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Consumer<LibraryProvider>(
@@ -433,6 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      drawer: _buildDrawer(context, localeProvider),
       body: IndexedStack(
         index: _currentIndex,
         children: const [
@@ -441,25 +323,305 @@ class _HomeScreenState extends State<HomeScreen> {
           StatsScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.library_books),
-            label: l10n.myLibrary,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMoreMenu(context, localeProvider),
+              _buildNavItem(Icons.library_books, l10n.myLibrary, 0),
+              _buildNavItem(Icons.qr_code_scanner, l10n.scan, 1),
+              _buildNavItem(Icons.bar_chart, l10n.statistics, 2),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.qr_code_scanner),
-            label: l10n.scan,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.bar_chart),
-            label: l10n.statistics,
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    final isSelected = _currentIndex == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _currentIndex = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreMenu(BuildContext context, LocaleProvider localeProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    return Consumer<InvitationProvider>(
+      builder: (context, invitationProvider, _) {
+        final pendingCount = invitationProvider.pendingReceivedCount;
+        return Expanded(
+          child: Builder(
+            builder: (builderContext) => InkWell(
+              onTap: () => Scaffold.of(builderContext).openDrawer(),
+              child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.more_vert,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
+                      if (pendingCount > 0)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              '$pendingCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.more,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, LocaleProvider localeProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    return Consumer3<AuthProvider, LibraryProvider, InvitationProvider>(
+      builder: (context, authProvider, libraryProvider, invitationProvider, _) {
+        final pendingCount = invitationProvider.pendingReceivedCount;
+        final userEmail = authProvider.user?.email ?? '';
+        return Drawer(
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Drawer header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userEmail.isNotEmpty ? userEmail : l10n.more,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Drawer menu items
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.settings,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        title: Text(l10n.myLibraries),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LibrariesScreen(),
+                            ),
+                          );
+                          if (mounted) {
+                            await libraryProvider.fetchLibraries();
+                          }
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.person_add,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        title: Text(l10n.shareLibrary),
+                        onTap: () {
+                          Navigator.pop(context);
+                          final selectedLibrary = libraryProvider.selectedLibrary;
+                          if (selectedLibrary != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ShareLibraryScreen(selectedLibrary: selectedLibrary),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.selectLibraryFirst)),
+                            );
+                          }
+                        },
+                      ),
+                      ListTile(
+                        leading: Stack(
+                          children: [
+                            Icon(
+                              Icons.mail_outline,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            if (pendingCount > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 12,
+                                    minHeight: 12,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        title: Row(
+                          children: [
+                            Text(l10n.invitations),
+                            if (pendingCount > 0) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$pendingCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const InvitationsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.language,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        title: Text(l10n.language),
+                        onTap: () {
+                          Navigator.pop(context);
+                          localeProvider.toggleLocale();
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.logout,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        title: Text(
+                          l10n.logout,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        ),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          await authProvider.logout();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

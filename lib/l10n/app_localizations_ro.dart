@@ -256,4 +256,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get noSharedLibraries => 'Fără biblioteci partajate';
+
+  @override
+  String get more => 'Mai mult';
 }

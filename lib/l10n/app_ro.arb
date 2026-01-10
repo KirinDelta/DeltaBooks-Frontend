@@ -83,5 +83,6 @@
   "libraryUpdated": "Bibliotecă actualizată",
   "enterLibraryName": "Introduceți un nume pentru bibliotecă",
   "forLibrary": "pentru biblioteca",
-  "noSharedLibraries": "Fără biblioteci partajate"
+  "noSharedLibraries": "Fără biblioteci partajate",
+  "more": "Mai mult"
 }

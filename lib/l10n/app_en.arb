@@ -335,5 +335,9 @@
   "noSharedLibraries": "No shared libraries",
   "@noSharedLibraries": {
     "description": "Message when there are no shared libraries"
+  },
+  "more": "More",
+  "@more": {
+    "description": "Label for more menu button"
   }
 }

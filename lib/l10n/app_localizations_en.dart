@@ -256,4 +256,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSharedLibraries => 'No shared libraries';
+
+  @override
+  String get more => 'More';
 }
