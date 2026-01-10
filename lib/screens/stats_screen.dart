@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
@@ -39,17 +40,19 @@ class _StatsScreenState extends State<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_stats == null) {
-      return const Center(child: Text('Eroare la încărcarea statisticilor'));
+      return Center(child: Text(l10n.statsError));
     }
 
-    final combined = _stats!['combined'] as Map<String, dynamic>;
-    final user = _stats!['user'] as Map<String, dynamic>;
-    final partner = _stats!['partner'] as Map<String, dynamic>;
+    final combined = (_stats!['combined'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final user = (_stats!['user'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final partner = (_stats!['partner'] as Map<String, dynamic>?) ?? <String, dynamic>{};
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -57,25 +60,29 @@ class _StatsScreenState extends State<StatsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildStatCard(
-            'Pagini citite luna aceasta',
+            context,
+            l10n.pagesReadThisMonth,
             '${user['pages_read'] ?? 0}',
             Icons.book,
           ),
           const SizedBox(height: 16),
           _buildStatCard(
-            'Valoare totală bibliotecă (RON)',
+            context,
+            l10n.totalLibraryValue,
             '${(combined['money_spent'] ?? 0.0).toStringAsFixed(2)} RON',
             Icons.attach_money,
           ),
           const SizedBox(height: 16),
           _buildStatCard(
-            'Total cărți',
+            context,
+            l10n.totalBooks,
             '${combined['total_books'] ?? 0}',
             Icons.library_books,
           ),
           const SizedBox(height: 16),
           _buildStatCard(
-            'Total pagini citite',
+            context,
+            l10n.totalPagesRead,
             '${combined['pages_read'] ?? 0}',
             Icons.menu_book,
           ),
@@ -84,7 +91,7 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon) {
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon) {
     return Card(
       elevation: 4,
       child: Padding(

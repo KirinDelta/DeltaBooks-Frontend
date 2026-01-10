@@ -15,6 +15,9 @@ class BookProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchMyBooks() async {
+    // Prevent multiple simultaneous fetches
+    if (_isLoading) return;
+    
     _isLoading = true;
     notifyListeners();
     
@@ -26,13 +29,16 @@ class BookProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error fetching my books: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> fetchPartnerBooks() async {
+    // Prevent multiple simultaneous fetches
+    if (_isLoading) return;
+    
     _isLoading = true;
     notifyListeners();
     
@@ -44,10 +50,10 @@ class BookProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error fetching partner books: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<Book?> findBookByIsbn(String isbn) async {
@@ -62,7 +68,7 @@ class BookProvider with ChangeNotifier {
     return null;
   }
 
-  Future<bool> addBookToShelf(int bookId) async {
+  Future<bool> addBookToLibrary(int bookId) async {
     try {
       final response = await _apiService.post('/api/v1/user_books', {
         'user_book': {'book_id': bookId, 'status': 'unread'}

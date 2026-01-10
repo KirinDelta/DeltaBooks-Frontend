@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,14 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (!success && mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isLogin ? 'Login eșuat' : 'Înregistrare eșuată')),
+        SnackBar(content: Text(_isLogin ? l10n.loginFailed : l10n.registrationFailed)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: const Color(0xFFE2E8F0),
       body: Center(
@@ -46,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'DeltaBooks',
+                    l10n.appTitle,
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           color: const Color(0xFF1A365D),
                         ),
@@ -54,18 +58,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   TextField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.email,
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Parolă',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.password,
+                      border: const OutlineInputBorder(),
                     ),
                     obscureText: true,
                   ),
@@ -79,14 +83,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator()
-                        : Text(_isLogin ? 'Conectare' : 'Înregistrare'),
+                        : Text(_isLogin ? l10n.login : l10n.register),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => setState(() => _isLogin = !_isLogin),
                     child: Text(_isLogin
-                        ? 'Nu ai cont? Înregistrează-te'
-                        : 'Ai deja cont? Conectează-te'),
+                        ? '${l10n.dontHaveAccount} ${l10n.register}'
+                        : '${l10n.alreadyHaveAccount} ${l10n.login}'),
                   ),
                 ],
               ),

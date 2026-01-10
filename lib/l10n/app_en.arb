@@ -1,0 +1,335 @@
+{
+  "@@locale": "en",
+  "appTitle": "DeltaBooks",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "myLibrary": "My Library",
+  "@myLibrary": {
+    "description": "Label for user's own library"
+  },
+  "partnerLibrary": "Partner's Library",
+  "@partnerLibrary": {
+    "description": "Label for partner's library"
+  },
+  "scan": "Scan",
+  "@scan": {
+    "description": "Label for scanning barcode"
+  },
+  "statistics": "Statistics",
+  "@statistics": {
+    "description": "Label for statistics screen"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button label"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email input label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password input label"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button label"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button label"
+  },
+  "loginFailed": "Login failed",
+  "@loginFailed": {
+    "description": "Error message for failed login"
+  },
+  "registrationFailed": "Registration failed",
+  "@registrationFailed": {
+    "description": "Error message for failed registration"
+  },
+  "emptyLibrary": "Your library is empty",
+  "@emptyLibrary": {
+    "description": "Message when user's library is empty"
+  },
+  "emptyPartnerLibrary": "Partner's library is empty",
+  "@emptyPartnerLibrary": {
+    "description": "Message when partner's library is empty"
+  },
+  "scanBarcode": "Scan the book's barcode",
+  "@scanBarcode": {
+    "description": "Instruction for scanning barcode"
+  },
+  "enterIsbnManually": "Enter ISBN manually",
+  "@enterIsbnManually": {
+    "description": "Label for manual ISBN input"
+  },
+  "isbn": "ISBN",
+  "@isbn": {
+    "description": "ISBN input label"
+  },
+  "enterIsbn": "Enter ISBN",
+  "@enterIsbn": {
+    "description": "Placeholder for ISBN input"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Search button label"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "addToLibrary": "Add to library",
+  "@addToLibrary": {
+    "description": "Button to add book to library"
+  },
+  "author": "Author",
+  "@author": {
+    "description": "Author label"
+  },
+  "pages": "Pages",
+  "@pages": {
+    "description": "Pages label"
+  },
+  "bookAdded": "Book added!",
+  "@bookAdded": {
+    "description": "Success message when book is added"
+  },
+  "addError": "Error adding book",
+  "@addError": {
+    "description": "Error message when adding book fails"
+  },
+  "bookNotFound": "Book not found",
+  "@bookNotFound": {
+    "description": "Error message when book is not found"
+  },
+  "enterIsbnError": "Please enter an ISBN",
+  "@enterIsbnError": {
+    "description": "Error message when ISBN is empty"
+  },
+  "page": "Page",
+  "@page": {
+    "description": "Page label"
+  },
+  "reading": "Reading",
+  "@reading": {
+    "description": "Book status: currently reading"
+  },
+  "finished": "Finished",
+  "@finished": {
+    "description": "Book status: finished reading"
+  },
+  "unread": "Unread",
+  "@unread": {
+    "description": "Book status: not yet read"
+  },
+  "pagesReadThisMonth": "Pages read this month",
+  "@pagesReadThisMonth": {
+    "description": "Statistics label"
+  },
+  "totalLibraryValue": "Total library value (RON)",
+  "@totalLibraryValue": {
+    "description": "Statistics label"
+  },
+  "totalBooks": "Total books",
+  "@totalBooks": {
+    "description": "Statistics label"
+  },
+  "totalPagesRead": "Total pages read",
+  "@totalPagesRead": {
+    "description": "Statistics label"
+  },
+  "statsError": "Error loading statistics",
+  "@statsError": {
+    "description": "Error message for statistics"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language label"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language name"
+  },
+  "romanian": "Romanian",
+  "@romanian": {
+    "description": "Romanian language name"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Text for register link"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Text for login link"
+  },
+  "shareLibrary": "Share Library",
+  "@shareLibrary": {
+    "description": "Button to share library with another user"
+  },
+  "searchUser": "Search User",
+  "@searchUser": {
+    "description": "Title for searching user screen"
+  },
+  "searchUserByEmail": "Search user by email",
+  "@searchUserByEmail": {
+    "description": "Placeholder for email search"
+  },
+  "userNotFound": "User not found",
+  "@userNotFound": {
+    "description": "Error when user is not found"
+  },
+  "sendInvitation": "Send Invitation",
+  "@sendInvitation": {
+    "description": "Button to send invitation"
+  },
+  "invitationSent": "Invitation sent successfully!",
+  "@invitationSent": {
+    "description": "Success message when invitation is sent"
+  },
+  "invitationError": "Error sending invitation",
+  "@invitationError": {
+    "description": "Error message when invitation fails"
+  },
+  "invitations": "Invitations",
+  "@invitations": {
+    "description": "Title for invitations screen"
+  },
+  "sentInvitations": "Sent Invitations",
+  "@sentInvitations": {
+    "description": "Label for sent invitations tab"
+  },
+  "receivedInvitations": "Received Invitations",
+  "@receivedInvitations": {
+    "description": "Label for received invitations tab"
+  },
+  "pending": "Pending",
+  "@pending": {
+    "description": "Status label for pending invitations"
+  },
+  "accepted": "Accepted",
+  "@accepted": {
+    "description": "Status label for accepted invitations"
+  },
+  "rejected": "Rejected",
+  "@rejected": {
+    "description": "Status label for rejected invitations"
+  },
+  "accept": "Accept",
+  "@accept": {
+    "description": "Button to accept invitation"
+  },
+  "reject": "Reject",
+  "@reject": {
+    "description": "Button to reject invitation"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button to cancel invitation"
+  },
+  "invitationAccepted": "Invitation accepted!",
+  "@invitationAccepted": {
+    "description": "Success message when invitation is accepted"
+  },
+  "invitationRejected": "Invitation rejected",
+  "@invitationRejected": {
+    "description": "Message when invitation is rejected"
+  },
+  "invitationCanceled": "Invitation canceled",
+  "@invitationCanceled": {
+    "description": "Message when invitation is canceled"
+  },
+  "noInvitations": "No invitations",
+  "@noInvitations": {
+    "description": "Message when there are no invitations"
+  },
+  "inviteFrom": "Invite from",
+  "@inviteFrom": {
+    "description": "Label showing who sent the invitation"
+  },
+  "inviteTo": "Invite to",
+  "@inviteTo": {
+    "description": "Label showing who received the invitation"
+  },
+  "alreadyPartner": "You are already partners",
+  "@alreadyPartner": {
+    "description": "Error when users are already partners"
+  },
+  "invitationExists": "Invitation already exists",
+  "@invitationExists": {
+    "description": "Error when invitation already exists"
+  },
+  "library": "Library",
+  "@library": {
+    "description": "Label for library"
+  },
+  "libraries": "Libraries",
+  "@libraries": {
+    "description": "Title for libraries screen"
+  },
+  "selectLibrary": "Select Library",
+  "@selectLibrary": {
+    "description": "Label for library selection"
+  },
+  "selectLibraryFirst": "Please select a library first",
+  "@selectLibraryFirst": {
+    "description": "Error message when library is not selected"
+  },
+  "createLibrary": "Create Library",
+  "@createLibrary": {
+    "description": "Button to create a new library"
+  },
+  "libraryName": "Library Name",
+  "@libraryName": {
+    "description": "Label for library name input"
+  },
+  "libraryDescription": "Description (optional)",
+  "@libraryDescription": {
+    "description": "Label for library description input"
+  },
+  "noLibraries": "No libraries yet",
+  "@noLibraries": {
+    "description": "Message when user has no libraries"
+  },
+  "createLibraryFirst": "Create a library first to share it",
+  "@createLibraryFirst": {
+    "description": "Message prompting user to create library"
+  },
+  "libraryCreated": "Library created!",
+  "@libraryCreated": {
+    "description": "Success message when library is created"
+  },
+  "libraryError": "Error creating library",
+  "@libraryError": {
+    "description": "Error message when library creation fails"
+  },
+  "myLibraries": "My Libraries",
+  "@myLibraries": {
+    "description": "Title for my libraries list"
+  },
+  "deleteLibrary": "Delete Library",
+  "@deleteLibrary": {
+    "description": "Button to delete library"
+  },
+  "editLibrary": "Edit Library",
+  "@editLibrary": {
+    "description": "Button to edit library"
+  },
+  "libraryDeleted": "Library deleted",
+  "@libraryDeleted": {
+    "description": "Message when library is deleted"
+  },
+  "libraryUpdated": "Library updated",
+  "@libraryUpdated": {
+    "description": "Message when library is updated"
+  },
+  "enterLibraryName": "Please enter a library name",
+  "@enterLibraryName": {
+    "description": "Error when library name is empty"
+  },
+  "forLibrary": "for library",
+  "@forLibrary": {
+    "description": "Text showing which library the invitation is for"
+  }
+}
