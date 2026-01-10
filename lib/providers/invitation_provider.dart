@@ -81,6 +81,8 @@ class InvitationProvider with ChangeNotifier {
       
       if (response.statusCode == 200) {
         await fetchInvitations();
+        // Refresh shared libraries after accepting invitation
+        // Note: LibraryProvider will be refreshed from the screen that calls this
         return true;
       }
     } catch (e) {

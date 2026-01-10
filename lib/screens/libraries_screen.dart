@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
+import '../providers/book_provider.dart';
 import '../models/library.dart';
 
 class LibrariesScreen extends StatefulWidget {
@@ -224,6 +225,9 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
                     ),
                     onTap: () {
                       libraryProvider.selectLibrary(library);
+                      // Refresh books for the selected library
+                      final bookProvider = Provider.of<BookProvider>(context, listen: false);
+                      bookProvider.fetchMyBooks(libraryId: library.id);
                       Navigator.pop(context);
                     },
                   ),

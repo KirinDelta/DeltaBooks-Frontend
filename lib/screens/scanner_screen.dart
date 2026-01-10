@@ -3,6 +3,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
+import '../providers/library_provider.dart';
+import '../models/book.dart';
+import '../models/library.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -66,45 +69,28 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         if (book != null) {
-          final add = await showDialog<bool>(
-            context: context,
-            builder: (context) {
-              final l10n = AppLocalizations.of(context)!;
-              return AlertDialog(
-                title: Text(book.title),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${l10n.author}: ${book.author}'),
-                    Text('${l10n.isbn}: ${book.isbn}'),
-                    Text('${l10n.pages}: ${book.totalPages}'),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text(l10n.cancel),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(l10n.addToLibrary),
-                  ),
-                ],
-              );
-            },
-          );
+          final result = await _showAddBookDialog(book);
           
-          if (add == true) {
-            final success = await bookProvider.addBookToLibrary(book.id);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(success ? l10n.bookAdded : l10n.addError),
-                ),
-              );
-            }
+        if (result != null && result['add'] == true) {
+          final libraryId = result['libraryId'] as int?;
+          final success = await bookProvider.addBookToLibrary(book.id, libraryId: libraryId);
+          if (mounted && success) {
+            // Refresh libraries - books are included in the response
+            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            await libraryProvider.fetchLibraries();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.bookAdded),
+              ),
+            );
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.addError),
+              ),
+            );
           }
+        }
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -137,44 +123,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
     
     if (mounted) {
       if (book != null) {
-        final add = await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            final l10n = AppLocalizations.of(context)!;
-            return AlertDialog(
-              title: Text(book.title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${l10n.author}: ${book.author}'),
-                  Text('${l10n.isbn}: ${book.isbn}'),
-                  Text('${l10n.pages}: ${book.totalPages}'),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(l10n.cancel),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(l10n.addToLibrary),
-                ),
-              ],
-            );
-          },
-        );
+        final result = await _showAddBookDialog(book);
         
-        if (add == true) {
-          final success = await bookProvider.addBookToLibrary(book.id);
-          if (mounted) {
+        if (result != null && result['add'] == true) {
+          final libraryId = result['libraryId'] as int?;
+          final success = await bookProvider.addBookToLibrary(book.id, libraryId: libraryId);
+          if (mounted && success) {
+            // Refresh libraries - books are included in the response
+            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            await libraryProvider.fetchLibraries();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(success ? l10n.bookAdded : l10n.addError),
+                content: Text(l10n.bookAdded),
               ),
             );
             _isbnController.clear();
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.addError),
+              ),
+            );
           }
         }
       } else {
@@ -185,6 +154,105 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
     
     setState(() => _isScanning = false);
+  }
+
+  Future<Map<String, dynamic>?> _showAddBookDialog(Book book) async {
+    final l10n = AppLocalizations.of(context)!;
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    // Allow adding to both own libraries and shared libraries (user is a member)
+    final allLibraries = libraryProvider.allLibraries;
+    
+    if (allLibraries.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.noLibraries)),
+      );
+      return null;
+    }
+
+    Library? selectedLibrary = allLibraries.isNotEmpty 
+        ? (libraryProvider.selectedLibrary != null
+            ? libraryProvider.selectedLibrary
+            : allLibraries.first)
+        : null;
+
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(book.title),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${l10n.author}: ${book.author}'),
+                    Text('${l10n.isbn}: ${book.isbn}'),
+                    Text('${l10n.pages}: ${book.totalPages}'),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.selectLibrary,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<Library>(
+                      value: selectedLibrary,
+                      decoration: InputDecoration(
+                        labelText: l10n.library,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: allLibraries.map((library) {
+                        final isShared = libraryProvider.isSharedLibrary(library);
+                        return DropdownMenuItem<Library>(
+                          value: library,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isShared ? Icons.share : Icons.library_books,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  library.name + (isShared ? ' (Shared)' : ''),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (Library? library) {
+                        if (library != null) {
+                          setDialogState(() {
+                            selectedLibrary = library;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  child: Text(l10n.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, {
+                    'add': true,
+                    'libraryId': selectedLibrary?.id,
+                  }),
+                  child: Text(l10n.addToLibrary),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override

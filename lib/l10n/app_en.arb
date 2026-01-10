@@ -331,5 +331,9 @@
   "forLibrary": "for library",
   "@forLibrary": {
     "description": "Text showing which library the invitation is for"
+  },
+  "noSharedLibraries": "No shared libraries",
+  "@noSharedLibraries": {
+    "description": "Message when there are no shared libraries"
   }
 }

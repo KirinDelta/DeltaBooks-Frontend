@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
-import '../providers/book_provider.dart';
-import '../models/user_book.dart';
+import '../providers/library_provider.dart';
+import '../models/book.dart';
 
 class LibraryScreen extends StatefulWidget {
-  final bool isMyLibrary;
-
-  const LibraryScreen({super.key, required this.isMyLibrary});
+  const LibraryScreen({super.key});
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  bool _hasFetched = false;
+  int? _lastLibraryId;
 
   @override
   void initState() {
@@ -24,93 +22,110 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
   }
 
-  void _fetchBooks() {
-    if (!_hasFetched && mounted) {
-      final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      if (widget.isMyLibrary) {
-        bookProvider.fetchMyBooks();
-      } else {
-        bookProvider.fetchPartnerBooks();
+  Future<void> _fetchBooks() async {
+    // Books are now included in the library object from the API
+    // No need to fetch separately - books come with the library
+    if (mounted) {
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      final selectedLibrary = libraryProvider.selectedLibrary;
+      if (selectedLibrary != null) {
+        final libraryId = selectedLibrary.id;
+        if (libraryId != _lastLibraryId) {
+          _lastLibraryId = libraryId;
+        }
       }
-      _hasFetched = true;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Only listen to changes, don't rebuild unnecessarily
-    final bookProvider = Provider.of<BookProvider>(context);
-    final books = widget.isMyLibrary ? bookProvider.myBooks : bookProvider.partnerBooks;
+    // Listen to library changes to refresh books
+    final libraryProvider = Provider.of<LibraryProvider>(context);
+    
+    // Refresh books when library changes
+    final selectedLibrary = libraryProvider.selectedLibrary;
+    final currentLibraryId = selectedLibrary?.id;
+    if (currentLibraryId != _lastLibraryId && currentLibraryId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchBooks();
+      });
+    }
+    
+    // Show books from selected library - books are included in the library object
+    final isShared = selectedLibrary != null && libraryProvider.isSharedLibrary(selectedLibrary);
+    final books = selectedLibrary?.books ?? [];
 
-    if (bookProvider.isLoading && !_hasFetched) {
+    if (libraryProvider.isLoading && _lastLibraryId == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (books.isEmpty && !bookProvider.isLoading) {
-      return Center(
-        child: Text(
-          widget.isMyLibrary ? l10n.emptyLibrary : l10n.emptyPartnerLibrary,
-          style: Theme.of(context).textTheme.titleLarge,
+    Future<void> _refreshData() async {
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      final selectedLibrary = libraryProvider.selectedLibrary;
+      
+      // Refresh libraries - books are included in the response
+      await libraryProvider.fetchLibraries();
+      
+      // Update last library ID to trigger refresh if needed
+      if (selectedLibrary != null) {
+        _lastLibraryId = selectedLibrary.id;
+      }
+    }
+
+    if (books.isEmpty && !libraryProvider.isLoading) {
+      return RefreshIndicator(
+        onRefresh: _refreshData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Text(
+                isShared ? l10n.emptyPartnerLibrary : l10n.emptyLibrary,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: books.length,
-      itemBuilder: (context, index) {
-        final userBook = books[index];
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: books.length,
+        itemBuilder: (context, index) {
+        final book = books[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
-            leading: userBook.book.coverUrl != null
+            leading: book.coverUrl != null
                 ? Image.network(
-                    userBook.book.coverUrl!,
+                    book.coverUrl!,
                     width: 50,
                     height: 70,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(Icons.book),
                   )
                 : const Icon(Icons.book, size: 50),
-            title: Text(userBook.book.title),
+            title: Text(book.title),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(userBook.book.author),
+                Text(book.author),
                 const SizedBox(height: 4),
-                Text(_getStatusText(userBook.status, l10n)),
-                if (userBook.currentPage != null)
-                  Text('${l10n.page} ${userBook.currentPage}/${userBook.book.totalPages}'),
+                Text('${l10n.isbn}: ${book.isbn}'),
+                if (book.totalPages > 0)
+                  Text('${l10n.page} ${book.totalPages}'),
               ],
             ),
-            trailing: userBook.rating != null
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      5,
-                      (i) => Icon(
-                        i < userBook.rating! ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 20,
-                      ),
-                    ),
-                  )
-                : null,
           ),
         );
       },
+      ),
     );
   }
 
-  String _getStatusText(BookStatus status, AppLocalizations l10n) {
-    switch (status) {
-      case BookStatus.reading:
-        return l10n.reading;
-      case BookStatus.finished:
-        return l10n.finished;
-      default:
-        return l10n.unread;
-    }
-  }
 }

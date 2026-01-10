@@ -589,6 +589,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'for library'**
   String get forLibrary;
+
+  /// Message when there are no shared libraries
+  ///
+  /// In en, this message translates to:
+  /// **'No shared libraries'**
+  String get noSharedLibraries;
 }
 
 class _AppLocalizationsDelegate

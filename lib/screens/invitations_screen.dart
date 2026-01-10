@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/invitation_provider.dart';
+import '../providers/library_provider.dart';
 import '../models/invitation.dart';
 
 class InvitationsScreen extends StatefulWidget {
@@ -185,6 +186,11 @@ class _InvitationCard extends StatelessWidget {
     switch (action) {
       case 'accept':
         success = await provider.acceptInvitation(invitation.id);
+        if (success) {
+          // Refresh shared libraries after accepting
+          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          await libraryProvider.fetchLibraries();
+        }
         message = success ? l10n.invitationAccepted : l10n.invitationError;
         break;
       case 'reject':

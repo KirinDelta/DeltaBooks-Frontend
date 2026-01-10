@@ -253,4 +253,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get forLibrary => 'pentru biblioteca';
+
+  @override
+  String get noSharedLibraries => 'Fără biblioteci partajate';
 }

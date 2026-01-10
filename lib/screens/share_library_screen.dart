@@ -7,7 +7,9 @@ import '../models/library.dart';
 import 'libraries_screen.dart';
 
 class ShareLibraryScreen extends StatefulWidget {
-  const ShareLibraryScreen({super.key});
+  final Library? selectedLibrary;
+  
+  const ShareLibraryScreen({super.key, this.selectedLibrary});
 
   @override
   State<ShareLibraryScreen> createState() => _ShareLibraryScreenState();
@@ -82,6 +84,43 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
         );
       }
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize library selection
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      libraryProvider.fetchLibraries().then((_) {
+        if (mounted) {
+          // Use provided library or find matching one from list
+          if (widget.selectedLibrary != null) {
+            final matchingLibrary = libraryProvider.libraries.firstWhere(
+              (lib) => lib.id == widget.selectedLibrary!.id,
+              orElse: () => widget.selectedLibrary!,
+            );
+            setState(() {
+              _selectedLibrary = matchingLibrary;
+            });
+          } else if (libraryProvider.selectedLibrary != null) {
+            final matchingLibrary = libraryProvider.libraries.firstWhere(
+              (lib) => lib.id == libraryProvider.selectedLibrary!.id,
+              orElse: () => libraryProvider.libraries.isNotEmpty 
+                  ? libraryProvider.libraries.first 
+                  : libraryProvider.selectedLibrary!,
+            );
+            setState(() {
+              _selectedLibrary = matchingLibrary;
+            });
+          } else if (libraryProvider.libraries.isNotEmpty) {
+            setState(() {
+              _selectedLibrary = libraryProvider.libraries.first;
+            });
+          }
+        }
+      });
+    });
   }
 
   @override
@@ -163,6 +202,37 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                   );
                 }
                 
+                // Find the current selected library from the list (by ID to avoid instance mismatch)
+                Library? currentSelectedLibrary;
+                if (_selectedLibrary != null) {
+                  currentSelectedLibrary = libraryProvider.libraries.firstWhere(
+                    (lib) => lib.id == _selectedLibrary!.id,
+                    orElse: () => libraryProvider.libraries.isNotEmpty 
+                        ? libraryProvider.libraries.first 
+                        : _selectedLibrary!,
+                  );
+                } else if (libraryProvider.selectedLibrary != null) {
+                  currentSelectedLibrary = libraryProvider.libraries.firstWhere(
+                    (lib) => lib.id == libraryProvider.selectedLibrary!.id,
+                    orElse: () => libraryProvider.libraries.isNotEmpty 
+                        ? libraryProvider.libraries.first 
+                        : libraryProvider.selectedLibrary!,
+                  );
+                } else if (libraryProvider.libraries.isNotEmpty) {
+                  currentSelectedLibrary = libraryProvider.libraries.first;
+                }
+                
+                // Update state if needed to ensure we have a valid selection
+                if (currentSelectedLibrary != null && (_selectedLibrary == null || _selectedLibrary!.id != currentSelectedLibrary.id)) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        _selectedLibrary = currentSelectedLibrary;
+                      });
+                    }
+                  });
+                }
+                
                 return Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -175,7 +245,7 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<Library>(
-                          value: _selectedLibrary ?? libraryProvider.selectedLibrary,
+                          value: currentSelectedLibrary,
                           decoration: InputDecoration(
                             labelText: l10n.library,
                             border: const OutlineInputBorder(),
