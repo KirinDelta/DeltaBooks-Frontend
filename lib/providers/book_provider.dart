@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/book.dart';
 import '../models/user_book.dart';
 import '../services/api_service.dart';
+import 'library_provider.dart';
 import 'dart:convert';
 
 class BookProvider with ChangeNotifier {
@@ -14,40 +15,54 @@ class BookProvider with ChangeNotifier {
   List<UserBook> get partnerBooks => _partnerBooks;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchMyBooks() async {
+  Future<void> fetchMyBooks({int? libraryId}) async {
+    // Prevent multiple simultaneous fetches
+    if (_isLoading) return;
+    
     _isLoading = true;
     notifyListeners();
     
     try {
-      final response = await _apiService.get('/api/v1/user_books');
+      String endpoint = '/api/v1/user_books';
+      if (libraryId != null) {
+        endpoint += '?library_id=$libraryId';
+      }
+      final response = await _apiService.get(endpoint);
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         _myBooks = data.map((json) => UserBook.fromJson(json)).toList();
       }
     } catch (e) {
       debugPrint('Error fetching my books: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
-  Future<void> fetchPartnerBooks() async {
+  Future<void> fetchPartnerBooks({int? libraryId}) async {
+    // Prevent multiple simultaneous fetches
+    if (_isLoading) return;
+    
     _isLoading = true;
     notifyListeners();
     
     try {
-      final response = await _apiService.get('/api/v1/user_books?partner=true');
+      String endpoint = '/api/v1/user_books?partner=true';
+      if (libraryId != null) {
+        endpoint += '&library_id=$libraryId';
+      }
+      final response = await _apiService.get(endpoint);
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         _partnerBooks = data.map((json) => UserBook.fromJson(json)).toList();
       }
     } catch (e) {
       debugPrint('Error fetching partner books: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<Book?> findBookByIsbn(String isbn) async {
@@ -62,13 +77,18 @@ class BookProvider with ChangeNotifier {
     return null;
   }
 
-  Future<bool> addBookToShelf(int bookId) async {
+  Future<bool> addBookToLibrary(int bookId, {int? libraryId}) async {
     try {
+      final body = <String, dynamic>{
+        'book_id': bookId,
+        'status': 'unread',
+      };
       final response = await _apiService.post('/api/v1/user_books', {
-        'user_book': {'book_id': bookId, 'status': 'unread'}
+        'user_book': body,
+        if (libraryId != null) 'library_ids': [libraryId], // Backend expects library_ids as array
       });
       if (response.statusCode == 201) {
-        await fetchMyBooks();
+        // Books are now included in library response, so we don't need to fetch separately
         return true;
       }
     } catch (e) {
