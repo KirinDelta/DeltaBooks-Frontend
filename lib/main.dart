@@ -28,9 +28,16 @@ class DeltaBooksApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
       ],
-      child: Consumer<LocaleProvider>(
-        builder: (context, localeProvider, _) {
-          return MaterialApp(
+      child: Builder(
+        builder: (context) {
+          // Initialize locale provider reference in auth provider
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+          authProvider.setLocaleProvider(localeProvider);
+          
+          return Consumer<LocaleProvider>(
+            builder: (context, localeProvider, _) {
+              return MaterialApp(
             title: 'DeltaBooks',
             locale: localeProvider.locale,
             localizationsDelegates: const [
@@ -123,13 +130,15 @@ class DeltaBooksApp extends StatelessWidget {
                 indicatorSize: TabBarIndicatorSize.tab,
               ),
             ),
-            home: Consumer<AuthProvider>(
-              builder: (context, authProvider, _) {
-                return authProvider.isAuthenticated
-                    ? const HomeScreen()
-                    : const LoginScreen();
-              },
-            ),
+                home: Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) {
+                    return authProvider.isAuthenticated
+                        ? const HomeScreen()
+                        : const LoginScreen();
+                  },
+                ),
+              );
+            },
           );
         },
       ),

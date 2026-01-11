@@ -39,14 +39,14 @@ class Library {
     
     return Library(
       id: parseId(json['id']) ?? 0,
-      name: json['name'] as String? ?? '',
+      name: (json['name'] as String?) ?? '',
       description: json['description'] as String?,
       userId: parseId(json['user_id']) ?? parseId(json['owner']?['id']) ?? 0,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+          ? DateTime.parse(json['created_at'].toString())
           : DateTime.now(),
       updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+          ? DateTime.parse(json['updated_at'].toString())
           : null,
       shared: (json['shared'] as bool?) ?? false,
       books: books,

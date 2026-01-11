@@ -23,13 +23,24 @@ class BookComment {
       return null;
     }
     
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
     return BookComment(
-      id: json['id'] as int,
-      comment: json['comment'] as String,
+      id: parseId(json['id']) ?? 0,
+      comment: (json['comment'] as String?) ?? '',
       rating: parseRating(json['rating']),
-      user: CommentUser.fromJson(json['user'] as Map<String, dynamic>),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      user: CommentUser.fromJson(json['user'] as Map<String, dynamic>? ?? {}),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'].toString())
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'].toString())
+          : DateTime.now(),
     );
   }
 }
@@ -37,16 +48,29 @@ class BookComment {
 class CommentUser {
   final int id;
   final String email;
+  final String? firstName;
+  final String? lastName;
 
   CommentUser({
     required this.id,
     required this.email,
+    this.firstName,
+    this.lastName,
   });
 
   factory CommentUser.fromJson(Map<String, dynamic> json) {
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
     return CommentUser(
-      id: json['id'] as int,
-      email: json['email'] as String,
+      id: parseId(json['id']) ?? 0,
+      email: (json['email'] as String?) ?? '',
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
     );
   }
 }

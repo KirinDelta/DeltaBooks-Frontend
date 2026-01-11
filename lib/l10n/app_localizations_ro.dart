@@ -406,4 +406,82 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get confirm => 'Confirmă';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get settings => 'Setări';
+
+  @override
+  String get firstName => 'Prenume';
+
+  @override
+  String get lastName => 'Nume';
+
+  @override
+  String get username => 'Nume utilizator';
+
+  @override
+  String get enterFirstName => 'Introduceți prenumele';
+
+  @override
+  String get enterLastName => 'Introduceți numele';
+
+  @override
+  String get enterUsername => 'Introduceți numele de utilizator';
+
+  @override
+  String get defaultCurrency => 'Monedă Implicită';
+
+  @override
+  String get defaultLanguage => 'Limbă Implicită';
+
+  @override
+  String get changePassword => 'Schimbă Parola';
+
+  @override
+  String get currentPassword => 'Parolă Curentă';
+
+  @override
+  String get newPassword => 'Parolă Nouă';
+
+  @override
+  String get confirmPassword => 'Confirmă Parola Nouă';
+
+  @override
+  String get enterCurrentPassword => 'Introduceți parola curentă';
+
+  @override
+  String get enterNewPassword => 'Introduceți parola nouă';
+
+  @override
+  String get enterConfirmPassword => 'Confirmați parola nouă';
+
+  @override
+  String get passwordMismatch => 'Parolele nu se potrivesc';
+
+  @override
+  String get passwordChanged => 'Parolă schimbată cu succes!';
+
+  @override
+  String get passwordChangeError => 'Eroare la schimbarea parolei';
+
+  @override
+  String get profileUpdated => 'Profil actualizat cu succes!';
+
+  @override
+  String get profileUpdateError => 'Eroare la actualizarea profilului';
+
+  @override
+  String get ron => 'RON (Leu Românesc)';
+
+  @override
+  String get eur => 'EUR (Euro)';
+
+  @override
+  String get usd => 'USD (Dolar American)';
+
+  @override
+  String get updateProfile => 'Actualizează Profilul';
 }

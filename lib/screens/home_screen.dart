@@ -13,6 +13,7 @@ import 'library_screen.dart';
 import 'share_library_screen.dart';
 import 'invitations_screen.dart';
 import 'libraries_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -314,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      drawer: _buildDrawer(context, localeProvider),
+      drawer: _buildDrawer(context),
       body: IndexedStack(
         index: _currentIndex,
         children: const [
@@ -390,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  Widget _buildDrawer(BuildContext context, LocaleProvider localeProvider) {
+  Widget _buildDrawer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Consumer3<AuthProvider, LibraryProvider, InvitationProvider>(
       builder: (context, authProvider, libraryProvider, invitationProvider, _) {
@@ -528,13 +529,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       ListTile(
                         leading: Icon(
-                          Icons.language,
+                          Icons.person,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        title: Text(l10n.language),
+                        title: Text(l10n.profile),
                         onTap: () {
                           Navigator.pop(context);
-                          localeProvider.toggleLocale();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          );
                         },
                       ),
                       const Divider(),

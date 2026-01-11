@@ -889,6 +889,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// Title for profile screen
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// Title for settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// Label for first name input
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get firstName;
+
+  /// Label for last name input
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get lastName;
+
+  /// Label for username input
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// Placeholder for first name input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter first name'**
+  String get enterFirstName;
+
+  /// Placeholder for last name input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter last name'**
+  String get enterLastName;
+
+  /// Placeholder for username input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter username'**
+  String get enterUsername;
+
+  /// Label for default currency dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Default Currency'**
+  String get defaultCurrency;
+
+  /// Label for default language dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Default Language'**
+  String get defaultLanguage;
+
+  /// Title for password change section
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// Label for current password input
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// Label for new password input
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// Label for confirm password input
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmPassword;
+
+  /// Placeholder for current password input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter current password'**
+  String get enterCurrentPassword;
+
+  /// Placeholder for new password input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new password'**
+  String get enterNewPassword;
+
+  /// Placeholder for confirm password input
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get enterConfirmPassword;
+
+  /// Error when passwords don't match
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordMismatch;
+
+  /// Success message when password is changed
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully!'**
+  String get passwordChanged;
+
+  /// Error message when password change fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error changing password'**
+  String get passwordChangeError;
+
+  /// Success message when profile is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profileUpdated;
+
+  /// Error message when profile update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating profile'**
+  String get profileUpdateError;
+
+  /// Romanian Leu currency name
+  ///
+  /// In en, this message translates to:
+  /// **'RON (Romanian Leu)'**
+  String get ron;
+
+  /// Euro currency name
+  ///
+  /// In en, this message translates to:
+  /// **'EUR (Euro)'**
+  String get eur;
+
+  /// US Dollar currency name
+  ///
+  /// In en, this message translates to:
+  /// **'USD (US Dollar)'**
+  String get usd;
+
+  /// Button to update profile
+  ///
+  /// In en, this message translates to:
+  /// **'Update Profile'**
+  String get updateProfile;
 }
 
 class _AppLocalizationsDelegate

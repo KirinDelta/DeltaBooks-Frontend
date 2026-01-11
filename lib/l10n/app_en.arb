@@ -531,5 +531,109 @@
   "confirm": "Confirm",
   "@confirm": {
     "description": "Button to confirm an action"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Title for profile screen"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Title for settings section"
+  },
+  "firstName": "First Name",
+  "@firstName": {
+    "description": "Label for first name input"
+  },
+  "lastName": "Last Name",
+  "@lastName": {
+    "description": "Label for last name input"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Label for username input"
+  },
+  "enterFirstName": "Enter first name",
+  "@enterFirstName": {
+    "description": "Placeholder for first name input"
+  },
+  "enterLastName": "Enter last name",
+  "@enterLastName": {
+    "description": "Placeholder for last name input"
+  },
+  "enterUsername": "Enter username",
+  "@enterUsername": {
+    "description": "Placeholder for username input"
+  },
+  "defaultCurrency": "Default Currency",
+  "@defaultCurrency": {
+    "description": "Label for default currency dropdown"
+  },
+  "defaultLanguage": "Default Language",
+  "@defaultLanguage": {
+    "description": "Label for default language dropdown"
+  },
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Title for password change section"
+  },
+  "currentPassword": "Current Password",
+  "@currentPassword": {
+    "description": "Label for current password input"
+  },
+  "newPassword": "New Password",
+  "@newPassword": {
+    "description": "Label for new password input"
+  },
+  "confirmPassword": "Confirm New Password",
+  "@confirmPassword": {
+    "description": "Label for confirm password input"
+  },
+  "enterCurrentPassword": "Enter current password",
+  "@enterCurrentPassword": {
+    "description": "Placeholder for current password input"
+  },
+  "enterNewPassword": "Enter new password",
+  "@enterNewPassword": {
+    "description": "Placeholder for new password input"
+  },
+  "enterConfirmPassword": "Confirm new password",
+  "@enterConfirmPassword": {
+    "description": "Placeholder for confirm password input"
+  },
+  "passwordMismatch": "Passwords do not match",
+  "@passwordMismatch": {
+    "description": "Error when passwords don't match"
+  },
+  "passwordChanged": "Password changed successfully!",
+  "@passwordChanged": {
+    "description": "Success message when password is changed"
+  },
+  "passwordChangeError": "Error changing password",
+  "@passwordChangeError": {
+    "description": "Error message when password change fails"
+  },
+  "profileUpdated": "Profile updated successfully!",
+  "@profileUpdated": {
+    "description": "Success message when profile is updated"
+  },
+  "profileUpdateError": "Error updating profile",
+  "@profileUpdateError": {
+    "description": "Error message when profile update fails"
+  },
+  "ron": "RON (Romanian Leu)",
+  "@ron": {
+    "description": "Romanian Leu currency name"
+  },
+  "eur": "EUR (Euro)",
+  "@eur": {
+    "description": "Euro currency name"
+  },
+  "usd": "USD (US Dollar)",
+  "@usd": {
+    "description": "US Dollar currency name"
+  },
+  "updateProfile": "Update Profile",
+  "@updateProfile": {
+    "description": "Button to update profile"
   }
 }

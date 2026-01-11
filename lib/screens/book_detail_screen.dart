@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
 import '../widgets/mark_as_read_sheet.dart';
+import '../widgets/user_avatar.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
@@ -200,7 +201,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     
     // Use new backend fields
     final hasRead = book.isReadByMe;
-    final partnerHasRead = book.isReadByOthers;
 
     return Scaffold(
       appBar: AppBar(
@@ -208,87 +208,85 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Cover image
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  color: AppColors.riverMist,
-                  child: book.coverUrl != null
-                      ? Image.network(
-                          book.coverUrl!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Center(
-                            child: Icon(
-                              Icons.book,
-                              size: 80,
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
-                        )
-                      : Center(
-                          child: Icon(
-                            Icons.book,
-                            size: 80,
-                            color: AppColors.textTertiary,
-                          ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Cover image
+            Container(
+              width: double.infinity,
+              height: 300,
+              color: AppColors.riverMist,
+              child: book.coverUrl != null
+                  ? Image.network(
+                      book.coverUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Icon(
+                          Icons.book,
+                          size: 80,
+                          color: AppColors.textTertiary,
                         ),
-                ),
-                
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.book,
+                        size: 80,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title with read badge
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title with read badge
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              book.title,
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.deltaTeal,
-                              ),
-                            ),
+                      Expanded(
+                        child: Text(
+                          book.title,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.deltaTeal,
                           ),
-                          Visibility(
-                            visible: hasRead,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: AppColors.goldLeaf,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Read',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      Visibility(
+                        visible: hasRead,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.goldLeaf,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Read',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   
                   // Author
@@ -347,58 +345,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ],
                   ),
                   
-                  // My reading info (if I've read it)
-                  if (hasRead) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.riverMist,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.borderLight,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'My Review',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: AppColors.deltaTeal,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (book.myRating != null && book.myRating! > 0) ...[
-                            const SizedBox(height: 8),
-                            Row(
-                              children: List.generate(5, (index) {
-                                final starIndex = index + 1;
-                                return Icon(
-                                  starIndex <= book.myRating!
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  color: AppColors.goldLeaf,
-                                  size: 18,
-                                );
-                              }),
-                            ),
-                          ],
-                          if (book.myComment != null && book.myComment!.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              book.myComment!,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.deltaTeal,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                  
                   const SizedBox(height: 24),
                   
                   // Book details
@@ -420,6 +366,30 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       book.description!,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.deltaTeal,
+                      ),
+                    ),
+                  ],
+                  
+                  // My Status card (if user has read it)
+                  if (hasRead) ...[
+                    const SizedBox(height: 24),
+                    _buildMyStatusCard(context, authProvider),
+                  ],
+                  
+                  // Floating action button for Mark as Read (if user hasn't read it)
+                  if (!hasRead) ...[
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showMarkAsReadSheet(context),
+                        icon: const Icon(Icons.check_circle),
+                        label: Text(l10n.markAsRead),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldLeaf,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
                       ),
                     ),
                   ],
@@ -446,6 +416,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         ),
                       );
                     }),
+                    // Add bottom padding to ensure comments are never obscured
+                    const SizedBox(height: 20),
                   ] else if (book.totalCommentsCount > 0) ...[
                     // Show message if there are comments but they're not loaded
                     const SizedBox(height: 24),
@@ -463,65 +435,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         color: AppColors.textSecondary,
                       ),
                     ),
+                    const SizedBox(height: 20),
+                  ] else ...[
+                    const SizedBox(height: 20),
                   ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Partner read indicator - always visible in bottom right corner when partner has read
-          if (partnerHasRead)
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: Tooltip(
-                message: 'Partner read this',
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.deepSeaBlue,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
+                ],
               ),
             ),
-          // FloatingActionButton positioned above partner icon when it's visible
-          Positioned(
-            bottom: partnerHasRead ? 80 : 16, // Position above partner icon if visible
-            right: 16,
-            child: !hasRead
-                ? FloatingActionButton.extended(
-                    onPressed: () => _showMarkAsReadSheet(context),
-                    backgroundColor: AppColors.goldLeaf,
-                    foregroundColor: Colors.white,
-                    icon: const Icon(Icons.check_circle),
-                    label: Text(l10n.markAsRead),
-                  )
-                : FloatingActionButton.extended(
-                    onPressed: () => _markAsUnread(context),
-                    backgroundColor: AppColors.deepSeaBlue,
-                    foregroundColor: Colors.white,
-                    icon: const Icon(Icons.undo),
-                    label: const Text('Unread'),
-                  ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -546,12 +468,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.person,
-                size: 16,
-                color: AppColors.deltaTeal,
+              UserAvatar(
+                firstName: comment.user.firstName,
+                lastName: comment.user.lastName,
+                email: comment.user.email,
+                size: 24,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   isCurrentUser ? 'You' : comment.user.email,
@@ -645,6 +568,103 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Build My Status card showing user's avatar, rating, and Unread button
+  Widget _buildMyStatusCard(BuildContext context, AuthProvider authProvider) {
+    final user = authProvider.user;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.riverMist,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'My Status',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: AppColors.deltaTeal,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // User avatar
+              UserAvatar(
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                email: user?.email,
+                size: 40,
+              ),
+              const SizedBox(width: 12),
+              // Rating and Unread button
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Rating stars
+                    if (book.myRating != null && book.myRating! > 0)
+                      Row(
+                        children: List.generate(5, (index) {
+                          final starIndex = index + 1;
+                          return Icon(
+                            starIndex <= book.myRating!
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: AppColors.goldLeaf,
+                            size: 18,
+                          );
+                        }),
+                      )
+                    else
+                      Text(
+                        'No rating',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    // Unread button
+                    OutlinedButton(
+                      onPressed: () => _markAsUnread(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.deepSeaBlue,
+                        side: const BorderSide(color: AppColors.deepSeaBlue, width: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        minimumSize: const Size(0, 36),
+                      ),
+                      child: const Text('Unread'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Comment text if available
+          if (book.myComment != null && book.myComment!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              book.myComment!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.deltaTeal,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
     );

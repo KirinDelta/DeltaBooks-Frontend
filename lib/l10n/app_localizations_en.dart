@@ -405,4 +405,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get firstName => 'First Name';
+
+  @override
+  String get lastName => 'Last Name';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get enterFirstName => 'Enter first name';
+
+  @override
+  String get enterLastName => 'Enter last name';
+
+  @override
+  String get enterUsername => 'Enter username';
+
+  @override
+  String get defaultCurrency => 'Default Currency';
+
+  @override
+  String get defaultLanguage => 'Default Language';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmPassword => 'Confirm New Password';
+
+  @override
+  String get enterCurrentPassword => 'Enter current password';
+
+  @override
+  String get enterNewPassword => 'Enter new password';
+
+  @override
+  String get enterConfirmPassword => 'Confirm new password';
+
+  @override
+  String get passwordMismatch => 'Passwords do not match';
+
+  @override
+  String get passwordChanged => 'Password changed successfully!';
+
+  @override
+  String get passwordChangeError => 'Error changing password';
+
+  @override
+  String get profileUpdated => 'Profile updated successfully!';
+
+  @override
+  String get profileUpdateError => 'Error updating profile';
+
+  @override
+  String get ron => 'RON (Romanian Leu)';
+
+  @override
+  String get eur => 'EUR (Euro)';
+
+  @override
+  String get usd => 'USD (US Dollar)';
+
+  @override
+  String get updateProfile => 'Update Profile';
 }

@@ -4,8 +4,10 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/book.dart';
+import '../models/book_comment.dart';
 import '../theme/app_colors.dart';
 import '../widgets/mark_as_read_sheet.dart';
+import '../widgets/user_avatar.dart';
 import 'book_detail_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -341,10 +343,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Tooltip(
                     message: 'Partner read this',
                     child: Container(
-                      width: 32,
-                      height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.deepSeaBlue,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -354,13 +353,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
+                      child: _buildPartnerAvatar(book),
                     ),
                   ),
                 ),
@@ -369,6 +362,42 @@ class _LibraryScreenState extends State<LibraryScreen> {
         );
       },
       ),
+    );
+  }
+
+  /// Build partner avatar from book comments
+  /// Uses the first non-current-user comment author for the avatar
+  Widget _buildPartnerAvatar(Book book) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.user?.id;
+    
+    // Find a comment from a partner (non-current user)
+    BookComment? partnerComment;
+    try {
+      partnerComment = book.comments.firstWhere(
+        (comment) => comment.user.id != currentUserId,
+      );
+    } catch (e) {
+      // No partner comment found, use first comment if available
+      if (book.comments.isNotEmpty) {
+        partnerComment = book.comments.first;
+      }
+    }
+    
+    if (partnerComment != null) {
+      return UserAvatar(
+        firstName: partnerComment.user.firstName,
+        lastName: partnerComment.user.lastName,
+        email: partnerComment.user.email,
+        size: 32,
+        fallbackText: 'P',
+      );
+    }
+    
+    // Fallback to generic "P" for partner
+    return UserAvatar(
+      fallbackText: 'P',
+      size: 32,
     );
   }
 
