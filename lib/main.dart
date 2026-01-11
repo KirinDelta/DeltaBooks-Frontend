@@ -9,6 +9,7 @@ import 'providers/invitation_provider.dart';
 import 'providers/library_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   runApp(const DeltaBooksApp());
@@ -44,34 +45,36 @@ class DeltaBooksApp extends StatelessWidget {
             ],
             theme: ThemeData(
               useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF6366F1), // Modern indigo
+              colorScheme: ColorScheme.light(
+                primary: AppColors.deepSeaBlue,
+                secondary: AppColors.riverMist,
+                tertiary: AppColors.goldLeaf,
+                surface: AppColors.white,
+                surfaceContainerHighest: AppColors.riverMist,
+                onPrimary: AppColors.white,
+                onSecondary: AppColors.deltaTeal,
+                onSurface: AppColors.deltaTeal,
+                onSurfaceVariant: AppColors.textSecondary,
                 brightness: Brightness.light,
-                primary: const Color(0xFF6366F1),
-                secondary: const Color(0xFF8B5CF6),
-                tertiary: const Color(0xFFEC4899),
-                surface: const Color(0xFFFFFFFF),
-                surfaceContainerHighest: const Color(0xFFF3F4F6),
-                onPrimary: Colors.white,
-                onSecondary: Colors.white,
-                onSurface: const Color(0xFF1F2937),
-                onSurfaceVariant: const Color(0xFF6B7280),
               ),
-              scaffoldBackgroundColor: const Color(0xFFF9FAFB),
+              scaffoldBackgroundColor: Colors.white,
               cardTheme: CardThemeData(
-                elevation: 0,
+                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: AppColors.borderLight, width: 1),
                 ),
-                color: Colors.white,
+                color: AppColors.white,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shadowColor: AppColors.deltaTeal.withOpacity(0.1),
               ),
               appBarTheme: const AppBarTheme(
                 elevation: 0,
                 centerTitle: false,
-                backgroundColor: Color(0xFF6366F1),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.deepSeaBlue,
+                foregroundColor: AppColors.white,
                 surfaceTintColor: Colors.transparent,
+                iconTheme: IconThemeData(color: AppColors.white),
               ),
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
@@ -80,38 +83,44 @@ class DeltaBooksApp extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.deepSeaBlue,
+                  foregroundColor: AppColors.white,
                 ),
               ),
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
-                fillColor: const Color(0xFFF9FAFB),
+                fillColor: AppColors.riverMist,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                  borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
               bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-                backgroundColor: Colors.white,
-                selectedItemColor: Color(0xFF6366F1),
-                unselectedItemColor: Color(0xFF9CA3AF),
+                backgroundColor: AppColors.white,
+                selectedItemColor: AppColors.deepSeaBlue,
+                unselectedItemColor: AppColors.textTertiary,
                 elevation: 8,
                 type: BottomNavigationBarType.fixed,
               ),
               floatingActionButtonTheme: const FloatingActionButtonThemeData(
                 elevation: 4,
-                backgroundColor: Color(0xFF6366F1),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.goldLeaf,
+                foregroundColor: AppColors.white,
+              ),
+              tabBarTheme: const TabBarThemeData(
+                labelColor: AppColors.deepSeaBlue,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.white,
+                indicatorSize: TabBarIndicatorSize.tab,
               ),
             ),
             home: Consumer<AuthProvider>(

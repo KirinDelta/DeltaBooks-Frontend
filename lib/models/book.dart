@@ -1,20 +1,36 @@
 class Book {
-  final int id;
+  final int? id;
   final String isbn;
   final String title;
   final String author;
   final String? coverUrl;
   final int totalPages;
   final String? description;
+  final String? source; // 'internal', 'google_books', 'open_library'
+  
+  // Reading status fields - TOP-LEVEL fields from API
+  final bool isReadByMe; // is_read_by_me
+  final int? myRating; // my_rating (nullable)
+  final String? myComment; // my_comment (nullable)
+  final double? averageRating; // average_rating (nullable)
+  final int totalCommentsCount; // total_comments_count
+  final bool isReadByOthers; // is_read_by_others
 
   Book({
-    required this.id,
+    this.id,
     required this.isbn,
     required this.title,
     required this.author,
     this.coverUrl,
     required this.totalPages,
     this.description,
+    this.source,
+    this.isReadByMe = false,
+    this.myRating,
+    this.myComment,
+    this.averageRating,
+    this.totalCommentsCount = 0,
+    this.isReadByOthers = false,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -32,14 +48,45 @@ class Book {
       return null;
     }
     
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is num) return value.toDouble();
+      return null;
+    }
+    
+    int? parseInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+    
+    // Parse TOP-LEVEL fields from API (not nested)
+    final isReadByMe = json['is_read_by_me'] == true;
+    final myRating = parseInt(json['my_rating']);
+    final myComment = json['my_comment'] as String?;
+    final averageRating = parseDouble(json['average_rating']);
+    final totalCommentsCount = parseInt(json['total_comments_count']) ?? 0;
+    final isReadByOthers = json['is_read_by_others'] == true;
+    
     return Book(
-      id: parseId(json['id']) ?? 0,
+      id: parseId(json['id']),
       isbn: json['isbn'] as String? ?? '',
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',
       coverUrl: json['cover_url'] as String?,
       totalPages: parsePages(json['total_pages']) ?? 0,
       description: json['description'] as String?,
+      source: json['source'] as String?,
+      // Top-level reading status fields
+      isReadByMe: isReadByMe,
+      myRating: myRating,
+      myComment: myComment,
+      averageRating: averageRating,
+      totalCommentsCount: totalCommentsCount,
+      isReadByOthers: isReadByOthers,
     );
   }
 }

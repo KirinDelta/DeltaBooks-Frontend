@@ -338,7 +338,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMoreMenu(context, localeProvider),
               _buildNavItem(Icons.library_books, l10n.myLibrary, 0),
               _buildNavItem(Icons.qr_code_scanner, l10n.scan, 1),
               _buildNavItem(Icons.bar_chart, l10n.statistics, 2),
@@ -356,6 +355,12 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () => setState(() => _currentIndex = index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -384,72 +389,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMoreMenu(BuildContext context, LocaleProvider localeProvider) {
-    final l10n = AppLocalizations.of(context)!;
-    return Consumer<InvitationProvider>(
-      builder: (context, invitationProvider, _) {
-        final pendingCount = invitationProvider.pendingReceivedCount;
-        return Expanded(
-          child: Builder(
-            builder: (builderContext) => InkWell(
-              onTap: () => Scaffold.of(builderContext).openDrawer(),
-              child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        Icons.more_vert,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        size: 24,
-                      ),
-                      if (pendingCount > 0)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              '$pendingCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.more,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildDrawer(BuildContext context, LocaleProvider localeProvider) {
     final l10n = AppLocalizations.of(context)!;

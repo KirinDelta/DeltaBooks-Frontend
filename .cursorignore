@@ -1,0 +1,83 @@
+# Build artifacts
+build/
+.dart_tool/
+*.iml
+*.ipr
+*.iws
+
+# Generated files
+**/generated_plugin_registrant.dart
+lib/l10n/app_localizations*.dart
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Dependencies
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/Flutter.framework
+macos/Flutter/Flutter.podspec
+**/Podfile.lock
+
+# Xcode project files (large and not needed for code understanding)
+*.xcodeproj/
+*.xcworkspace/
+*.pbxproj
+*.xcscheme
+*.xcconfig
+*.plist
+*.storyboard
+*.xib
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Lock files
+pubspec.lock
+
+# Assets (images, fonts, etc. - usually not needed for code understanding)
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.ico
+**/*.webp
+**/*.pdf
+**/*.ttf
+**/*.otf
+**/*.woff
+**/*.woff2
+ios/Runner/Assets.xcassets/
+macos/Runner/Assets.xcassets/
+web/icons/
+web/favicon.png
+
+# Test coverage
+coverage/
+*.lcov
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -156,10 +156,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get invitations => 'Invitații';
 
   @override
-  String get sentInvitations => 'Invitații Trimise';
+  String get sentInvitations => 'Trimise';
 
   @override
-  String get receivedInvitations => 'Invitații Primite';
+  String get receivedInvitations => 'Primite';
 
   @override
   String get pending => 'În așteptare';
@@ -259,4 +259,151 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get more => 'Mai mult';
+
+  @override
+  String get title => 'Titlu';
+
+  @override
+  String get enterTitle => 'Introduceți titlul';
+
+  @override
+  String get enterAuthor => 'Introduceți autorul';
+
+  @override
+  String get searchByTitleAuthor => 'Căutare după Titlu/Autor';
+
+  @override
+  String get createManually => 'Creează Manual';
+
+  @override
+  String get coverImageUrl => 'URL Imagine Copertă';
+
+  @override
+  String get enterCoverUrl => 'Introduceți URL-ul imaginii de copertă';
+
+  @override
+  String get description => 'Descriere';
+
+  @override
+  String get enterDescription => 'Introduceți descrierea';
+
+  @override
+  String get price => 'Preț';
+
+  @override
+  String get enterPrice => 'Introduceți prețul';
+
+  @override
+  String get editBookDetails => 'Editează Detaliile Cărții';
+
+  @override
+  String get required => 'Obligatoriu';
+
+  @override
+  String get optional => 'Opțional';
+
+  @override
+  String get titleRequired => 'Titlul este obligatoriu';
+
+  @override
+  String get authorRequired => 'Autorul este obligatoriu';
+
+  @override
+  String get isbnRequired => 'ISBN-ul este obligatoriu';
+
+  @override
+  String get pagesRequired =>
+      'Numărul total de pagini trebuie să fie mai mare decât 0';
+
+  @override
+  String get invalidPrice => 'Preț invalid';
+
+  @override
+  String get invalidPages => 'Număr invalid de pagini';
+
+  @override
+  String get coverPreview => 'Previzualizare Copertă';
+
+  @override
+  String get noCoverImage => 'Fără imagine de copertă';
+
+  @override
+  String get searching => 'Căutare...';
+
+  @override
+  String get add => 'Adaugă';
+
+  @override
+  String get save => 'Salvează';
+
+  @override
+  String get searchError => 'Eroare la căutarea cărții';
+
+  @override
+  String get atLeastOneSearchField =>
+      'Vă rugăm să furnizați cel puțin un câmp de căutare';
+
+  @override
+  String get searchByIsbn => 'Căutare după ISBN';
+
+  @override
+  String get or => 'SAU';
+
+  @override
+  String get addManually => 'Adaugă Manual';
+
+  @override
+  String get markAsRead => 'Marchează ca Citit';
+
+  @override
+  String get rating => 'Evaluare';
+
+  @override
+  String get selectRating => 'Selectează Evaluarea';
+
+  @override
+  String get comment => 'Comentariu';
+
+  @override
+  String get enterComment => 'Introduceți comentariul (opțional)';
+
+  @override
+  String get readDate => 'Data Citirii';
+
+  @override
+  String get selectDate => 'Selectează Data';
+
+  @override
+  String get saveReading => 'Salvează Citirea';
+
+  @override
+  String get readingSaved => 'Citire salvată cu succes!';
+
+  @override
+  String get readingError => 'Eroare la salvarea citirii';
+
+  @override
+  String get comments => 'Comentarii';
+
+  @override
+  String get readByPartner => 'Citit de Partener';
+
+  @override
+  String get bookDetails => 'Detalii Carte';
+
+  @override
+  String get markAsUnread => 'Marchează ca Necitit';
+
+  @override
+  String get confirmUnread =>
+      'Sigur doriți să marcați această carte ca necitită?';
+
+  @override
+  String get bookMarkedAsUnread => 'Carte marcată ca necitită';
+
+  @override
+  String get errorMarkingUnread => 'Eroare la marcarea cărții ca necitită';
+
+  @override
+  String get confirm => 'Confirmă';
 }

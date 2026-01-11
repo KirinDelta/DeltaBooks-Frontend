@@ -395,13 +395,13 @@ abstract class AppLocalizations {
   /// Label for sent invitations tab
   ///
   /// In en, this message translates to:
-  /// **'Sent Invitations'**
+  /// **'Sent'**
   String get sentInvitations;
 
   /// Label for received invitations tab
   ///
   /// In en, this message translates to:
-  /// **'Received Invitations'**
+  /// **'Received'**
   String get receivedInvitations;
 
   /// Status label for pending invitations
@@ -601,6 +601,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get more;
+
+  /// Book title label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
+  /// Placeholder for title input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter title'**
+  String get enterTitle;
+
+  /// Placeholder for author input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter author'**
+  String get enterAuthor;
+
+  /// Label for title/author search option
+  ///
+  /// In en, this message translates to:
+  /// **'Search by Title/Author'**
+  String get searchByTitleAuthor;
+
+  /// Label for manual book creation option
+  ///
+  /// In en, this message translates to:
+  /// **'Create Manually'**
+  String get createManually;
+
+  /// Label for cover image URL input
+  ///
+  /// In en, this message translates to:
+  /// **'Cover Image URL'**
+  String get coverImageUrl;
+
+  /// Placeholder for cover URL input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter cover image URL'**
+  String get enterCoverUrl;
+
+  /// Label for description field
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Placeholder for description input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter description'**
+  String get enterDescription;
+
+  /// Label for price field
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// Placeholder for price input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter price'**
+  String get enterPrice;
+
+  /// Title for book edit screen
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Book Details'**
+  String get editBookDetails;
+
+  /// Label for required field
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get required;
+
+  /// Label for optional field
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// Error when title is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get titleRequired;
+
+  /// Error when author is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Author is required'**
+  String get authorRequired;
+
+  /// Error when ISBN is empty
+  ///
+  /// In en, this message translates to:
+  /// **'ISBN is required'**
+  String get isbnRequired;
+
+  /// Error when pages is invalid
+  ///
+  /// In en, this message translates to:
+  /// **'Total pages must be greater than 0'**
+  String get pagesRequired;
+
+  /// Error when price is invalid
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid price'**
+  String get invalidPrice;
+
+  /// Error when pages is invalid
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid number of pages'**
+  String get invalidPages;
+
+  /// Label for cover image preview
+  ///
+  /// In en, this message translates to:
+  /// **'Cover Preview'**
+  String get coverPreview;
+
+  /// Message when no cover image is available
+  ///
+  /// In en, this message translates to:
+  /// **'No cover image'**
+  String get noCoverImage;
+
+  /// Message shown while searching
+  ///
+  /// In en, this message translates to:
+  /// **'Searching...'**
+  String get searching;
+
+  /// Button to add book
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Button to save changes
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Error message when search fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error searching for book'**
+  String get searchError;
+
+  /// Error when no search fields are provided
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide at least one search field'**
+  String get atLeastOneSearchField;
+
+  /// Title for ISBN search screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search by ISBN'**
+  String get searchByIsbn;
+
+  /// OR separator text
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// Button label for adding book manually
+  ///
+  /// In en, this message translates to:
+  /// **'Add Manually'**
+  String get addManually;
+
+  /// Button to mark a book as read
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Read'**
+  String get markAsRead;
+
+  /// Label for book rating
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// Label for rating selector
+  ///
+  /// In en, this message translates to:
+  /// **'Select Rating'**
+  String get selectRating;
+
+  /// Label for comment field
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get comment;
+
+  /// Placeholder for comment input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your comment (optional)'**
+  String get enterComment;
+
+  /// Label for read date
+  ///
+  /// In en, this message translates to:
+  /// **'Read Date'**
+  String get readDate;
+
+  /// Label for date picker
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get selectDate;
+
+  /// Button to save reading status
+  ///
+  /// In en, this message translates to:
+  /// **'Save Reading'**
+  String get saveReading;
+
+  /// Success message when reading is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Reading saved successfully!'**
+  String get readingSaved;
+
+  /// Error message when saving reading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving reading'**
+  String get readingError;
+
+  /// Label for comments count
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
+
+  /// Label indicating partner has read the book
+  ///
+  /// In en, this message translates to:
+  /// **'Read by Partner'**
+  String get readByPartner;
+
+  /// Title for book details screen
+  ///
+  /// In en, this message translates to:
+  /// **'Book Details'**
+  String get bookDetails;
+
+  /// Button to mark a book as unread
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Unread'**
+  String get markAsUnread;
+
+  /// Confirmation message for marking book as unread
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to mark this book as unread?'**
+  String get confirmUnread;
+
+  /// Success message when book is marked as unread
+  ///
+  /// In en, this message translates to:
+  /// **'Book marked as unread'**
+  String get bookMarkedAsUnread;
+
+  /// Error message when marking book as unread fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error marking book as unread'**
+  String get errorMarkingUnread;
+
+  /// Button to confirm an action
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 import 'dart:convert';
 
 class StatsScreen extends StatefulWidget {
@@ -97,12 +98,13 @@ class _StatsScreenState extends State<StatsScreen> {
         padding: const EdgeInsets.all(24.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
+          border: Border.all(color: AppColors.borderLight, width: 1),
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+              Color(0x1A1A365D), // deepSeaBlue.withOpacity(0.1)
+              Color(0x0D2D3748), // deltaTeal.withOpacity(0.05)
             ],
           ),
         ),
@@ -111,20 +113,21 @@ class _StatsScreenState extends State<StatsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                color: AppColors.deepSeaBlue.withOpacity(0.15),
                 shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderLight, width: 1),
               ),
               child: Icon(
                 icon,
                 size: 32,
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.deepSeaBlue,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -132,7 +135,7 @@ class _StatsScreenState extends State<StatsScreen> {
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.deepSeaBlue,
                 fontWeight: FontWeight.bold,
               ),
             ),
