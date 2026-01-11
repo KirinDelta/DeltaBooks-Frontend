@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import '../models/book.dart';
+import '../models/book_comment.dart';
 import '../theme/app_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
@@ -67,7 +69,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         }
       } catch (e) {
         // Book not found in updated library, keep current book
-        debugPrint('Book ${widget.book.id} not found in updated library');
       }
     }
   }
@@ -207,85 +208,87 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Cover image
-            Container(
-              width: double.infinity,
-              height: 300,
-              color: AppColors.riverMist,
-              child: book.coverUrl != null
-                  ? Image.network(
-                      book.coverUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Center(
-                        child: Icon(
-                          Icons.book,
-                          size: 80,
-                          color: AppColors.textTertiary,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Cover image
+                Container(
+                  width: double.infinity,
+                  height: 300,
+                  color: AppColors.riverMist,
+                  child: book.coverUrl != null
+                      ? Image.network(
+                          book.coverUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Icon(
+                              Icons.book,
+                              size: 80,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            Icons.book,
+                            size: 80,
+                            color: AppColors.textTertiary,
+                          ),
                         ),
-                      ),
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.book,
-                        size: 80,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title with read badge
-                  Row(
+                ),
+                
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          book.title,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.deltaTeal,
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: hasRead,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.goldLeaf,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 16,
+                      // Title with read badge
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              book.title,
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.deltaTeal,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Read',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          Visibility(
+                            visible: hasRead,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.goldLeaf,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Read',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                   const SizedBox(height: 8),
                   
                   // Author
@@ -421,47 +424,121 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ],
                   
-                  // Note: The API now provides aggregated data (average_rating, total_comments_count)
-                  // Individual comments from other users are not included in the book response
-                  // If you need to show individual comments, you would need a separate endpoint
-                ],
+                  // Comments section - display all comments from all users
+                  if (book.comments.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      'Comments (${book.comments.length})',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.deltaTeal,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...book.comments.map((comment) {
+                      final isCurrentUser = authProvider.user?.id == comment.user.id;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildCommentCard(
+                          context,
+                          comment: comment,
+                          isCurrentUser: isCurrentUser,
+                        ),
+                      );
+                    }),
+                  ] else if (book.totalCommentsCount > 0) ...[
+                    // Show message if there are comments but they're not loaded
+                    const SizedBox(height: 24),
+                    Text(
+                      'Comments',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.deltaTeal,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${book.totalCommentsCount} comment${book.totalCommentsCount == 1 ? '' : 's'}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Partner read indicator - always visible in bottom right corner when partner has read
+          if (partnerHasRead)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Tooltip(
+                message: 'Partner read this',
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.deepSeaBlue,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          // FloatingActionButton positioned above partner icon when it's visible
+          Positioned(
+            bottom: partnerHasRead ? 80 : 16, // Position above partner icon if visible
+            right: 16,
+            child: !hasRead
+                ? FloatingActionButton.extended(
+                    onPressed: () => _showMarkAsReadSheet(context),
+                    backgroundColor: AppColors.goldLeaf,
+                    foregroundColor: Colors.white,
+                    icon: const Icon(Icons.check_circle),
+                    label: Text(l10n.markAsRead),
+                  )
+                : FloatingActionButton.extended(
+                    onPressed: () => _markAsUnread(context),
+                    backgroundColor: AppColors.deepSeaBlue,
+                    foregroundColor: Colors.white,
+                    icon: const Icon(Icons.undo),
+                    label: const Text('Unread'),
+                  ),
+          ),
+        ],
       ),
-      floatingActionButton: !hasRead
-          ? FloatingActionButton.extended(
-              onPressed: () => _showMarkAsReadSheet(context),
-              backgroundColor: AppColors.goldLeaf,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.check_circle),
-              label: Text(l10n.markAsRead),
-            )
-          : FloatingActionButton.extended(
-              onPressed: () => _markAsUnread(context),
-              backgroundColor: AppColors.deepSeaBlue,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.undo),
-              label: const Text('Unread'),
-            ),
     );
   }
 
   Widget _buildCommentCard(
     BuildContext context, {
-    required String name,
-    int? rating,
-    String? comment,
+    required BookComment comment,
     required bool isCurrentUser,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.riverMist,
+        color: isCurrentUser ? AppColors.deepSeaBlue.withOpacity(0.1) : AppColors.riverMist,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.borderLight,
+          color: isCurrentUser ? AppColors.deepSeaBlue : AppColors.borderLight,
+          width: isCurrentUser ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -469,40 +546,79 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         children: [
           Row(
             children: [
-              Text(
-                name,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.deltaTeal,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (rating != null && rating > 0) ...[
-                const SizedBox(width: 12),
-                ...List.generate(5, (index) {
-                  final starIndex = index + 1;
-                  return Icon(
-                    starIndex <= rating
-                        ? Icons.star
-                        : Icons.star_border,
-                    color: AppColors.goldLeaf,
-                    size: 16,
-                  );
-                }),
-              ],
-            ],
-          ),
-          if (comment != null && comment.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              comment,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              Icon(
+                Icons.person,
+                size: 16,
                 color: AppColors.deltaTeal,
               ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  isCurrentUser ? 'You' : comment.user.email,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.deltaTeal,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              // Display rating if available
+              if (comment.rating != null) ...[
+                Row(
+                  children: [
+                    Icon(Icons.star, size: 14, color: AppColors.goldLeaf),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${comment.rating}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.deltaTeal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                _formatDate(comment.createdAt),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            comment.comment,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.deltaTeal,
             ),
-          ],
+          ),
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Just now';
+        }
+        return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
+      }
+      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+    } else {
+      return DateFormat('MMM d, y').format(date);
+    }
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {

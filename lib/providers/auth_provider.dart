@@ -37,7 +37,6 @@ class AuthProvider with ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Login error: $e');
       return false;
     }
   }
@@ -66,8 +65,7 @@ class AuthProvider with ChangeNotifier {
           // If no token in registration response, automatically sign in to get token
           final loginSuccess = await login(email, password);
           if (!loginSuccess) {
-            // If auto-login fails, still keep user authenticated but log warning
-            debugPrint('Registration succeeded but auto-login failed');
+            // If auto-login fails, still keep user authenticated
             // User is already authenticated from registration, just notify
             notifyListeners();
           }
@@ -77,7 +75,6 @@ class AuthProvider with ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Register error: $e');
       return false;
     }
   }

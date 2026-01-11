@@ -37,7 +37,6 @@ class InvitationProvider with ChangeNotifier {
         _receivedInvitations = receivedData.map((json) => Invitation.fromJson(json)).toList();
       }
     } catch (e) {
-      debugPrint('Error fetching invitations: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -51,7 +50,6 @@ class InvitationProvider with ChangeNotifier {
         return jsonDecode(response.body);
       }
     } catch (e) {
-      debugPrint('Error searching user: $e');
     }
     return null;
   }
@@ -70,7 +68,6 @@ class InvitationProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error sending invitation: $e');
     }
     return false;
   }
@@ -86,7 +83,6 @@ class InvitationProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error accepting invitation: $e');
     }
     return false;
   }
@@ -100,7 +96,6 @@ class InvitationProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error rejecting invitation: $e');
     }
     return false;
   }
@@ -114,7 +109,6 @@ class InvitationProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error canceling invitation: $e');
     }
     return false;
   }

@@ -27,6 +27,18 @@ class _MarkAsReadSheetState extends State<MarkAsReadSheet> {
   bool _isSaving = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-populate with existing rating and comment if user has already read the book
+    if (widget.book.isReadByMe) {
+      _selectedRating = widget.book.myRating;
+      if (widget.book.myComment != null && widget.book.myComment!.isNotEmpty) {
+        _commentController.text = widget.book.myComment!;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _commentController.dispose();
     super.dispose();

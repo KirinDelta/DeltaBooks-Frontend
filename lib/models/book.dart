@@ -1,3 +1,5 @@
+import 'book_comment.dart';
+
 class Book {
   final int? id;
   final String isbn;
@@ -15,6 +17,7 @@ class Book {
   final double? averageRating; // average_rating (nullable)
   final int totalCommentsCount; // total_comments_count
   final bool isReadByOthers; // is_read_by_others
+  final List<BookComment> comments; // array of all comments from all users
 
   Book({
     this.id,
@@ -31,6 +34,7 @@ class Book {
     this.averageRating,
     this.totalCommentsCount = 0,
     this.isReadByOthers = false,
+    this.comments = const [],
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -64,12 +68,21 @@ class Book {
     }
     
     // Parse TOP-LEVEL fields from API (not nested)
+    // These fields are always present and never null according to API spec
     final isReadByMe = json['is_read_by_me'] == true;
     final myRating = parseInt(json['my_rating']);
     final myComment = json['my_comment'] as String?;
     final averageRating = parseDouble(json['average_rating']);
     final totalCommentsCount = parseInt(json['total_comments_count']) ?? 0;
     final isReadByOthers = json['is_read_by_others'] == true;
+    
+    // Parse comments array
+    List<BookComment> comments = [];
+    if (json['comments'] != null && json['comments'] is List) {
+      comments = (json['comments'] as List)
+          .map((commentJson) => BookComment.fromJson(commentJson as Map<String, dynamic>))
+          .toList();
+    }
     
     return Book(
       id: parseId(json['id']),
@@ -87,6 +100,7 @@ class Book {
       averageRating: averageRating,
       totalCommentsCount: totalCommentsCount,
       isReadByOthers: isReadByOthers,
+      comments: comments,
     );
   }
 }

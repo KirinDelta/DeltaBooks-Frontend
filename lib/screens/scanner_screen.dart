@@ -33,7 +33,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error initializing scanner: $e');
       if (mounted) {
         setState(() {
           _isInitialized = false;

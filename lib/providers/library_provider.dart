@@ -59,16 +59,11 @@ class LibraryProvider with ChangeNotifier {
           try {
             return Library.fromJson(json as Map<String, dynamic>);
           } catch (e) {
-            debugPrint('Error parsing library: $e');
-            debugPrint('Library JSON: $json');
             rethrow;
           }
         }).toList();
         
         // Note: Selection logic will be handled after filtering shared libraries
-      } else {
-        debugPrint('Error fetching libraries: Status ${response.statusCode}');
-        debugPrint('Response body: ${response.body}');
       }
 
       // Filter shared libraries from the main libraries response
@@ -125,8 +120,6 @@ class LibraryProvider with ChangeNotifier {
         _selectedSharedLibrary = null;
       }
     } catch (e, stackTrace) {
-      debugPrint('Error fetching libraries: $e');
-      debugPrint('Stack trace: $stackTrace');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -147,7 +140,6 @@ class LibraryProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error creating library: $e');
     }
     return false;
   }
@@ -166,7 +158,6 @@ class LibraryProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error updating library: $e');
     }
     return false;
   }
@@ -184,7 +175,6 @@ class LibraryProvider with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Error deleting library: $e');
     }
     return false;
   }

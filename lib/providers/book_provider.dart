@@ -33,7 +33,6 @@ class BookProvider with ChangeNotifier {
         _myBooks = data.map((json) => UserBook.fromJson(json)).toList();
       }
     } catch (e) {
-      debugPrint('Error fetching my books: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -58,7 +57,6 @@ class BookProvider with ChangeNotifier {
         _partnerBooks = data.map((json) => UserBook.fromJson(json)).toList();
       }
     } catch (e) {
-      debugPrint('Error fetching partner books: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -72,7 +70,6 @@ class BookProvider with ChangeNotifier {
         return Book.fromJson(jsonDecode(response.body));
       }
     } catch (e) {
-      debugPrint('Error finding book: $e');
     }
     return null;
   }
@@ -91,7 +88,6 @@ class BookProvider with ChangeNotifier {
       if (author != null && author.isNotEmpty) body['author'] = author;
 
       if (body.isEmpty) {
-        debugPrint('Error: At least one search parameter is required');
         return null;
       }
 
@@ -102,11 +98,9 @@ class BookProvider with ChangeNotifier {
       } else if (response.statusCode == 404) {
         return null; // Book not found
       } else {
-        debugPrint('Error searching books: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('Error searching books: $e');
       return null;
     }
   }
@@ -161,11 +155,9 @@ class BookProvider with ChangeNotifier {
         final responseData = jsonDecode(response.body);
         return responseData as Map<String, dynamic>;
       } else {
-        debugPrint('Error adding book to library: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('Error adding book to library: $e');
       return null;
     }
   }
@@ -246,11 +238,9 @@ class BookProvider with ChangeNotifier {
         // Refresh libraries to get updated book data
         return true;
       } else {
-        debugPrint('Error marking book as read: ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      debugPrint('Error marking book as read: $e');
       return false;
     }
   }
@@ -271,7 +261,6 @@ class BookProvider with ChangeNotifier {
         );
       } catch (e) {
         // User book doesn't exist, nothing to delete
-        debugPrint('No user_book found to delete for book $bookId');
         return true; // Already unread
       }
 
@@ -282,11 +271,9 @@ class BookProvider with ChangeNotifier {
         // Refresh libraries to get updated book data
         return true;
       } else {
-        debugPrint('Error marking book as unread: ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      debugPrint('Error marking book as unread: $e');
       return false;
     }
   }
