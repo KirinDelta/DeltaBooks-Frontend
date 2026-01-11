@@ -9,6 +9,8 @@ class Book {
   final int totalPages;
   final String? description;
   final String? source; // 'internal', 'google_books', 'open_library'
+  final String? genre;
+  final String? seriesName;
   
   // Reading status fields - TOP-LEVEL fields from API
   final bool isReadByMe; // is_read_by_me
@@ -18,6 +20,7 @@ class Book {
   final int totalCommentsCount; // total_comments_count
   final bool isReadByOthers; // is_read_by_others
   final List<BookComment> comments; // array of all comments from all users
+  final bool isOwnedGlobally; // is_owned_globally - indicates if book is owned globally (in any library)
 
   Book({
     this.id,
@@ -28,6 +31,8 @@ class Book {
     required this.totalPages,
     this.description,
     this.source,
+    this.genre,
+    this.seriesName,
     this.isReadByMe = false,
     this.myRating,
     this.myComment,
@@ -35,6 +40,7 @@ class Book {
     this.totalCommentsCount = 0,
     this.isReadByOthers = false,
     this.comments = const [],
+    this.isOwnedGlobally = false,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -75,6 +81,7 @@ class Book {
     final averageRating = parseDouble(json['average_rating']);
     final totalCommentsCount = parseInt(json['total_comments_count']) ?? 0;
     final isReadByOthers = json['is_read_by_others'] == true;
+    final isOwnedGlobally = json['is_owned_globally'] == true;
     
     // Parse comments array
     List<BookComment> comments = [];
@@ -93,6 +100,8 @@ class Book {
       totalPages: parsePages(json['total_pages']) ?? 0,
       description: json['description'] as String?,
       source: json['source'] as String?,
+      genre: json['genre'] as String?,
+      seriesName: json['series_name'] as String?,
       // Top-level reading status fields
       isReadByMe: isReadByMe,
       myRating: myRating,
@@ -101,6 +110,7 @@ class Book {
       totalCommentsCount: totalCommentsCount,
       isReadByOthers: isReadByOthers,
       comments: comments,
+      isOwnedGlobally: isOwnedGlobally,
     );
   }
 }

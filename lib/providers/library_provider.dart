@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/library.dart';
+import '../models/book.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
 
@@ -8,6 +9,7 @@ class LibraryProvider with ChangeNotifier {
   List<Library> _libraries = [];
   Library? _selectedLibrary;
   bool _isLoading = false;
+  bool _isAscending = true;
 
   // Combined list of all libraries (own + shared) from API
   List<Library> get libraries => _libraries;
@@ -20,6 +22,19 @@ class LibraryProvider with ChangeNotifier {
   
   Library? get selectedLibrary => _selectedLibrary;
   bool get isLoading => _isLoading;
+  bool get isAscending => _isAscending;
+
+  void setSortAscending(bool ascending) {
+    if (_isAscending != ascending) {
+      _isAscending = ascending;
+      notifyListeners();
+    }
+  }
+
+  void toggleSortDirection() {
+    _isAscending = !_isAscending;
+    notifyListeners();
+  }
 
   Future<void> fetchLibraries() async {
     if (_isLoading) return;
@@ -191,5 +206,39 @@ class LibraryProvider with ChangeNotifier {
   void clearSelection() {
     _selectedLibrary = null;
     notifyListeners();
+  }
+
+  /// Filter books by search query
+  /// Checks title, ISBN, series name, and genre
+  List<Book> filterBooksBySearch(List<Book> books, String query) {
+    if (query.trim().isEmpty) {
+      return books;
+    }
+    
+    final lowerQuery = query.toLowerCase().trim();
+    
+    return books.where((book) {
+      // Check title
+      if (book.title.toLowerCase().contains(lowerQuery)) {
+        return true;
+      }
+      
+      // Check ISBN
+      if (book.isbn.toLowerCase().contains(lowerQuery)) {
+        return true;
+      }
+      
+      // Check series name (if exists)
+      if (book.seriesName != null && book.seriesName!.toLowerCase().contains(lowerQuery)) {
+        return true;
+      }
+      
+      // Check genre (if exists)
+      if (book.genre != null && book.genre!.toLowerCase().contains(lowerQuery)) {
+        return true;
+      }
+      
+      return false;
+    }).toList();
   }
 }

@@ -13,12 +13,14 @@ import '../widgets/user_avatar.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
-  final int libraryId;
+  final int? libraryId; // Optional - null means search preview mode
+  final bool isSearchPreview; // Show OWNED badge only in search preview
 
   const BookDetailScreen({
     super.key,
     required this.book,
-    required this.libraryId,
+    this.libraryId,
+    this.isSearchPreview = false,
   });
 
   @override
@@ -33,13 +35,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void initState() {
     super.initState();
     _currentBook = widget.book;
-    // Store provider reference and listen to library changes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-        _libraryProvider?.addListener(_onLibraryChanged);
-      }
-    });
+    // Store provider reference and listen to library changes (only if in library mode)
+    if (widget.libraryId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          _libraryProvider?.addListener(_onLibraryChanged);
+        }
+      });
+    }
   }
 
   @override
@@ -77,7 +81,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Book get book => _currentBook ?? widget.book;
 
   void _showMarkAsReadSheet(BuildContext context) {
-    if (!mounted) return;
+    if (!mounted || widget.libraryId == null) return;
     
     showModalBottomSheet(
       context: context,
@@ -89,7 +93,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         maxChildSize: 0.95,
         builder: (context, scrollController) => MarkAsReadSheet(
           book: book,
-          libraryId: widget.libraryId,
+          libraryId: widget.libraryId!,
         ),
       ),
     ).then((shouldRefresh) {
@@ -114,7 +118,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Future<void> _markAsUnread(BuildContext context) async {
-    if (!mounted) return;
+    if (!mounted || widget.libraryId == null) return;
     
     final l10n = AppLocalizations.of(context)!;
     final bookProvider = Provider.of<BookProvider>(context, listen: false);
@@ -157,7 +161,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     try {
       final success = await bookProvider.markBookAsUnread(
         bookId: book.id!,
-        libraryId: widget.libraryId,
+        libraryId: widget.libraryId!,
       );
 
       if (!mounted) return;
@@ -243,7 +247,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title with read badge
+                  // Title with read badge and owned badge (if search preview)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -256,6 +260,34 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // OWNED badge (only in search preview mode)
+                      if (widget.isSearchPreview && book.isOwnedGlobally)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.goldLeaf,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                                color: Colors.black.withOpacity(0.2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            l10n.owned,
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                  letterSpacing: 0.5,
+                                ),
+                          ),
+                        ),
+                      if (widget.isSearchPreview && book.isOwnedGlobally)
+                        const SizedBox(width: 8),
                       Visibility(
                         visible: hasRead,
                         child: Container(
@@ -288,6 +320,51 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  
+                  // Genre badge (if available)
+                  if (book.genre != null && book.genre!.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.riverMist,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.borderLight,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        book.genre!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.deltaTeal,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  
+                  // Series Name (if available)
+                  if (book.seriesName != null && book.seriesName!.isNotEmpty) ...[
+                    RichText(
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.deltaTeal,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Series: '),
+                          TextSpan(
+                            text: book.seriesName!,
+                            style: TextStyle(
+                              color: AppColors.goldLeaf,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   
                   // Author
                   Text(
@@ -370,32 +447,34 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ],
                   
-                  // My Status card (if user has read it)
-                  if (hasRead) ...[
-                    const SizedBox(height: 24),
-                    _buildMyStatusCard(context, authProvider),
-                  ],
-                  
-                  // Floating action button for Mark as Read (if user hasn't read it)
-                  if (!hasRead) ...[
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showMarkAsReadSheet(context),
-                        icon: const Icon(Icons.check_circle),
-                        label: Text(l10n.markAsRead),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.goldLeaf,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                  // Library mode: Show status cards and comments (only if libraryId is not null)
+                  if (widget.libraryId != null) ...[
+                    // My Status card (if user has read it)
+                    if (hasRead) ...[
+                      const SizedBox(height: 24),
+                      _buildMyStatusCard(context, authProvider),
+                    ],
+                    
+                    // Floating action button for Mark as Read (if user hasn't read it)
+                    if (!hasRead) ...[
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showMarkAsReadSheet(context),
+                          icon: const Icon(Icons.check_circle),
+                          label: Text(l10n.markAsRead),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.goldLeaf,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                  
-                  // Comments section - display all comments from all users
-                  if (book.comments.isNotEmpty) ...[
+                    ],
+                    
+                    // Comments section - display all comments from all users
+                    if (book.comments.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     Text(
                       'Comments (${book.comments.length})',
@@ -439,6 +518,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ] else ...[
                     const SizedBox(height: 20),
                   ],
+                  ], // Close widget.libraryId != null block
                 ],
               ),
             ),

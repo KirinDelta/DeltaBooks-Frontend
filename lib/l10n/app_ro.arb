@@ -14,6 +14,9 @@
   "registrationFailed": "Înregistrare eșuată",
   "emptyLibrary": "Biblioteca ta este goală",
   "emptyPartnerLibrary": "Biblioteca partenerului este goală",
+  "noResults": "Fără rezultate",
+  "searchBooks": "Caută cărți...",
+  "noBooksFoundSearch": "Nu s-au găsit cărți în această bibliotecă care să se potrivească căutării tale.",
   "scanBarcode": "Scanează codul de bare al cărții",
   "enterIsbnManually": "Introduceți ISBN manual",
   "isbn": "ISBN",
@@ -158,5 +161,6 @@
   "ron": "RON (Leu Românesc)",
   "eur": "EUR (Euro)",
   "usd": "USD (Dolar American)",
-  "updateProfile": "Actualizează Profilul"
+  "updateProfile": "Actualizează Profilul",
+  "owned": "DEȚINUTĂ"
 }

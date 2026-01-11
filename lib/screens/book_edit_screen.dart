@@ -29,6 +29,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
   final TextEditingController _totalPagesController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _libraryPagesController = TextEditingController();
+  final TextEditingController _genreController = TextEditingController();
+  final TextEditingController _seriesNameController = TextEditingController();
 
   Book? _currentBook;
   bool _isAdding = false;
@@ -56,6 +58,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
     _coverUrlController.text = book.coverUrl ?? '';
     _descriptionController.text = book.description ?? '';
     _totalPagesController.text = book.totalPages > 0 ? book.totalPages.toString() : '';
+    _genreController.text = book.genre ?? '';
+    _seriesNameController.text = book.seriesName ?? '';
   }
 
   @override
@@ -68,6 +72,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
     _totalPagesController.dispose();
     _priceController.dispose();
     _libraryPagesController.dispose();
+    _genreController.dispose();
+    _seriesNameController.dispose();
     super.dispose();
   }
 
@@ -99,6 +105,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
       final totalPages = int.tryParse(_totalPagesController.text.trim()) ?? 0;
       final price = double.tryParse(_priceController.text.trim());
       final libraryTotalPages = int.tryParse(_libraryPagesController.text.trim());
+      final genre = _genreController.text.trim();
+      final seriesName = _seriesNameController.text.trim();
 
       final result = await bookProvider.addBookToLibrary(
         bookId: _currentBook?.id,
@@ -108,6 +116,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
         coverUrl: coverUrl.isNotEmpty ? coverUrl : null,
         totalPages: totalPages > 0 ? totalPages : null,
         description: description.isNotEmpty ? description : null,
+        genre: genre.isNotEmpty ? genre : null,
+        seriesName: seriesName.isNotEmpty ? seriesName : null,
         price: price,
         libraryTotalPages: libraryTotalPages,
         libraryId: _selectedLibrary!.id,
@@ -431,6 +441,60 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
               maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            
+            // Genre
+            TextFormField(
+              controller: _genreController,
+              decoration: InputDecoration(
+                labelText: 'Genre (${l10n.optional.toLowerCase()})',
+                hintText: 'Enter genre',
+                filled: true,
+                fillColor: AppColors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.deltaTeal, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                labelStyle: const TextStyle(color: AppColors.deltaTeal),
+              ),
+              style: const TextStyle(color: AppColors.deltaTeal),
+            ),
+            const SizedBox(height: 16),
+            
+            // Series Name
+            TextFormField(
+              controller: _seriesNameController,
+              decoration: InputDecoration(
+                labelText: 'Series Name (${l10n.optional.toLowerCase()})',
+                hintText: 'Enter series name',
+                filled: true,
+                fillColor: AppColors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.deltaTeal, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                labelStyle: const TextStyle(color: AppColors.deltaTeal),
+              ),
+              style: const TextStyle(color: AppColors.deltaTeal),
             ),
             const SizedBox(height: 24),
             

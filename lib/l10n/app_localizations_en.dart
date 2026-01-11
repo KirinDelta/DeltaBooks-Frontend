@@ -51,6 +51,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyPartnerLibrary => 'Partner\'s library is empty';
 
   @override
+  String get noResults => 'No results';
+
+  @override
+  String get searchBooks => 'Search books...';
+
+  @override
+  String get noBooksFoundSearch =>
+      'No books found in this library matching your search.';
+
+  @override
   String get scanBarcode => 'Scan the book\'s barcode';
 
   @override
@@ -483,4 +493,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateProfile => 'Update Profile';
+
+  @override
+  String get owned => 'OWNED';
 }

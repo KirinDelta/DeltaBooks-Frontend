@@ -56,6 +56,18 @@
   "@emptyPartnerLibrary": {
     "description": "Message when partner's library is empty"
   },
+  "noResults": "No results",
+  "@noResults": {
+    "description": "Message when filters return no results"
+  },
+  "searchBooks": "Search books...",
+  "@searchBooks": {
+    "description": "Placeholder for book search input"
+  },
+  "noBooksFoundSearch": "No books found in this library matching your search.",
+  "@noBooksFoundSearch": {
+    "description": "Message when search returns no results"
+  },
   "scanBarcode": "Scan the book's barcode",
   "@scanBarcode": {
     "description": "Instruction for scanning barcode"
@@ -635,5 +647,9 @@
   "updateProfile": "Update Profile",
   "@updateProfile": {
     "description": "Button to update profile"
+  },
+  "owned": "OWNED",
+  "@owned": {
+    "description": "Badge text for books that are already owned"
   }
 }

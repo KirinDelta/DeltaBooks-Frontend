@@ -51,6 +51,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get emptyPartnerLibrary => 'Biblioteca partenerului este goală';
 
   @override
+  String get noResults => 'Fără rezultate';
+
+  @override
+  String get searchBooks => 'Caută cărți...';
+
+  @override
+  String get noBooksFoundSearch =>
+      'Nu s-au găsit cărți în această bibliotecă care să se potrivească căutării tale.';
+
+  @override
   String get scanBarcode => 'Scanează codul de bare al cărții';
 
   @override
@@ -484,4 +494,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get updateProfile => 'Actualizează Profilul';
+
+  @override
+  String get owned => 'DEȚINUTĂ';
 }

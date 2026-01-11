@@ -24,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final GlobalKey<LibraryScreenState> _libraryScreenKey = GlobalKey<LibraryScreenState>();
 
   @override
   void initState() {
@@ -35,6 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
       libraryProvider.fetchLibraries(); // This now fetches both own and shared libraries
       invitationProvider.fetchInvitations();
     });
+  }
+  
+  void _showSortBottomSheet() {
+    _libraryScreenKey.currentState?.showSortBottomSheetFromParent();
   }
 
   void _showLibrarySelector(BuildContext context, LibraryProvider libraryProvider, List<Library> allLibraries) {
@@ -226,6 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        actions: const [],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Consumer<LibraryProvider>(
@@ -318,10 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: _buildDrawer(context),
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          LibraryScreen(),
-          ScannerScreen(),
-          StatsScreen(),
+        children: [
+          LibraryScreen(key: _libraryScreenKey),
+          const ScannerScreen(),
+          const StatsScreen(),
         ],
       ),
       bottomNavigationBar: Container(

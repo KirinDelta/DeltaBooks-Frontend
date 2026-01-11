@@ -182,6 +182,24 @@ abstract class AppLocalizations {
   /// **'Partner\'s library is empty'**
   String get emptyPartnerLibrary;
 
+  /// Message when filters return no results
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get noResults;
+
+  /// Placeholder for book search input
+  ///
+  /// In en, this message translates to:
+  /// **'Search books...'**
+  String get searchBooks;
+
+  /// Message when search returns no results
+  ///
+  /// In en, this message translates to:
+  /// **'No books found in this library matching your search.'**
+  String get noBooksFoundSearch;
+
   /// Instruction for scanning barcode
   ///
   /// In en, this message translates to:
@@ -1045,6 +1063,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update Profile'**
   String get updateProfile;
+
+  /// Badge text for books that are already owned
+  ///
+  /// In en, this message translates to:
+  /// **'OWNED'**
+  String get owned;
 }
 
 class _AppLocalizationsDelegate

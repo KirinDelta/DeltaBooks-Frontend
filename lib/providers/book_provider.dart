@@ -76,7 +76,8 @@ class BookProvider with ChangeNotifier {
 
   /// Search for books using ISBN, title, or author
   /// At least one parameter must be provided
-  Future<Book?> searchBooks({
+  /// Returns a list of books (can be empty if no results found)
+  Future<List<Book>> searchBooks({
     String? isbn,
     String? title,
     String? author,
@@ -88,20 +89,29 @@ class BookProvider with ChangeNotifier {
       if (author != null && author.isNotEmpty) body['author'] = author;
 
       if (body.isEmpty) {
-        return null;
+        return [];
       }
 
       final response = await _apiService.post('/api/v1/books/search', body);
       
       if (response.statusCode == 200) {
-        return Book.fromJson(jsonDecode(response.body));
+        final responseBody = jsonDecode(response.body);
+        // Handle both array and single object responses
+        if (responseBody is List) {
+          return responseBody.map((json) => Book.fromJson(json as Map<String, dynamic>)).toList();
+        } else if (responseBody is Map<String, dynamic>) {
+          // Single book returned
+          return [Book.fromJson(responseBody)];
+        } else {
+          return [];
+        }
       } else if (response.statusCode == 404) {
-        return null; // Book not found
+        return []; // No books found
       } else {
-        return null;
+        return [];
       }
     } catch (e) {
-      return null;
+      return [];
     }
   }
 
@@ -115,6 +125,8 @@ class BookProvider with ChangeNotifier {
     String? coverUrl,
     int? totalPages,
     String? description,
+    String? genre,
+    String? seriesName,
     double? price,
     int? libraryTotalPages, // Library-specific override
     required int libraryId,
@@ -144,6 +156,8 @@ class BookProvider with ChangeNotifier {
           body['total_pages'] = totalPages;
         }
         if (description != null && description.isNotEmpty) body['description'] = description;
+        if (genre != null && genre.isNotEmpty) body['genre'] = genre;
+        if (seriesName != null && seriesName.isNotEmpty) body['series_name'] = seriesName;
       }
       
       // Library-specific fields

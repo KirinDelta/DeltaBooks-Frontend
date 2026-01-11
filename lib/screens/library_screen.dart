@@ -1,30 +1,75 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/book.dart';
-import '../models/book_comment.dart';
 import '../theme/app_colors.dart';
-import '../widgets/mark_as_read_sheet.dart';
 import '../widgets/user_avatar.dart';
 import 'book_detail_screen.dart';
 
-class LibraryScreen extends StatefulWidget {
-  const LibraryScreen({super.key});
-
-  @override
-  State<LibraryScreen> createState() => _LibraryScreenState();
+enum SortOption {
+  recent,
+  rating,
+  pages,
+  title,
 }
 
-class _LibraryScreenState extends State<LibraryScreen> {
+enum FilterOption {
+  unread,
+  read,
+  inCircle,
+}
+
+class LibraryScreen extends StatefulWidget {
+  final GlobalKey<LibraryScreenState>? libraryScreenKey;
+  
+  const LibraryScreen({super.key, this.libraryScreenKey});
+
+  @override
+  State<LibraryScreen> createState() => LibraryScreenState();
+}
+
+class LibraryScreenState extends State<LibraryScreen> {
   int? _lastLibraryId;
+  SortOption _currentSort = SortOption.recent;
+  Set<FilterOption> _activeFilters = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isFilterBarExpanded = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBooks();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+    });
+  }
+
+  void showSortBottomSheetFromParent() {
+    // Sort options are now in the floating bar, so expand it instead
+    setState(() {
+      _isFilterBarExpanded = true;
     });
   }
 
@@ -86,31 +131,43 @@ class _LibraryScreenState extends State<LibraryScreen> {
       }
     }
 
-    if (books.isEmpty && !libraryProvider.isLoading) {
-      return RefreshIndicator(
-        onRefresh: _refreshData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: Center(
-              child: Text(
-                isShared ? l10n.emptyPartnerLibrary : l10n.emptyLibrary,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+    // Apply filtering and sorting
+    final filteredAndSortedBooks = _applyFiltersAndSort(books);
+
+    // Determine if library is empty (no books at all) vs filters returned no results
+    final isLibraryEmpty = books.isEmpty && !libraryProvider.isLoading;
+    final hasSearchQuery = _searchQuery.trim().isNotEmpty;
+    final hasNoFilterResults = filteredAndSortedBooks.isEmpty && !isLibraryEmpty && !libraryProvider.isLoading;
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: books.length,
+      child: Stack(
+        children: [
+          // Books list or empty state (with padding for floating bar)
+          Column(
+            children: [
+              SizedBox(height: _isFilterBarExpanded ? 0 : 48),
+              Expanded(
+            child: hasNoFilterResults
+                ? Center(
+                    child: Text(
+                      hasSearchQuery ? l10n.noBooksFoundSearch : l10n.noResults,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : isLibraryEmpty
+                    ? Center(
+                        child: Text(
+                          isShared ? l10n.emptyPartnerLibrary : l10n.emptyLibrary,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: filteredAndSortedBooks.length,
         itemBuilder: (context, index) {
-        final book = books[index];
+        final book = filteredAndSortedBooks[index];
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final currentUserId = authProvider.user?.id;
         
@@ -118,287 +175,892 @@ class _LibraryScreenState extends State<LibraryScreen> {
         final hasRead = book.isReadByMe;
         final partnerHasRead = book.isReadByOthers;
         
-        // Calculate opacity: if I haven't read but partner has, show as unread (lower opacity)
-        final opacity = hasRead ? 1.0 : (partnerHasRead ? 0.7 : 1.0);
-        
-        return Opacity(
-          opacity: opacity,
-          child: Stack(
-            children: [
-              // Book card
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: AppColors.riverMist,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () async {
-                    if (selectedLibrary != null) {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookDetailScreen(
-                            book: book,
-                            libraryId: selectedLibrary.id,
-                          ),
-                        ),
-                      );
-                      // Refresh library when returning from detail screen
-                      if (mounted) {
-                        final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-                        await libraryProvider.fetchLibraries();
-                      }
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Cover image with badge overlay
-                        Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: book.coverUrl != null
-                                  ? Image.network(
-                                      book.coverUrl!,
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[200]!),
+            boxShadow: [
+              BoxShadow(
+                offset: const Offset(0, 4),
+                blurRadius: 12,
+                color: Colors.black.withOpacity(0.05),
+              ),
+            ],
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () async {
+              if (selectedLibrary != null) {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookDetailScreen(
+                      book: book,
+                      libraryId: selectedLibrary.id,
+                    ),
+                  ),
+                );
+                // Refresh library when returning from detail screen
+                if (mounted) {
+                  final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                  await libraryProvider.fetchLibraries();
+                }
+              }
+            },
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left: Book Cover with Sub-Cover Metadata
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: book.coverUrl != null
+                                ? Image.network(
+                                    book.coverUrl!,
+                                    width: 60,
+                                    height: 90,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
                                       width: 60,
                                       height: 90,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        width: 60,
-                                        height: 90,
-                                        color: Colors.grey[300],
-                                        child: Icon(
-                                          Icons.book,
-                                          color: Colors.grey[600],
-                                          size: 30,
-                                        ),
-                                      ),
-                                    )
-                                  : Container(
-                                      width: 60,
-                                      height: 90,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
+                                      color: Colors.grey[300],
                                       child: Icon(
                                         Icons.book,
                                         color: Colors.grey[600],
                                         size: 30,
                                       ),
                                     ),
-                            ),
-                            // Gold badge if current user has read
-                            if (hasRead)
-                              Positioned(
-                                top: -4,
-                                right: -4,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.goldLeaf,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
+                                  )
+                                : Container(
+                                    width: 60,
+                                    height: 90,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.book,
+                                      color: Colors.grey[600],
+                                      size: 30,
                                     ),
                                   ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Title row with read badge and partner indicator
-                              Row(
+                          ),
+                          // Sub-Cover Metadata
+                          if (book.totalPages > 0) ...[
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              width: 60,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      book.title,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.deltaTeal,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Icon(
+                                    Icons.menu_book_rounded,
+                                    size: 10,
+                                    color: AppColors.deltaTeal.withOpacity(0.4),
                                   ),
-                                  // Read badge - use Visibility widget for explicit control
-                                  Visibility(
-                                    visible: hasRead,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      margin: const EdgeInsets.only(right: 4),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.goldLeaf,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'READ',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    '${book.totalPages} pgs',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.textTertiary,
+                                      fontSize: 10,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                book.author,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      // Middle: Expanded Column with Title, Author, Rating and Comments
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              book.title,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.deltaTeal,
+                                fontSize: 15,
                               ),
-                              const SizedBox(height: 8),
-                              // Rating and comments row - always show stars, even if rating is 0
-                              Row(
-                                children: [
-                                  // Star rating (Gold Leaf) - use average_rating, show empty stars if 0
-                                  ...List.generate(5, (index) {
-                                    final rating = book.averageRating ?? 0.0;
-                                    final starIndex = index + 1;
-                                    final isFilled = starIndex <= rating.round();
-                                    final isHalf = starIndex - 0.5 <= rating && rating < starIndex;
-                                    
-                                    return Icon(
-                                      isFilled
-                                          ? Icons.star
-                                          : isHalf
-                                              ? Icons.star_half
-                                              : Icons.star_border,
-                                      color: AppColors.goldLeaf,
-                                      size: 14,
-                                    );
-                                  }),
-                                  if (book.averageRating != null && book.averageRating! > 0) ...[
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      book.averageRating!.toStringAsFixed(1),
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: AppColors.deltaTeal,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(width: 12),
-                                  // Comments count with speech bubble icon
-                                  Icon(
-                                    Icons.chat_bubble_outline,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              book.author,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Star Rating and Comment Count Row
+                            Row(
+                              children: [
+                                // Star rating (Gold Leaf) - use average_rating, show empty stars if 0
+                                ...List.generate(5, (index) {
+                                  final rating = book.averageRating ?? 0.0;
+                                  final starIndex = index + 1;
+                                  final isFilled = starIndex <= rating.round();
+                                  final isHalf = starIndex - 0.5 <= rating && rating < starIndex;
+                                  
+                                  return Icon(
+                                    isFilled
+                                        ? Icons.star
+                                        : isHalf
+                                            ? Icons.star_half
+                                            : Icons.star_border,
+                                    color: AppColors.goldLeaf,
                                     size: 14,
-                                    color: AppColors.deltaTeal,
-                                  ),
+                                  );
+                                }),
+                                if (book.averageRating != null && book.averageRating! > 0) ...[
                                   const SizedBox(width: 4),
                                   Text(
-                                    book.totalCommentsCount.toString(),
+                                    book.averageRating!.toStringAsFixed(1),
                                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.deltaTeal,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
-                              ),
-                              // Note: Individual partner reviews are not available in the book response
-                              // The API only provides aggregated data (average_rating, total_comments_count, is_read_by_others)
-                              const SizedBox(height: 8),
-                              Text(
-                                '${l10n.isbn}: ${book.isbn}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textTertiary,
+                                const SizedBox(width: 12),
+                                // Comments count with speech bubble icon
+                                Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 14,
+                                  color: AppColors.deltaTeal,
                                 ),
-                              ),
-                              if (book.totalPages > 0) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  '${l10n.page} ${book.totalPages}',
+                                  book.totalCommentsCount.toString(),
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textTertiary,
+                                    color: AppColors.deltaTeal,
                                   ),
                                 ),
                               ],
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
+                      // Vertical Divider
+                      Container(
+                        width: 1,
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        color: AppColors.riverMist,
+                      ),
+                      // Right: Spacer for READ badge area (positioned absolutely)
+                      SizedBox(width: 50),
                     ],
                   ),
                 ),
-              ),
-              ),
-              // Partner read indicator - always visible in bottom right corner when partner has read
-              if (partnerHasRead)
-                Positioned(
-                  bottom: 8,
-                  right: 8,
-                  child: Tooltip(
-                    message: 'Partner read this',
+                // Top right: READ badge
+                if (hasRead)
+                  Positioned(
+                    top: 8,
+                    right: 8,
                     child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: AppColors.goldLeaf,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: _buildPartnerAvatar(book),
+                      child: Text(
+                        'READ',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-            ],
+                // Bottom right: Avatars
+                if (partnerHasRead)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      alignment: WrapAlignment.end,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: _buildOtherReadersAvatars(book, currentUserId),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
+                        ),
+                      ),
+          ],
+        ),
+          // Floating filter bar
+          _buildFloatingFilterBar(context, l10n, filteredAndSortedBooks),
+        ],
       ),
     );
   }
 
-  /// Build partner avatar from book comments
-  /// Uses the first non-current-user comment author for the avatar
-  Widget _buildPartnerAvatar(Book book) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final currentUserId = authProvider.user?.id;
+  List<Book> _applyFiltersAndSort(List<Book> books) {
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
     
-    // Find a comment from a partner (non-current user)
-    BookComment? partnerComment;
-    try {
-      partnerComment = book.comments.firstWhere(
-        (comment) => comment.user.id != currentUserId,
+    // First apply search filter if there's a query
+    List<Book> filtered = books;
+    if (_searchQuery.trim().isNotEmpty) {
+      filtered = libraryProvider.filterBooksBySearch(filtered, _searchQuery);
+    }
+    
+    // Then apply status filters with AND logic - all selected filters must be satisfied
+    if (_activeFilters.isEmpty) {
+      // No status filters selected, return search-filtered books
+      return _applySorting(filtered);
+    }
+    
+    final hasUnread = _activeFilters.contains(FilterOption.unread);
+    final hasRead = _activeFilters.contains(FilterOption.read);
+    final hasInCircle = _activeFilters.contains(FilterOption.inCircle);
+    
+    // If both Read and Unread are selected, return empty list (contradiction)
+    if (hasUnread && hasRead) {
+      return [];
+    }
+    
+    // Apply AND logic - filter books that match ALL selected criteria
+    filtered = filtered.where((book) {
+      // Check Read/Unread filter (mutually exclusive, so only one can be true at a time)
+      if (hasRead && !book.isReadByMe) {
+        return false;
+      }
+      if (hasUnread && book.isReadByMe) {
+        return false;
+      }
+      
+      // Check In Circle filter
+      if (hasInCircle && !book.isReadByOthers) {
+        return false;
+      }
+      
+      // Book satisfies all selected filters
+      return true;
+    }).toList();
+    
+    return _applySorting(filtered);
+  }
+  
+  List<Book> _applySorting(List<Book> books) {
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final isAscending = libraryProvider.isAscending;
+    
+    List<Book> sorted = List.from(books);
+    switch (_currentSort) {
+      case SortOption.recent:
+        // Sort by ID (proxy for created_at - higher ID = more recent)
+        sorted.sort((a, b) {
+          final comparison = (a.id ?? 0).compareTo(b.id ?? 0);
+          return isAscending ? comparison : -comparison;
+        });
+        break;
+      case SortOption.rating:
+        sorted.sort((a, b) {
+          final aRating = a.averageRating ?? 0.0;
+          final bRating = b.averageRating ?? 0.0;
+          final comparison = aRating.compareTo(bRating);
+          return isAscending ? comparison : -comparison;
+        });
+        break;
+      case SortOption.pages:
+        sorted.sort((a, b) {
+          final comparison = a.totalPages.compareTo(b.totalPages);
+          return isAscending ? comparison : -comparison;
+        });
+        break;
+      case SortOption.title:
+        sorted.sort((a, b) {
+          final comparison = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          return isAscending ? comparison : -comparison;
+        });
+        break;
+    }
+    
+    return sorted;
+  }
+
+  Widget _buildFloatingFilterBar(BuildContext context, AppLocalizations l10n, List<Book> filteredBooks) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Collapse/Expand header
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _isFilterBarExpanded = !_isFilterBarExpanded;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isFilterBarExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: AppColors.deltaTeal,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Search & Filter',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.deltaTeal,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (!_isFilterBarExpanded && _searchQuery.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.deltaTeal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Search: $_searchQuery',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.deltaTeal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    if (!_isFilterBarExpanded && _activeFilters.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.goldLeaf.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_activeFilters.length} filter${_activeFilters.length > 1 ? 's' : ''}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.goldLeaf,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            // Expandable content
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 300),
+              crossFadeState: _isFilterBarExpanded
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
+              firstChild: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Search bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
+                      decoration: InputDecoration(
+                        hintText: l10n.searchBooks,
+                        prefixIcon: Icon(Icons.search, color: AppColors.deltaTeal),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear, color: AppColors.deltaTeal),
+                                onPressed: _clearSearch,
+                                tooltip: 'Clear',
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: AppColors.riverMist.withOpacity(0.5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.riverMist, width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.deltaTeal, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                  ),
+                  // Sort options
+                  _buildSortOptions(context, l10n),
+                  // Filter chips
+                  _buildFilterChips(context, l10n, filteredBooks),
+                ],
+              ),
+              secondChild: const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOptions(BuildContext context, AppLocalizations l10n) {
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.riverMist.withOpacity(0.3),
+        border: Border(
+          bottom: BorderSide(color: AppColors.riverMist, width: 1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Sort By',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: AppColors.deltaTeal,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSortChip(context, 'Recent', SortOption.recent, Icons.access_time, libraryProvider),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildSortChip(context, 'Rating', SortOption.rating, Icons.star, libraryProvider),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildSortChip(context, 'Pages', SortOption.pages, Icons.menu_book, libraryProvider),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildSortChip(context, 'Title', SortOption.title, Icons.sort_by_alpha, libraryProvider),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSortChip(
+    BuildContext context,
+    String label,
+    SortOption option,
+    IconData icon,
+    LibraryProvider libraryProvider,
+  ) {
+    final isSelected = _currentSort == option;
+    
+    return InkWell(
+      onTap: () {
+        if (_currentSort != option) {
+          setState(() {
+            _currentSort = option;
+          });
+        }
+      },
+      child: Consumer<LibraryProvider>(
+        builder: (context, provider, _) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.deepSeaBlue.withOpacity(0.2)
+                  : AppColors.riverMist.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? AppColors.deepSeaBlue : AppColors.riverMist,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 16, color: isSelected ? AppColors.textPrimary : AppColors.textSecondary),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? AppColors.textPrimary : AppColors.deltaTeal,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      provider.toggleSortDirection();
+                    },
+                    child: Icon(
+                      provider.isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                      size: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context, AppLocalizations l10n, List<Book> filteredBooks) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            // Unread filter
+            FilterChip(
+              label: const Text('Unread'),
+              selected: _activeFilters.contains(FilterOption.unread),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _activeFilters.add(FilterOption.unread);
+                  } else {
+                    _activeFilters.remove(FilterOption.unread);
+                  }
+                });
+              },
+              selectedColor: AppColors.deepSeaBlue.withOpacity(0.2),
+              checkmarkColor: AppColors.deepSeaBlue,
+              labelStyle: TextStyle(
+                color: _activeFilters.contains(FilterOption.unread)
+                    ? AppColors.deepSeaBlue 
+                    : AppColors.deltaTeal,
+                fontWeight: _activeFilters.contains(FilterOption.unread)
+                    ? FontWeight.bold 
+                    : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Read filter
+            FilterChip(
+              label: const Text('Read'),
+              selected: _activeFilters.contains(FilterOption.read),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _activeFilters.add(FilterOption.read);
+                  } else {
+                    _activeFilters.remove(FilterOption.read);
+                  }
+                });
+              },
+              selectedColor: AppColors.goldLeaf.withOpacity(0.2),
+              checkmarkColor: AppColors.goldLeaf,
+              labelStyle: TextStyle(
+                color: _activeFilters.contains(FilterOption.read)
+                    ? AppColors.goldLeaf 
+                    : AppColors.deltaTeal,
+                fontWeight: _activeFilters.contains(FilterOption.read)
+                    ? FontWeight.bold 
+                    : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // In Circle filter
+            FilterChip(
+              label: const Text('In Circle'),
+              selected: _activeFilters.contains(FilterOption.inCircle),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _activeFilters.add(FilterOption.inCircle);
+                  } else {
+                    _activeFilters.remove(FilterOption.inCircle);
+                  }
+                });
+              },
+              selectedColor: AppColors.deepSeaBlue.withOpacity(0.2),
+              checkmarkColor: AppColors.deepSeaBlue,
+              labelStyle: TextStyle(
+                color: _activeFilters.contains(FilterOption.inCircle)
+                    ? AppColors.deepSeaBlue 
+                    : AppColors.deltaTeal,
+                fontWeight: _activeFilters.contains(FilterOption.inCircle)
+                    ? FontWeight.bold 
+                    : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Surprise Me button
+            FilterChip(
+              avatar: const Icon(Icons.shuffle, size: 18),
+              label: const Text('Surprise Me'),
+              selected: false,
+              onSelected: (selected) {
+                _surpriseMe(context, filteredBooks);
+              },
+              backgroundColor: AppColors.goldLeaf.withOpacity(0.1),
+              selectedColor: AppColors.goldLeaf.withOpacity(0.2),
+              labelStyle: const TextStyle(
+                color: AppColors.goldLeaf,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _surpriseMe(BuildContext context, List<Book> books) {
+    // Filter to unread books only
+    final unreadBooks = books.where((book) => !book.isReadByMe).toList();
+    
+    if (unreadBooks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No unread books available'),
+          duration: Duration(seconds: 2),
+        ),
       );
-    } catch (e) {
-      // No partner comment found, use first comment if available
-      if (book.comments.isNotEmpty) {
-        partnerComment = book.comments.first;
+      return;
+    }
+    
+    // Pick a random unread book
+    final random = Random();
+    final randomBook = unreadBooks[random.nextInt(unreadBooks.length)];
+    
+    // Navigate to book detail
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final selectedLibrary = libraryProvider.selectedLibrary;
+    
+    if (selectedLibrary != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookDetailScreen(
+            book: randomBook,
+            libraryId: selectedLibrary.id,
+          ),
+        ),
+      ).then((_) {
+        if (mounted) {
+          libraryProvider.fetchLibraries();
+        }
+      });
+    }
+  }
+
+  void _showSortBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(
+                  'Sort Books',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.deltaTeal,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildSortOption(
+                context,
+                'Recent',
+                SortOption.recent,
+                Icons.access_time,
+              ),
+              _buildSortOption(
+                context,
+                'Rating',
+                SortOption.rating,
+                Icons.star,
+              ),
+              _buildSortOption(
+                context,
+                'Pages',
+                SortOption.pages,
+                Icons.menu_book,
+              ),
+              _buildSortOption(
+                context,
+                'Title',
+                SortOption.title,
+                Icons.sort_by_alpha,
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(
+    BuildContext context,
+    String label,
+    SortOption option,
+    IconData icon,
+  ) {
+    final isSelected = _currentSort == option;
+    
+    return Consumer<LibraryProvider>(
+      builder: (context, libraryProvider, _) {
+        return ListTile(
+          leading: Icon(
+            icon,
+            color: isSelected ? AppColors.deepSeaBlue : AppColors.textSecondary,
+          ),
+          title: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? AppColors.deepSeaBlue : AppColors.deltaTeal,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                Icon(Icons.check, color: AppColors.deepSeaBlue),
+                const SizedBox(width: 8),
+              ],
+              IconButton(
+                icon: Icon(
+                  libraryProvider.isAscending 
+                      ? Icons.arrow_upward 
+                      : Icons.arrow_downward,
+                  color: AppColors.deepSeaBlue,
+                  size: 20,
+                ),
+                onPressed: () {
+                  libraryProvider.toggleSortDirection();
+                },
+                tooltip: libraryProvider.isAscending 
+                    ? 'Ascending' 
+                    : 'Descending',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          onTap: () {
+            setState(() {
+              _currentSort = option;
+            });
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+
+  /// Build avatars for other people who have read the book
+  /// Extracts unique users from comments who are not the current user
+  List<Widget> _buildOtherReadersAvatars(Book book, int? currentUserId) {
+    if (book.comments.isEmpty) {
+      return [];
+    }
+    
+    // Extract unique users from comments (excluding current user)
+    final Set<int> seenUserIds = {};
+    final List<Widget> avatars = [];
+    
+    for (final comment in book.comments) {
+      final userId = comment.user.id;
+      if (userId != currentUserId && !seenUserIds.contains(userId)) {
+        seenUserIds.add(userId);
+        avatars.add(
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: UserAvatar(
+              firstName: comment.user.firstName,
+              lastName: comment.user.lastName,
+              email: comment.user.email,
+              size: 24,
+              fallbackText: '?',
+            ),
+          ),
+        );
       }
     }
     
-    if (partnerComment != null) {
-      return UserAvatar(
-        firstName: partnerComment.user.firstName,
-        lastName: partnerComment.user.lastName,
-        email: partnerComment.user.email,
-        size: 32,
-        fallbackText: 'P',
-      );
-    }
-    
-    // Fallback to generic "P" for partner
-    return UserAvatar(
-      fallbackText: 'P',
-      size: 32,
-    );
+    return avatars;
   }
 
 }

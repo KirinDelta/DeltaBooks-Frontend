@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
-import '../models/book.dart';
 import '../theme/app_colors.dart';
 import 'book_edit_screen.dart';
+import 'search_results_screen.dart';
+import 'book_detail_screen.dart';
 
 class ManualEntryScreen extends StatefulWidget {
   final String? initialIsbn;
@@ -62,17 +63,22 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      final book = await bookProvider.searchBooks(isbn: isbn);
+      final books = await bookProvider.searchBooks(isbn: isbn);
       
       if (mounted) {
-        if (book != null) {
-          // Navigate to BookEditScreen with found book
+        if (books.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.bookNotFound)),
+          );
+        } else if (books.length == 1) {
+          // Single result: navigate directly to preview
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookEditScreen(
-                initialBook: book,
-              ),
+          builder: (context) => BookDetailScreen(
+            book: books[0],
+            isSearchPreview: true,
+          ),
             ),
           );
           
@@ -83,8 +89,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             Navigator.pop(context, true);
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.bookNotFound)),
+          // Multiple results: navigate to search results screen
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchResultsScreen(
+                books: books,
+                searchQuery: isbn,
+              ),
+            ),
           );
         }
       }
@@ -117,32 +130,27 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      final book = await bookProvider.searchBooks(
+      final books = await bookProvider.searchBooks(
         title: title.isNotEmpty ? title : null,
         author: author.isNotEmpty ? author : null,
       );
       
       if (mounted) {
-        if (book != null) {
-          // Navigate to BookEditScreen with found book
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BookEditScreen(
-                initialBook: book,
-              ),
-            ),
-          );
-          
-          // Refresh libraries if book was added
-          if (result == true && mounted) {
-            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-            await libraryProvider.fetchLibraries();
-            Navigator.pop(context, true);
-          }
-        } else {
+        if (books.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.bookNotFound)),
+          );
+        } else {
+          // Always show search results screen for title/author searches
+          final searchQuery = [title, author].where((s) => s.isNotEmpty).join(' / ');
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchResultsScreen(
+                books: books,
+                searchQuery: searchQuery,
+              ),
+            ),
           );
         }
       }
