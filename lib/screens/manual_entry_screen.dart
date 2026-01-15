@@ -90,7 +90,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           }
         } else {
           // Multiple results: navigate to search results screen
-          await Navigator.push(
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SearchResultsScreen(
@@ -99,6 +99,13 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
             ),
           );
+          
+          // Refresh libraries if book was added
+          if (result == true && mounted) {
+            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            await libraryProvider.fetchLibraries();
+            Navigator.pop(context, true);
+          }
         }
       }
     } catch (e) {
@@ -143,7 +150,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         } else {
           // Always show search results screen for title/author searches
           final searchQuery = [title, author].where((s) => s.isNotEmpty).join(' / ');
-          await Navigator.push(
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SearchResultsScreen(
@@ -152,6 +159,13 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
             ),
           );
+          
+          // Refresh libraries if book was added
+          if (result == true && mounted) {
+            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            await libraryProvider.fetchLibraries();
+            Navigator.pop(context, true);
+          }
         }
       }
     } catch (e) {

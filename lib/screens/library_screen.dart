@@ -38,18 +38,33 @@ class LibraryScreenState extends State<LibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isFilterBarExpanded = true;
+  final ScrollController _scrollController = ScrollController();
+  String _previousSearchQuery = '';
+  final ValueNotifier<int> _filteredBookCountNotifier = ValueNotifier<int>(0);
 
   @override
   void initState() {
     super.initState();
+    // Initialize the filtered count notifier
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBooks();
+      _updateFilteredCount();
     });
+  }
+
+  void _updateFilteredCount() {
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final selectedLibrary = libraryProvider.selectedLibrary;
+    final books = selectedLibrary?.books ?? [];
+    final filteredAndSortedBooks = _applyFiltersAndSort(books);
+    _filteredBookCountNotifier.value = filteredAndSortedBooks.length;
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
+    _filteredBookCountNotifier.dispose();
     super.dispose();
   }
 
@@ -57,12 +72,31 @@ class LibraryScreenState extends State<LibraryScreen> {
     setState(() {
       _searchQuery = value;
     });
+    // Reset scroll position when search query changes
+    if (_previousSearchQuery != value) {
+      _previousSearchQuery = value;
+      _resetScrollPosition();
+    }
   }
 
   void _clearSearch() {
     _searchController.clear();
     setState(() {
       _searchQuery = '';
+      _previousSearchQuery = '';
+    });
+    _resetScrollPosition();
+  }
+
+  void _resetScrollPosition() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -72,6 +106,18 @@ class LibraryScreenState extends State<LibraryScreen> {
       _isFilterBarExpanded = true;
     });
   }
+
+  /// Returns the count of books after applying current filters and search
+  int getFilteredBookCount() {
+    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    final selectedLibrary = libraryProvider.selectedLibrary;
+    final books = selectedLibrary?.books ?? [];
+    final filteredAndSortedBooks = _applyFiltersAndSort(books);
+    return filteredAndSortedBooks.length;
+  }
+
+  /// Returns the ValueNotifier for filtered book count (for external listeners)
+  ValueNotifier<int> get filteredBookCountNotifier => _filteredBookCountNotifier;
 
   Future<void> _fetchBooks() async {
     // Books are now included in the library object from the API
@@ -108,10 +154,17 @@ class LibraryScreenState extends State<LibraryScreen> {
     // Show books from selected library - books are included in the library object
     final isShared = selectedLibrary != null && libraryProvider.isSharedLibrary(selectedLibrary);
     final books = selectedLibrary?.books ?? [];
+
+    final bool canRemoveBooks =
+        selectedLibrary != null && libraryProvider.userCanRemoveBooksFor(selectedLibrary);
     
     // Update last library ID to track changes
     if (currentLibraryId != null && currentLibraryId != _lastLibraryId) {
       _lastLibraryId = currentLibraryId;
+      // Update filtered count when library changes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateFilteredCount();
+      });
     }
 
     if (libraryProvider.isLoading && _lastLibraryId == null) {
@@ -133,6 +186,13 @@ class LibraryScreenState extends State<LibraryScreen> {
 
     // Apply filtering and sorting
     final filteredAndSortedBooks = _applyFiltersAndSort(books);
+    
+    // Update the filtered count notifier for the top dropdown (defer to avoid setState during build)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _updateFilteredCount();
+      }
+    });
 
     // Determine if library is empty (no books at all) vs filters returned no results
     final isLibraryEmpty = books.isEmpty && !libraryProvider.isLoading;
@@ -141,13 +201,12 @@ class LibraryScreenState extends State<LibraryScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: Stack(
+      child: Column(
         children: [
-          // Books list or empty state (with padding for floating bar)
-          Column(
-            children: [
-              SizedBox(height: _isFilterBarExpanded ? 0 : 48),
-              Expanded(
+          // Floating filter bar - always at the top
+          _buildFloatingFilterBar(context, l10n, filteredAndSortedBooks),
+          // Books list or empty state - takes remaining space
+          Expanded(
             child: hasNoFilterResults
                 ? Center(
                     child: Text(
@@ -164,6 +223,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                         ),
                       )
                     : ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(16),
                         itemCount: filteredAndSortedBooks.length,
         itemBuilder: (context, index) {
@@ -180,7 +240,7 @@ class LibraryScreenState extends State<LibraryScreen> {
           decoration: BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!),
+            border: Border.all(color: AppColors.riverMist),
             boxShadow: [
               BoxShadow(
                 offset: const Offset(0, 4),
@@ -209,6 +269,9 @@ class LibraryScreenState extends State<LibraryScreen> {
                 }
               }
             },
+            onLongPress: canRemoveBooks
+                ? () => _confirmAndRemoveBookFromLibrary(context, book)
+                : null,
             child: Stack(
               children: [
                 Padding(
@@ -261,18 +324,23 @@ class LibraryScreenState extends State<LibraryScreen> {
                               width: 60,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
                                     Icons.menu_book_rounded,
                                     size: 10,
                                     color: AppColors.deltaTeal.withOpacity(0.4),
                                   ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    '${book.totalPages} pgs',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textTertiary,
-                                      fontSize: 10,
+                                  const SizedBox(width: 2),
+                                  Flexible(
+                                    child: Text(
+                                      '${book.totalPages} pgs',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: AppColors.textTertiary,
+                                        fontSize: 10,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
@@ -405,12 +473,8 @@ class LibraryScreenState extends State<LibraryScreen> {
           ),
         );
       },
-                        ),
                       ),
-          ],
-        ),
-          // Floating filter bar
-          _buildFloatingFilterBar(context, l10n, filteredAndSortedBooks),
+          ),
         ],
       ),
     );
@@ -501,28 +565,22 @@ class LibraryScreenState extends State<LibraryScreen> {
   }
 
   Widget _buildFloatingFilterBar(BuildContext context, AppLocalizations l10n, List<Book> filteredBooks) {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Collapse/Expand header
-            InkWell(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Collapse/Expand header
+          InkWell(
               onTap: () {
                 setState(() {
                   _isFilterBarExpanded = !_isFilterBarExpanded;
@@ -580,13 +638,9 @@ class LibraryScreenState extends State<LibraryScreen> {
                 ),
               ),
             ),
-            // Expandable content
-            AnimatedCrossFade(
-              duration: const Duration(milliseconds: 300),
-              crossFadeState: _isFilterBarExpanded
-                  ? CrossFadeState.showFirst
-                  : CrossFadeState.showSecond,
-              firstChild: Column(
+          // Expandable content - instant visibility toggle
+          if (_isFilterBarExpanded)
+            Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Search bar
@@ -629,10 +683,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                   _buildFilterChips(context, l10n, filteredBooks),
                 ],
               ),
-              secondChild: const SizedBox.shrink(),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -664,19 +715,19 @@ class LibraryScreenState extends State<LibraryScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildSortChip(context, 'Recent', SortOption.recent, Icons.access_time, libraryProvider),
+                child: _buildSortChip(context, 'New', SortOption.recent, Icons.access_time, libraryProvider),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
-                child: _buildSortChip(context, 'Rating', SortOption.rating, Icons.star, libraryProvider),
+                child: _buildSortChip(context, 'Stars', SortOption.rating, Icons.star, libraryProvider),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
-                child: _buildSortChip(context, 'Pages', SortOption.pages, Icons.menu_book, libraryProvider),
+                child: _buildSortChip(context, 'Size', SortOption.pages, Icons.menu_book, libraryProvider),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
-                child: _buildSortChip(context, 'Title', SortOption.title, Icons.sort_by_alpha, libraryProvider),
+                child: _buildSortChip(context, 'Name', SortOption.title, Icons.sort_by_alpha, libraryProvider),
               ),
             ],
           ),
@@ -692,23 +743,27 @@ class LibraryScreenState extends State<LibraryScreen> {
     IconData icon,
     LibraryProvider libraryProvider,
   ) {
-    final isSelected = _currentSort == option;
-    
-    return InkWell(
-      onTap: () {
-        if (_currentSort != option) {
-          setState(() {
-            _currentSort = option;
-          });
-        }
-      },
-      child: Consumer<LibraryProvider>(
-        builder: (context, provider, _) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Consumer<LibraryProvider>(
+      builder: (context, provider, _) {
+        final isSelected = _currentSort == option;
+        return InkWell(
+          onTap: () {
+            if (_currentSort == option) {
+              // Toggle sort direction when clicking an already selected chip
+              provider.toggleSortDirection();
+            } else {
+              // Select new sort option
+              setState(() {
+                _currentSort = option;
+              });
+            }
+            _resetScrollPosition();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.deepSeaBlue.withOpacity(0.2)
+                  ? AppColors.deepSeaBlue
                   : AppColors.riverMist.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -720,37 +775,35 @@ class LibraryScreenState extends State<LibraryScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 16, color: isSelected ? AppColors.textPrimary : AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: isSelected ? AppColors.textPrimary : AppColors.deltaTeal,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 13,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected ? Colors.white : AppColors.deltaTeal,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.deltaTeal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 12,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
                 if (isSelected) ...[
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () {
-                      provider.toggleSortDirection();
-                    },
-                    child: Icon(
-                      provider.isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                      size: 16,
-                      color: AppColors.textPrimary,
-                    ),
+                  const SizedBox(width: 3),
+                  Icon(
+                    provider.isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                    size: 14,
+                    color: Colors.white,
                   ),
                 ],
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -773,6 +826,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                     _activeFilters.remove(FilterOption.unread);
                   }
                 });
+                _resetScrollPosition();
               },
               selectedColor: AppColors.deepSeaBlue.withOpacity(0.2),
               checkmarkColor: AppColors.deepSeaBlue,
@@ -798,6 +852,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                     _activeFilters.remove(FilterOption.read);
                   }
                 });
+                _resetScrollPosition();
               },
               selectedColor: AppColors.goldLeaf.withOpacity(0.2),
               checkmarkColor: AppColors.goldLeaf,
@@ -823,6 +878,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                     _activeFilters.remove(FilterOption.inCircle);
                   }
                 });
+                _resetScrollPosition();
               },
               selectedColor: AppColors.deepSeaBlue.withOpacity(0.2),
               checkmarkColor: AppColors.deepSeaBlue,
@@ -893,6 +949,71 @@ class LibraryScreenState extends State<LibraryScreen> {
           libraryProvider.fetchLibraries();
         }
       });
+    }
+  }
+
+  Future<void> _confirmAndRemoveBookFromLibrary(
+      BuildContext context, Book book) async {
+    if (book.id == null) return;
+
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Book'),
+        content: const Text('Remove this book from your library?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.deepSeaBlue,
+            ),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Show loading indicator while removing
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    String? errorMessage;
+    try {
+      errorMessage = await libraryProvider.removeBook(book.id!);
+    } finally {
+      Navigator.of(context).pop(); // Close loading dialog
+    }
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Book removed from your library'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+        ),
+      );
     }
   }
 

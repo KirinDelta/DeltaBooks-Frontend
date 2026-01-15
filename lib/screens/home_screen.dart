@@ -7,6 +7,8 @@ import '../providers/locale_provider.dart';
 import '../providers/invitation_provider.dart';
 import '../providers/library_provider.dart';
 import '../models/library.dart';
+import '../theme/app_images.dart';
+import '../theme/app_colors.dart';
 import 'scanner_screen.dart';
 import 'stats_screen.dart';
 import 'library_screen.dart';
@@ -179,147 +181,180 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.appTitle),
-            Consumer<LibraryProvider>(
-              builder: (context, libraryProvider, _) {
-                if (libraryProvider.isLoading || libraryProvider.allLibraries.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                final selectedLibrary = libraryProvider.selectedLibrary;
-                if (selectedLibrary == null) return const SizedBox.shrink();
-                final isShared = libraryProvider.isSharedLibrary(selectedLibrary);
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isShared) ...[
-                      const Icon(Icons.people, size: 14, color: Colors.amber),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        selectedLibrary.name,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          fontStyle: isShared ? FontStyle.italic : FontStyle.normal,
-                          color: isShared ? Colors.amber : null,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+        toolbarHeight: 56.0,
+        title: Builder(
+          builder: (builderContext) => Padding(
+            padding: const EdgeInsets.only(left: 0, right: 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Menu Icon (Left)
+                Transform.translate(
+                  offset: const Offset(-8, 0),
+                  child: IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => Scaffold.of(builderContext).openDrawer(),
+                    padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 8),
+                  ),
+                ),
+                // Logo (Right)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Hero(
+                    tag: 'app_logo',
+                    child: Image.asset(
+                      AppImages.logo,
+                      height: 40,
+                      fit: BoxFit.contain,
                     ),
-                    if (isShared) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        '(Shared)',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.amber.shade300,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              },
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(51.0),
+          child: Container(
+            color: AppColors.deepSeaBlue,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Divider between rows
+                Container(
+                  height: 1.0,
+                  color: Colors.white10,
+                ),
+                // Library Dropdown Row
+                Consumer<LibraryProvider>(
+                  builder: (context, libraryProvider, _) {
+                    if (libraryProvider.isLoading) {
+                      return const SizedBox(
+                        height: 50.0,
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        ),
+                      );
+                    }
+                    
+                    final allLibraries = libraryProvider.allLibraries;
+                    final selectedLibrary = libraryProvider.selectedLibrary;
+                    final isSelectedShared = selectedLibrary != null && libraryProvider.isSharedLibrary(selectedLibrary);
+                    
+                    return Container(
+                      height: 50.0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      alignment: Alignment.centerLeft,
+                      child: allLibraries.isEmpty
+                          ? InkWell(
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LibrariesScreen(),
+                                  ),
+                                );
+                                if (mounted) {
+                                  await libraryProvider.fetchLibraries();
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    l10n.createLibraryFirst,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : InkWell(
+                              onTap: () => _showLibrarySelector(context, libraryProvider, allLibraries),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Library name and (Shared) indicator (left-aligned)
+                                  Flexible(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            selectedLibrary?.name ?? '',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (isSelectedShared) ...[
+                                          const SizedBox(width: 6),
+                                          const Text(
+                                            '(Shared)',
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                              color: Colors.white70,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  // Book counter and dropdown arrow (right-aligned)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Builder(
+                                        builder: (context) {
+                                          final libraryScreenState = _libraryScreenKey.currentState;
+                                          if (libraryScreenState != null) {
+                                            return ValueListenableBuilder<int>(
+                                              valueListenable: libraryScreenState.filteredBookCountNotifier,
+                                              builder: (context, filteredCount, child) {
+                                                return Text(
+                                                  '$filteredCount',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else {
+                                            // Fallback to total count if library screen state is not available yet
+                                            return Text(
+                                              '${selectedLibrary?.books.length ?? 0}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.arrow_drop_down, color: Colors.white, size: 24),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        actions: const [],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Consumer<LibraryProvider>(
-            builder: (context, libraryProvider, _) {
-              if (libraryProvider.isLoading) {
-                return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
-              }
-              
-              final allLibraries = libraryProvider.allLibraries;
-              final selectedLibrary = libraryProvider.selectedLibrary;
-              final isSelectedShared = selectedLibrary != null && libraryProvider.isSharedLibrary(selectedLibrary);
-              
-              if (allLibraries.isEmpty) {
-                return Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: InkWell(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LibrariesScreen(),
-                        ),
-                      );
-                      if (mounted) {
-                        await libraryProvider.fetchLibraries();
-                      }
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add_circle_outline, color: Colors.white70, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.createLibraryFirst,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              return InkWell(
-                onTap: () => _showLibrarySelector(context, libraryProvider, allLibraries),
-                child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.library_books, color: Colors.white70, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                selectedLibrary?.name ?? '',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (isSelectedShared) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                '(Shared)',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white70,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_drop_down, color: Colors.white70, size: 24),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+        automaticallyImplyLeading: false,
       ),
       drawer: _buildDrawer(context),
       body: IndexedStack(
@@ -402,29 +437,64 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer3<AuthProvider, LibraryProvider, InvitationProvider>(
       builder: (context, authProvider, libraryProvider, invitationProvider, _) {
         final pendingCount = invitationProvider.pendingReceivedCount;
-        final userEmail = authProvider.user?.email ?? '';
+        final user = authProvider.user;
+        final userEmail = user?.email ?? '';
+        
+        // Construct user name from firstName and lastName
+        String? userName;
+        final firstName = user?.firstName;
+        final lastName = user?.lastName;
+        if (firstName != null && firstName.isNotEmpty) {
+          if (lastName != null && lastName.isNotEmpty) {
+            userName = '$firstName $lastName';
+          } else {
+            userName = firstName;
+          }
+        } else if (lastName != null && lastName.isNotEmpty) {
+          userName = lastName;
+        }
+        
+        // Determine if we should show name as primary (and email as secondary)
+        final hasName = userName != null && userName.isNotEmpty;
+        
         return Drawer(
           child: SafeArea(
             child: Column(
               children: [
-                // Drawer header
+                // Drawer Header
                 Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  padding: const EdgeInsets.only(top: 24.0, left: 16.0, right: 16.0, bottom: 0.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        userEmail.isNotEmpty ? userEmail : l10n.more,
-                        style: const TextStyle(
+                      // Circular logo container
+                      Container(
+                        height: 70.0,
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
                           color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          AppImages.logo,
+                          fit: BoxFit.contain,
                         ),
                       ),
+                      const SizedBox(height: 12.0),
+                      // User Name (Bold)
+                      if (hasName && userName != null)
+                        Text(
+                          userName!,
+                          style: const TextStyle(
+                            color: AppColors.deltaTeal,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
                 ),
@@ -434,11 +504,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsets.zero,
                     children: [
                       ListTile(
-                        leading: Icon(
+                        leading: const Icon(
                           Icons.settings,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: AppColors.deltaTeal,
                         ),
-                        title: Text(l10n.myLibraries),
+                        title: Text(
+                          l10n.myLibraries,
+                          style: const TextStyle(color: AppColors.deltaTeal),
+                        ),
                         onTap: () async {
                           Navigator.pop(context);
                           await Navigator.push(
@@ -453,11 +526,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       ListTile(
-                        leading: Icon(
+                        leading: const Icon(
                           Icons.person_add,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: AppColors.deltaTeal,
                         ),
-                        title: Text(l10n.shareLibrary),
+                        title: Text(
+                          l10n.shareLibrary,
+                          style: const TextStyle(color: AppColors.deltaTeal),
+                        ),
                         onTap: () {
                           Navigator.pop(context);
                           final selectedLibrary = libraryProvider.selectedLibrary;
@@ -478,9 +554,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ListTile(
                         leading: Stack(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.mail_outline,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: AppColors.deltaTeal,
                             ),
                             if (pendingCount > 0)
                               Positioned(
@@ -502,7 +578,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         title: Row(
                           children: [
-                            Text(l10n.invitations),
+                            Text(
+                              l10n.invitations,
+                              style: const TextStyle(color: AppColors.deltaTeal),
+                            ),
                             if (pendingCount > 0) ...[
                               const SizedBox(width: 8),
                               Container(
@@ -534,11 +613,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       ListTile(
-                        leading: Icon(
+                        leading: const Icon(
                           Icons.person,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: AppColors.deltaTeal,
                         ),
-                        title: Text(l10n.profile),
+                        title: Text(
+                          l10n.profile,
+                          style: const TextStyle(color: AppColors.deltaTeal),
+                        ),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -549,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
-                      const Divider(),
+                      const Divider(color: AppColors.riverMist),
                       ListTile(
                         leading: Icon(
                           Icons.logout,

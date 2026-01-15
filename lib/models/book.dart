@@ -1,7 +1,30 @@
 import 'book_comment.dart';
 
+class BookPermissions {
+  final bool canRemove;
+
+  const BookPermissions({
+    this.canRemove = false,
+  });
+
+  factory BookPermissions.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const BookPermissions();
+    }
+
+    return BookPermissions(
+      canRemove: (json['can_remove'] as bool?) ?? false,
+    );
+  }
+}
+
 class Book {
   final int? id;
+  /// ID of the library this book is associated with in a library context.
+  ///
+  /// Expected from backend as `library_id`. This may be null for
+  /// global/search results that are not tied to a specific library.
+  final int? libraryId;
   final String isbn;
   final String title;
   final String author;
@@ -22,8 +45,18 @@ class Book {
   final List<BookComment> comments; // array of all comments from all users
   final bool isOwnedGlobally; // is_owned_globally - indicates if book is owned globally (in any library)
 
+  /// Granular permissions for the current user on this book within a library.
+  ///
+  /// Backed by the `permissions` object from the backend
+  /// (e.g. `permissions.can_remove`).
+  final BookPermissions permissions;
+
+  /// Convenience accessor mirroring [permissions.canRemove].
+  bool get canRemove => permissions.canRemove;
+
   Book({
     this.id,
+    this.libraryId,
     required this.isbn,
     required this.title,
     required this.author,
@@ -41,6 +74,7 @@ class Book {
     this.isReadByOthers = false,
     this.comments = const [],
     this.isOwnedGlobally = false,
+    this.permissions = const BookPermissions(),
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -90,9 +124,15 @@ class Book {
           .map((commentJson) => BookComment.fromJson(commentJson as Map<String, dynamic>))
           .toList();
     }
+
+    // Parse permissions object for this book (if present)
+    final permissions = BookPermissions.fromJson(
+      json['permissions'] as Map<String, dynamic>?,
+    );
     
     return Book(
       id: parseId(json['id']),
+      libraryId: parseId(json['library_id']),
       isbn: json['isbn'] as String? ?? '',
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',
@@ -111,6 +151,7 @@ class Book {
       isReadByOthers: isReadByOthers,
       comments: comments,
       isOwnedGlobally: isOwnedGlobally,
+      permissions: permissions,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../models/book.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_images.dart';
 import 'book_detail_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -26,24 +27,38 @@ class SearchResultsScreen extends StatelessWidget {
       ),
       backgroundColor: AppColors.white,
       body: books.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 64,
-                    color: AppColors.textTertiary,
+          ? Stack(
+              children: [
+                Center(
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Image.asset(
+                      AppImages.logo,
+                      height: 200,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.noResults,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.deltaTeal,
-                        ),
+                ),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.noResults,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppColors.deltaTeal,
+                            ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -90,7 +105,7 @@ class SearchResultsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               onTap: () async {
                 // Navigate to preview (BookDetailScreen with isSearchPreview: true)
-                await Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => BookDetailScreen(
@@ -99,6 +114,11 @@ class SearchResultsScreen extends StatelessWidget {
                     ),
                   ),
                 );
+                
+                // If book was added, pop back to manual entry screen
+                if (result == true) {
+                  Navigator.pop(context, true);
+                }
               },
               child: Padding(
                 padding: EdgeInsets.only(
@@ -155,19 +175,24 @@ class SearchResultsScreen extends StatelessWidget {
                             width: 60,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.menu_book_rounded,
                                   size: 10,
                                   color: AppColors.deltaTeal.withOpacity(0.4),
                                 ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${book.totalPages} pgs',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: AppColors.textTertiary,
-                                        fontSize: 10,
-                                      ),
+                                const SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    '${book.totalPages} pgs',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: AppColors.textTertiary,
+                                          fontSize: 10,
+                                        ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               ],
                             ),

@@ -6,6 +6,7 @@ import '../providers/library_provider.dart';
 import '../models/book.dart';
 import '../models/library.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_images.dart';
 
 class BookEditScreen extends StatefulWidget {
   final Book? initialBook;
@@ -244,6 +245,11 @@ class _BookEditScreenState extends State<BookEditScreen> {
         matchingSelectedLibrary = null;
       }
     }
+
+    final bool canAddToSelectedLibrary = matchingSelectedLibrary != null &&
+        libraryProvider.userCanAddBooksFor(matchingSelectedLibrary);
+
+    final bool isAddEnabled = !_isAdding && canAddToSelectedLibrary;
 
     return Form(
       key: _formKey,
@@ -632,10 +638,21 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 24),
             
             // Add button
-            ElevatedButton.icon(
-              onPressed: _isAdding ? null : _addToLibrary,
-              icon: _isAdding
-                  ? SizedBox(
+            ElevatedButton(
+              onPressed: isAddEnabled ? _addToLibrary : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isAddEnabled ? AppColors.goldLeaf : Colors.grey,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isAdding)
+                    SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -643,15 +660,18 @@ class _BookEditScreenState extends State<BookEditScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.add),
-              label: Text(_isAdding ? l10n.searching : l10n.addToLibrary),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.goldLeaf,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                  else ...[
+                    Image.asset(
+                      AppImages.logo,
+                      height: 16,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.add, size: 20),
+                  ],
+                  const SizedBox(width: 8),
+                  Text(_isAdding ? l10n.searching : l10n.addToLibrary),
+                ],
               ),
             ),
           ],

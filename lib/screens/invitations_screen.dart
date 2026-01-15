@@ -261,6 +261,7 @@ class _InvitationCard extends StatelessWidget {
   Future<void> _handleAction(
     BuildContext context,
     InvitationProvider provider,
+    LibraryProvider libraryProvider,
     String action,
   ) async {
     final l10n = AppLocalizations.of(context)!;
@@ -272,7 +273,6 @@ class _InvitationCard extends StatelessWidget {
         success = await provider.acceptInvitation(invitation.id);
         if (success) {
           // Refresh shared libraries after accepting
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.fetchLibraries();
         }
         message = success ? l10n.invitationAccepted : l10n.invitationError;
@@ -287,17 +287,19 @@ class _InvitationCard extends StatelessWidget {
         break;
     }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    }
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final provider = Provider.of<InvitationProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -356,12 +358,14 @@ class _InvitationCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _handleAction(context, provider, 'reject'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'reject'),
                     child: Text(l10n.reject),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () => _handleAction(context, provider, 'accept'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'accept'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -377,7 +381,8 @@ class _InvitationCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _handleAction(context, provider, 'cancel'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'cancel'),
                     child: Text(l10n.cancel),
                   ),
                 ],

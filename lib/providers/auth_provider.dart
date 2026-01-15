@@ -14,6 +14,7 @@ class AuthProvider with ChangeNotifier {
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
+  int? get userId => _user?.id;
 
   void setLocaleProvider(LocaleProvider localeProvider) {
     _localeProvider = localeProvider;

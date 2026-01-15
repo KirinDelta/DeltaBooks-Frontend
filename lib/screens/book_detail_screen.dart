@@ -4,12 +4,15 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../models/book.dart';
 import '../models/book_comment.dart';
+import '../models/library.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_images.dart';
 import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
 import '../widgets/mark_as_read_sheet.dart';
 import '../widgets/user_avatar.dart';
+import 'book_edit_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
@@ -41,6 +44,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         if (mounted) {
           _libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
           _libraryProvider?.addListener(_onLibraryChanged);
+          // Force-refresh this library's details so currentUserPermissions is
+          // up to date before we evaluate delete permissions.
+          _libraryProvider?.fetchLibraryDetails(book.libraryId);
         }
       });
     }
@@ -79,6 +85,78 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Book get book => _currentBook ?? widget.book;
+
+  Future<void> _confirmAndRemoveBook(BuildContext context) async {
+    if (!mounted || widget.libraryId == null || book.id == null) return;
+
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+
+    // Confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Book'),
+        content: const Text('Remove this book from your library?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.deepSeaBlue,
+            ),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    // Show a loading indicator while removing the book
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    String? errorMessage;
+    try {
+      errorMessage = await libraryProvider.removeBook(book.id!);
+    } finally {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+      }
+    }
+
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Book removed from your library'),
+        ),
+      );
+      // Refresh libraries so the main list view removes the book.
+      await libraryProvider.refreshLibrary();
+      if (!mounted) return;
+      // Pop back to the library screen after successful removal
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+        ),
+      );
+    }
+  }
 
   void _showMarkAsReadSheet(BuildContext context) {
     if (!mounted || widget.libraryId == null) return;
@@ -197,20 +275,83 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  Future<void> _addBookToLibrary(BuildContext context) async {
+    if (!mounted) return;
+    
+    // Navigate to BookEditScreen with the book as initialBook
+    // This allows the user to edit fields (pages, price, etc.) before adding
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookEditScreen(
+          initialBook: book,
+        ),
+      ),
+    );
+    
+    // If book was added, navigate back and refresh libraries
+    if (result == true && mounted) {
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      await libraryProvider.fetchLibraries();
+      Navigator.pop(context, true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final libraryProvider = Provider.of<LibraryProvider>(context);
-    
+    final libraryProvider = context.watch<LibraryProvider>();
+
     // Use new backend fields
     final hasRead = book.isReadByMe;
 
+    // Resolve the active library context from the provider.
+    final Library? library = libraryProvider.currentLibrary;
+
+    // Check if the current user is the owner (string comparison for safety).
+    final bool isOwner =
+        library?.ownerId?.toString() == authProvider.userId?.toString();
+
+    // Check if the current user is a partner with explicit remove permission.
+    final bool canRemoveAsPartner =
+        library?.permissions?['can_remove'] == true;
+
+    // Final flag controlling whether the delete button is shown.
+    final bool canDelete = isOwner || canRemoveAsPartner;
+
+    // Debug log to verify IDs and permission resolution.
+    // ignore: avoid_print
+    print(
+        'DEBUG: OwnerID: ${library?.ownerId}, UserID: ${authProvider.userId}, hasPermission: $canRemoveAsPartner');
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.bookDetails),
+        title: widget.libraryId == null && widget.isSearchPreview
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    AppImages.logo,
+                    height: 20,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(l10n.bookDetails),
+                ],
+              )
+            : Text(l10n.bookDetails),
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
+        actions: [
+          if (canDelete)
+            IconButton(
+              icon: const Icon(Icons.delete_forever),
+              color: Colors.white,
+              onPressed: () => _confirmAndRemoveBook(context),
+              tooltip: 'Remove Book',
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -519,6 +660,25 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     const SizedBox(height: 20),
                   ],
                   ], // Close widget.libraryId != null block
+                  
+                  // Add book button (only in search preview mode)
+                  if (widget.isSearchPreview && widget.libraryId == null) ...[
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _addBookToLibrary(context),
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.addToLibrary),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldLeaf,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ],
               ),
             ),

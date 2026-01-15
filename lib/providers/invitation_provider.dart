@@ -54,12 +54,19 @@ class InvitationProvider with ChangeNotifier {
     return null;
   }
 
-  Future<bool> sendInvitation(int receiverId, int libraryId) async {
+  Future<bool> sendInvitation(
+    int receiverId,
+    int libraryId, {
+    bool canAddBooks = true,
+    bool canRemoveBooks = true,
+  }) async {
     try {
       final response = await _apiService.post('/api/v1/invitations', {
         'invitation': {
           'receiver_id': receiverId,
           'library_id': libraryId,
+          'can_add_books': canAddBooks,
+          'can_remove_books': canRemoveBooks,
         }
       });
       
