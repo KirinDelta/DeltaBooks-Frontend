@@ -51,6 +51,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyPartnerLibrary => 'Partner\'s library is empty';
 
   @override
+  String get noResults => 'No results';
+
+  @override
+  String get searchBooks => 'Search books...';
+
+  @override
+  String get noBooksFoundSearch =>
+      'No books found in this library matching your search.';
+
+  @override
   String get scanBarcode => 'Scan the book\'s barcode';
 
   @override
@@ -156,10 +166,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitations => 'Invitations';
 
   @override
-  String get sentInvitations => 'Sent Invitations';
+  String get sentInvitations => 'Sent';
 
   @override
-  String get receivedInvitations => 'Received Invitations';
+  String get receivedInvitations => 'Received';
 
   @override
   String get pending => 'Pending';
@@ -256,4 +266,234 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSharedLibraries => 'No shared libraries';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get title => 'Title';
+
+  @override
+  String get enterTitle => 'Enter title';
+
+  @override
+  String get enterAuthor => 'Enter author';
+
+  @override
+  String get searchByTitleAuthor => 'Search by Title/Author';
+
+  @override
+  String get createManually => 'Create Manually';
+
+  @override
+  String get coverImageUrl => 'Cover Image URL';
+
+  @override
+  String get enterCoverUrl => 'Enter cover image URL';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get enterDescription => 'Enter description';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get enterPrice => 'Enter price';
+
+  @override
+  String get editBookDetails => 'Edit Book Details';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get titleRequired => 'Title is required';
+
+  @override
+  String get authorRequired => 'Author is required';
+
+  @override
+  String get isbnRequired => 'ISBN is required';
+
+  @override
+  String get pagesRequired => 'Total pages must be greater than 0';
+
+  @override
+  String get invalidPrice => 'Invalid price';
+
+  @override
+  String get invalidPages => 'Invalid number of pages';
+
+  @override
+  String get coverPreview => 'Cover Preview';
+
+  @override
+  String get noCoverImage => 'No cover image';
+
+  @override
+  String get searching => 'Searching...';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get searchError => 'Error searching for book';
+
+  @override
+  String get atLeastOneSearchField =>
+      'Please provide at least one search field';
+
+  @override
+  String get searchByIsbn => 'Search by ISBN';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get addManually => 'Add Manually';
+
+  @override
+  String get markAsRead => 'Mark as Read';
+
+  @override
+  String get rating => 'Rating';
+
+  @override
+  String get selectRating => 'Select Rating';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get enterComment => 'Enter your comment (optional)';
+
+  @override
+  String get readDate => 'Read Date';
+
+  @override
+  String get selectDate => 'Select Date';
+
+  @override
+  String get saveReading => 'Save Reading';
+
+  @override
+  String get readingSaved => 'Reading saved successfully!';
+
+  @override
+  String get readingError => 'Error saving reading';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String get readByPartner => 'Read by Partner';
+
+  @override
+  String get bookDetails => 'Book Details';
+
+  @override
+  String get markAsUnread => 'Mark as Unread';
+
+  @override
+  String get confirmUnread =>
+      'Are you sure you want to mark this book as unread?';
+
+  @override
+  String get bookMarkedAsUnread => 'Book marked as unread';
+
+  @override
+  String get errorMarkingUnread => 'Error marking book as unread';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get firstName => 'First Name';
+
+  @override
+  String get lastName => 'Last Name';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get enterFirstName => 'Enter first name';
+
+  @override
+  String get enterLastName => 'Enter last name';
+
+  @override
+  String get enterUsername => 'Enter username';
+
+  @override
+  String get defaultCurrency => 'Default Currency';
+
+  @override
+  String get defaultLanguage => 'Default Language';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmPassword => 'Confirm New Password';
+
+  @override
+  String get enterCurrentPassword => 'Enter current password';
+
+  @override
+  String get enterNewPassword => 'Enter new password';
+
+  @override
+  String get enterConfirmPassword => 'Confirm new password';
+
+  @override
+  String get passwordMismatch => 'Passwords do not match';
+
+  @override
+  String get passwordChanged => 'Password changed successfully!';
+
+  @override
+  String get passwordChangeError => 'Error changing password';
+
+  @override
+  String get profileUpdated => 'Profile updated successfully!';
+
+  @override
+  String get profileUpdateError => 'Error updating profile';
+
+  @override
+  String get ron => 'RON (Romanian Leu)';
+
+  @override
+  String get eur => 'EUR (Euro)';
+
+  @override
+  String get usd => 'USD (US Dollar)';
+
+  @override
+  String get updateProfile => 'Update Profile';
+
+  @override
+  String get owned => 'OWNED';
 }

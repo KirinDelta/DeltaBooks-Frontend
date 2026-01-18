@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 import 'dart:convert';
 
 class StatsScreen extends StatefulWidget {
@@ -93,25 +94,50 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildStatCard(BuildContext context, String title, String value, IconData icon) {
     return Card(
-      elevation: 4,
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(24.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.borderLight, width: 1),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0x1A1A365D), // deepSeaBlue.withOpacity(0.1)
+              Color(0x0D2D3748), // deltaTeal.withOpacity(0.05)
+            ],
+          ),
+        ),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: const Color(0xFF1A365D)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.deepSeaBlue.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderLight, width: 1),
+              ),
+              child: Icon(
+                icon,
+                size: 32,
+                color: AppColors.deepSeaBlue,
+              ),
+            ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: const Color(0xFF1A365D),
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: AppColors.deepSeaBlue,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

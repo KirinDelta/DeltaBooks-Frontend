@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
 import '../providers/book_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/library.dart';
+import '../theme/app_colors.dart';
 
 class LibrariesScreen extends StatefulWidget {
   const LibrariesScreen({super.key});
@@ -50,7 +52,7 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
       final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
       final l10n = AppLocalizations.of(context)!;
       
-      final success = await libraryProvider.createLibrary(
+      final error = await libraryProvider.createLibrary(
         _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -60,7 +62,8 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? l10n.libraryCreated : l10n.libraryError),
+            content: Text(error ?? l10n.libraryCreated),
+            backgroundColor: error != null ? Colors.red : Colors.green,
           ),
         );
       }
@@ -85,7 +88,7 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
       final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
       final l10n = AppLocalizations.of(context)!;
       
-      final success = await libraryProvider.updateLibrary(
+      final error = await libraryProvider.updateLibrary(
         library.id,
         _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
@@ -96,7 +99,8 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? l10n.libraryUpdated : l10n.libraryError),
+            content: Text(error ?? l10n.libraryUpdated),
+            backgroundColor: error != null ? Colors.red : Colors.green,
           ),
         );
       }
@@ -129,12 +133,13 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
 
     if (confirmed == true && mounted) {
       final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-      final success = await libraryProvider.deleteLibrary(library.id);
+      final error = await libraryProvider.deleteLibrary(library.id);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? l10n.libraryDeleted : l10n.libraryError),
+            content: Text(error ?? l10n.libraryDeleted),
+            backgroundColor: error != null ? Colors.red : Colors.green,
           ),
         );
       }
@@ -148,7 +153,7 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.myLibraries),
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       body: Consumer<LibraryProvider>(
@@ -157,7 +162,7 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (libraryProvider.libraries.isEmpty) {
+          if (libraryProvider.allLibraries.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -179,28 +184,58 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
             );
           }
 
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          final currentUserId = authProvider.user?.id;
+
           return RefreshIndicator(
             onRefresh: () => libraryProvider.fetchLibraries(),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: libraryProvider.libraries.length,
+              itemCount: libraryProvider.allLibraries.length,
               itemBuilder: (context, index) {
-                final library = libraryProvider.libraries[index];
+                final library = libraryProvider.allLibraries[index];
                 final isSelected = libraryProvider.selectedLibrary?.id == library.id;
+                final isOwner = currentUserId != null && library.userId == currentUserId;
+                final isShared = libraryProvider.isSharedLibrary(library);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: isSelected ? const Color(0xFF1A365D).withOpacity(0.1) : null,
+                  color: isSelected ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
                   child: ListTile(
                     leading: Icon(
                       Icons.library_books,
-                      color: isSelected ? const Color(0xFF1A365D) : null,
+                      color: isSelected ? Theme.of(context).colorScheme.primary : null,
                     ),
-                    title: Text(
-                      library.name,
-                      style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            library.name,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                        if (isShared)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.goldLeaf,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Shared',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     subtitle: library.description != null && library.description!.isNotEmpty
                         ? Text(library.description!)
@@ -209,18 +244,25 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (isSelected)
-                          const Padding(
-                            padding: EdgeInsets.only(right: 8),
-                            child: Icon(Icons.check_circle, color: Color(0xFF1A365D)),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Icon(
+                              Icons.check_circle,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _showEditDialog(library),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteLibrary(library),
-                        ),
+                        if (isOwner)
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _showEditDialog(library),
+                            tooltip: 'Edit library',
+                          ),
+                        if (isOwner)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteLibrary(library),
+                            tooltip: 'Delete library',
+                          ),
                       ],
                     ),
                     onTap: () {
@@ -239,7 +281,7 @@ class _LibrariesScreenState extends State<LibrariesScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateDialog,
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -303,8 +345,6 @@ class _LibraryDialog extends StatelessWidget {
             Navigator.pop(context, true);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1A365D),
-            foregroundColor: Colors.white,
           ),
           child: Text(editingLibrary == null ? l10n.createLibrary : l10n.editLibrary),
         ),

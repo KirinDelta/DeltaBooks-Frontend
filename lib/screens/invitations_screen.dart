@@ -4,6 +4,7 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/invitation_provider.dart';
 import '../providers/library_provider.dart';
 import '../models/invitation.dart';
+import '../theme/app_colors.dart';
 
 class InvitationsScreen extends StatefulWidget {
   const InvitationsScreen({super.key});
@@ -20,6 +21,9 @@ class _InvitationsScreenState extends State<InvitationsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // Rebuild when tab changes
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<InvitationProvider>(context, listen: false).fetchInvitations();
     });
@@ -38,22 +42,102 @@ class _InvitationsScreenState extends State<InvitationsScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.invitations),
-        backgroundColor: const Color(0xFF1A365D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.receivedInvitations),
-            Tab(text: l10n.sentInvitations),
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: Column(
+        children: [
+          // Mobile-friendly tab selector with better visibility
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildTabButton(
+                    context,
+                    l10n.receivedInvitations,
+                    0,
+                    Icons.inbox,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTabButton(
+                    context,
+                    l10n.sentInvitations,
+                    1,
+                    Icons.send,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _ReceivedInvitationsTab(),
+                _SentInvitationsTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(BuildContext context, String label, int index, IconData icon) {
+    final isSelected = _tabController.index == index;
+    return InkWell(
+      onTap: () {
+        _tabController.animateTo(index);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : AppColors.borderLight,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _ReceivedInvitationsTab(),
-          _SentInvitationsTab(),
-        ],
       ),
     );
   }
@@ -177,6 +261,7 @@ class _InvitationCard extends StatelessWidget {
   Future<void> _handleAction(
     BuildContext context,
     InvitationProvider provider,
+    LibraryProvider libraryProvider,
     String action,
   ) async {
     final l10n = AppLocalizations.of(context)!;
@@ -188,7 +273,6 @@ class _InvitationCard extends StatelessWidget {
         success = await provider.acceptInvitation(invitation.id);
         if (success) {
           // Refresh shared libraries after accepting
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.fetchLibraries();
         }
         message = success ? l10n.invitationAccepted : l10n.invitationError;
@@ -203,17 +287,19 @@ class _InvitationCard extends StatelessWidget {
         break;
     }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    }
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final provider = Provider.of<InvitationProvider>(context, listen: false);
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -272,14 +358,16 @@ class _InvitationCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _handleAction(context, provider, 'reject'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'reject'),
                     child: Text(l10n.reject),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () => _handleAction(context, provider, 'accept'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'accept'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A365D),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: Text(l10n.accept),
@@ -293,7 +381,8 @@ class _InvitationCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _handleAction(context, provider, 'cancel'),
+                    onPressed: () =>
+                        _handleAction(context, provider, libraryProvider, 'cancel'),
                     child: Text(l10n.cancel),
                   ),
                 ],

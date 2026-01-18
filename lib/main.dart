@@ -9,6 +9,7 @@ import 'providers/invitation_provider.dart';
 import 'providers/library_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   runApp(const DeltaBooksApp());
@@ -27,9 +28,16 @@ class DeltaBooksApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
       ],
-      child: Consumer<LocaleProvider>(
-        builder: (context, localeProvider, _) {
-          return MaterialApp(
+      child: Builder(
+        builder: (context) {
+          // Initialize locale provider reference in auth provider
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+          authProvider.setLocaleProvider(localeProvider);
+          
+          return Consumer<LocaleProvider>(
+            builder: (context, localeProvider, _) {
+              return MaterialApp(
             title: 'DeltaBooks',
             locale: localeProvider.locale,
             localizationsDelegates: const [
@@ -43,20 +51,94 @@ class DeltaBooksApp extends StatelessWidget {
               Locale('ro'),
             ],
             theme: ThemeData(
-              primaryColor: const Color(0xFF1A365D),
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF1A365D),
-                secondary: const Color(0xFFE2E8F0),
-              ),
               useMaterial3: true,
+              colorScheme: ColorScheme.light(
+                primary: AppColors.deepSeaBlue,
+                secondary: AppColors.riverMist,
+                tertiary: AppColors.goldLeaf,
+                surface: AppColors.white,
+                surfaceContainerHighest: AppColors.riverMist,
+                onPrimary: AppColors.white,
+                onSecondary: AppColors.deltaTeal,
+                onSurface: AppColors.deltaTeal,
+                onSurfaceVariant: AppColors.textSecondary,
+                brightness: Brightness.light,
+              ),
+              scaffoldBackgroundColor: Colors.white,
+              cardTheme: CardThemeData(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: AppColors.borderLight, width: 1),
+                ),
+                color: AppColors.white,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shadowColor: AppColors.deltaTeal.withOpacity(0.1),
+              ),
+              appBarTheme: const AppBarTheme(
+                elevation: 0,
+                centerTitle: false,
+                backgroundColor: AppColors.deepSeaBlue,
+                foregroundColor: AppColors.white,
+                surfaceTintColor: Colors.transparent,
+                iconTheme: IconThemeData(color: AppColors.white),
+              ),
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor: AppColors.deepSeaBlue,
+                  foregroundColor: AppColors.white,
+                ),
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: AppColors.riverMist,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                backgroundColor: AppColors.white,
+                selectedItemColor: AppColors.deepSeaBlue,
+                unselectedItemColor: AppColors.textTertiary,
+                elevation: 8,
+                type: BottomNavigationBarType.fixed,
+              ),
+              floatingActionButtonTheme: const FloatingActionButtonThemeData(
+                elevation: 4,
+                backgroundColor: AppColors.goldLeaf,
+                foregroundColor: AppColors.white,
+              ),
+              tabBarTheme: const TabBarThemeData(
+                labelColor: AppColors.deepSeaBlue,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.white,
+                indicatorSize: TabBarIndicatorSize.tab,
+              ),
             ),
-            home: Consumer<AuthProvider>(
-              builder: (context, authProvider, _) {
-                return authProvider.isAuthenticated
-                    ? const HomeScreen()
-                    : const LoginScreen();
-              },
-            ),
+                home: Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) {
+                    return authProvider.isAuthenticated
+                        ? const HomeScreen()
+                        : const LoginScreen();
+                  },
+                ),
+              );
+            },
           );
         },
       ),

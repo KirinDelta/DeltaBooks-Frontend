@@ -56,6 +56,18 @@
   "@emptyPartnerLibrary": {
     "description": "Message when partner's library is empty"
   },
+  "noResults": "No results",
+  "@noResults": {
+    "description": "Message when filters return no results"
+  },
+  "searchBooks": "Search books...",
+  "@searchBooks": {
+    "description": "Placeholder for book search input"
+  },
+  "noBooksFoundSearch": "No books found in this library matching your search.",
+  "@noBooksFoundSearch": {
+    "description": "Message when search returns no results"
+  },
   "scanBarcode": "Scan the book's barcode",
   "@scanBarcode": {
     "description": "Instruction for scanning barcode"
@@ -196,11 +208,11 @@
   "@invitations": {
     "description": "Title for invitations screen"
   },
-  "sentInvitations": "Sent Invitations",
+  "sentInvitations": "Sent",
   "@sentInvitations": {
     "description": "Label for sent invitations tab"
   },
-  "receivedInvitations": "Received Invitations",
+  "receivedInvitations": "Received",
   "@receivedInvitations": {
     "description": "Label for received invitations tab"
   },
@@ -335,5 +347,309 @@
   "noSharedLibraries": "No shared libraries",
   "@noSharedLibraries": {
     "description": "Message when there are no shared libraries"
+  },
+  "more": "More",
+  "@more": {
+    "description": "Label for more menu button"
+  },
+  "title": "Title",
+  "@title": {
+    "description": "Book title label"
+  },
+  "enterTitle": "Enter title",
+  "@enterTitle": {
+    "description": "Placeholder for title input"
+  },
+  "enterAuthor": "Enter author",
+  "@enterAuthor": {
+    "description": "Placeholder for author input"
+  },
+  "searchByTitleAuthor": "Search by Title/Author",
+  "@searchByTitleAuthor": {
+    "description": "Label for title/author search option"
+  },
+  "createManually": "Create Manually",
+  "@createManually": {
+    "description": "Label for manual book creation option"
+  },
+  "coverImageUrl": "Cover Image URL",
+  "@coverImageUrl": {
+    "description": "Label for cover image URL input"
+  },
+  "enterCoverUrl": "Enter cover image URL",
+  "@enterCoverUrl": {
+    "description": "Placeholder for cover URL input"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Label for description field"
+  },
+  "enterDescription": "Enter description",
+  "@enterDescription": {
+    "description": "Placeholder for description input"
+  },
+  "price": "Price",
+  "@price": {
+    "description": "Label for price field"
+  },
+  "enterPrice": "Enter price",
+  "@enterPrice": {
+    "description": "Placeholder for price input"
+  },
+  "editBookDetails": "Edit Book Details",
+  "@editBookDetails": {
+    "description": "Title for book edit screen"
+  },
+  "required": "Required",
+  "@required": {
+    "description": "Label for required field"
+  },
+  "optional": "Optional",
+  "@optional": {
+    "description": "Label for optional field"
+  },
+  "titleRequired": "Title is required",
+  "@titleRequired": {
+    "description": "Error when title is empty"
+  },
+  "authorRequired": "Author is required",
+  "@authorRequired": {
+    "description": "Error when author is empty"
+  },
+  "isbnRequired": "ISBN is required",
+  "@isbnRequired": {
+    "description": "Error when ISBN is empty"
+  },
+  "pagesRequired": "Total pages must be greater than 0",
+  "@pagesRequired": {
+    "description": "Error when pages is invalid"
+  },
+  "invalidPrice": "Invalid price",
+  "@invalidPrice": {
+    "description": "Error when price is invalid"
+  },
+  "invalidPages": "Invalid number of pages",
+  "@invalidPages": {
+    "description": "Error when pages is invalid"
+  },
+  "coverPreview": "Cover Preview",
+  "@coverPreview": {
+    "description": "Label for cover image preview"
+  },
+  "noCoverImage": "No cover image",
+  "@noCoverImage": {
+    "description": "Message when no cover image is available"
+  },
+  "searching": "Searching...",
+  "@searching": {
+    "description": "Message shown while searching"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Button to add book"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button to save changes"
+  },
+  "searchError": "Error searching for book",
+  "@searchError": {
+    "description": "Error message when search fails"
+  },
+  "atLeastOneSearchField": "Please provide at least one search field",
+  "@atLeastOneSearchField": {
+    "description": "Error when no search fields are provided"
+  },
+  "searchByIsbn": "Search by ISBN",
+  "@searchByIsbn": {
+    "description": "Title for ISBN search screen"
+  },
+  "or": "OR",
+  "@or": {
+    "description": "OR separator text"
+  },
+  "addManually": "Add Manually",
+  "@addManually": {
+    "description": "Button label for adding book manually"
+  },
+  "markAsRead": "Mark as Read",
+  "@markAsRead": {
+    "description": "Button to mark a book as read"
+  },
+  "rating": "Rating",
+  "@rating": {
+    "description": "Label for book rating"
+  },
+  "selectRating": "Select Rating",
+  "@selectRating": {
+    "description": "Label for rating selector"
+  },
+  "comment": "Comment",
+  "@comment": {
+    "description": "Label for comment field"
+  },
+  "enterComment": "Enter your comment (optional)",
+  "@enterComment": {
+    "description": "Placeholder for comment input"
+  },
+  "readDate": "Read Date",
+  "@readDate": {
+    "description": "Label for read date"
+  },
+  "selectDate": "Select Date",
+  "@selectDate": {
+    "description": "Label for date picker"
+  },
+  "saveReading": "Save Reading",
+  "@saveReading": {
+    "description": "Button to save reading status"
+  },
+  "readingSaved": "Reading saved successfully!",
+  "@readingSaved": {
+    "description": "Success message when reading is saved"
+  },
+  "readingError": "Error saving reading",
+  "@readingError": {
+    "description": "Error message when saving reading fails"
+  },
+  "comments": "Comments",
+  "@comments": {
+    "description": "Label for comments count"
+  },
+  "readByPartner": "Read by Partner",
+  "@readByPartner": {
+    "description": "Label indicating partner has read the book"
+  },
+  "bookDetails": "Book Details",
+  "@bookDetails": {
+    "description": "Title for book details screen"
+  },
+  "markAsUnread": "Mark as Unread",
+  "@markAsUnread": {
+    "description": "Button to mark a book as unread"
+  },
+  "confirmUnread": "Are you sure you want to mark this book as unread?",
+  "@confirmUnread": {
+    "description": "Confirmation message for marking book as unread"
+  },
+  "bookMarkedAsUnread": "Book marked as unread",
+  "@bookMarkedAsUnread": {
+    "description": "Success message when book is marked as unread"
+  },
+  "errorMarkingUnread": "Error marking book as unread",
+  "@errorMarkingUnread": {
+    "description": "Error message when marking book as unread fails"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Button to confirm an action"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Title for profile screen"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Title for settings section"
+  },
+  "firstName": "First Name",
+  "@firstName": {
+    "description": "Label for first name input"
+  },
+  "lastName": "Last Name",
+  "@lastName": {
+    "description": "Label for last name input"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Label for username input"
+  },
+  "enterFirstName": "Enter first name",
+  "@enterFirstName": {
+    "description": "Placeholder for first name input"
+  },
+  "enterLastName": "Enter last name",
+  "@enterLastName": {
+    "description": "Placeholder for last name input"
+  },
+  "enterUsername": "Enter username",
+  "@enterUsername": {
+    "description": "Placeholder for username input"
+  },
+  "defaultCurrency": "Default Currency",
+  "@defaultCurrency": {
+    "description": "Label for default currency dropdown"
+  },
+  "defaultLanguage": "Default Language",
+  "@defaultLanguage": {
+    "description": "Label for default language dropdown"
+  },
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Title for password change section"
+  },
+  "currentPassword": "Current Password",
+  "@currentPassword": {
+    "description": "Label for current password input"
+  },
+  "newPassword": "New Password",
+  "@newPassword": {
+    "description": "Label for new password input"
+  },
+  "confirmPassword": "Confirm New Password",
+  "@confirmPassword": {
+    "description": "Label for confirm password input"
+  },
+  "enterCurrentPassword": "Enter current password",
+  "@enterCurrentPassword": {
+    "description": "Placeholder for current password input"
+  },
+  "enterNewPassword": "Enter new password",
+  "@enterNewPassword": {
+    "description": "Placeholder for new password input"
+  },
+  "enterConfirmPassword": "Confirm new password",
+  "@enterConfirmPassword": {
+    "description": "Placeholder for confirm password input"
+  },
+  "passwordMismatch": "Passwords do not match",
+  "@passwordMismatch": {
+    "description": "Error when passwords don't match"
+  },
+  "passwordChanged": "Password changed successfully!",
+  "@passwordChanged": {
+    "description": "Success message when password is changed"
+  },
+  "passwordChangeError": "Error changing password",
+  "@passwordChangeError": {
+    "description": "Error message when password change fails"
+  },
+  "profileUpdated": "Profile updated successfully!",
+  "@profileUpdated": {
+    "description": "Success message when profile is updated"
+  },
+  "profileUpdateError": "Error updating profile",
+  "@profileUpdateError": {
+    "description": "Error message when profile update fails"
+  },
+  "ron": "RON (Romanian Leu)",
+  "@ron": {
+    "description": "Romanian Leu currency name"
+  },
+  "eur": "EUR (Euro)",
+  "@eur": {
+    "description": "Euro currency name"
+  },
+  "usd": "USD (US Dollar)",
+  "@usd": {
+    "description": "US Dollar currency name"
+  },
+  "updateProfile": "Update Profile",
+  "@updateProfile": {
+    "description": "Button to update profile"
+  },
+  "owned": "OWNED",
+  "@owned": {
+    "description": "Badge text for books that are already owned"
   }
 }
