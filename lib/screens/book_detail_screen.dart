@@ -161,6 +161,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void _showMarkAsReadSheet(BuildContext context) {
     if (!mounted || widget.libraryId == null) return;
     
+    // Capture the current book to ensure we use the correct one
+    final currentBook = book;
+    if (currentBook.id == null) return;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -170,7 +174,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => MarkAsReadSheet(
-          book: book,
+          book: currentBook,
           libraryId: widget.libraryId!,
         ),
       ),
@@ -297,6 +301,30 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  Future<void> _navigateToEditBook(BuildContext context) async {
+    if (!mounted || widget.libraryId == null || book.id == null) return;
+    
+    // Navigate to BookEditScreen in edit mode with the book and library
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookEditScreen(
+          initialBook: book,
+          libraryId: widget.libraryId,
+          editMode: true,
+        ),
+      ),
+    );
+    
+    // If book was updated, refresh the book detail screen
+    if (result == true && mounted) {
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      // Refresh library details to get updated book data
+      await libraryProvider.fetchLibraryDetails(widget.libraryId!);
+      // The _onLibraryChanged listener will update the book state
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -309,21 +337,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     // Resolve the active library context from the provider.
     final Library? library = libraryProvider.currentLibrary;
 
-    // Check if the current user is the owner (string comparison for safety).
-    final bool isOwner =
-        library?.ownerId?.toString() == authProvider.userId?.toString();
+    // Check if the current user is the owner (use backend-computed field).
+    final bool isOwner = library?.isOwner ?? false;
 
     // Check if the current user is a partner with explicit remove permission.
-    final bool canRemoveAsPartner =
-        library?.permissions?['can_remove'] == true;
+    final bool canRemoveAsPartner = library?.canRemoveBooks ?? false;
 
     // Final flag controlling whether the delete button is shown.
     final bool canDelete = isOwner || canRemoveAsPartner;
 
-    // Debug log to verify IDs and permission resolution.
-    // ignore: avoid_print
-    print(
-        'DEBUG: OwnerID: ${library?.ownerId}, UserID: ${authProvider.userId}, hasPermission: $canRemoveAsPartner');
+    // Check if the current user can edit books (owner or has can_add_books permission).
+    final bool canAddBooks = library?.canAddBooks ?? false;
+    final bool canEdit = isOwner || canAddBooks;
 
     return Scaffold(
       appBar: AppBar(
@@ -344,6 +369,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
         actions: [
+          if (canEdit && widget.libraryId != null)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              color: Colors.white,
+              onPressed: () => _navigateToEditBook(context),
+              tooltip: 'Edit Book',
+            ),
           if (canDelete)
             IconButton(
               icon: const Icon(Icons.delete_forever),
@@ -490,17 +522,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     RichText(
                       text: TextSpan(
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.deltaTeal,
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
                         ),
                         children: [
-                          const TextSpan(text: 'Series: '),
+                          const TextSpan(text: 'Part of the '),
                           TextSpan(
                             text: book.seriesName!,
-                            style: TextStyle(
-                              color: AppColors.goldLeaf,
-                              fontWeight: FontWeight.bold,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
+                          const TextSpan(text: ' series'),
                         ],
                       ),
                     ),
@@ -614,51 +648,51 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       ),
                     ],
                     
-                    // Comments section - display all comments from all users
-                    if (book.comments.isNotEmpty) ...[
+                    // Comments section - always show, even if empty
                     const SizedBox(height: 24),
                     Text(
-                      'Comments (${book.comments.length})',
+                      book.comments.isNotEmpty 
+                          ? 'Comments (${book.comments.length})'
+                          : 'Comments',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.deltaTeal,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ...book.comments.map((comment) {
-                      final isCurrentUser = authProvider.user?.id == comment.user.id;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildCommentCard(
-                          context,
-                          comment: comment,
-                          isCurrentUser: isCurrentUser,
+                    if (book.comments.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ...book.comments.map((comment) {
+                        final isCurrentUser = authProvider.user?.id == comment.user.id;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildCommentCard(
+                            context,
+                            comment: comment,
+                            isCurrentUser: isCurrentUser,
+                          ),
+                        );
+                      }),
+                    ] else if (book.totalCommentsCount > 0) ...[
+                      // Show message if there are comments but they're not loaded
+                      const SizedBox(height: 8),
+                      Text(
+                        '${book.totalCommentsCount} comment${book.totalCommentsCount == 1 ? '' : 's'}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
                         ),
-                      );
-                    }),
+                      ),
+                    ] else ...[
+                      // No comments yet
+                      const SizedBox(height: 8),
+                      Text(
+                        'No comments yet',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                     // Add bottom padding to ensure comments are never obscured
                     const SizedBox(height: 20),
-                  ] else if (book.totalCommentsCount > 0) ...[
-                    // Show message if there are comments but they're not loaded
-                    const SizedBox(height: 24),
-                    Text(
-                      'Comments',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.deltaTeal,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${book.totalCommentsCount} comment${book.totalCommentsCount == 1 ? '' : 's'}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ] else ...[
-                    const SizedBox(height: 20),
-                  ],
                   ], // Close widget.libraryId != null block
                   
                   // Add book button (only in search preview mode)
@@ -717,7 +751,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isCurrentUser ? 'You' : comment.user.email,
+                  isCurrentUser ? 'You' : comment.user.name,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: AppColors.deltaTeal,
                     fontWeight: FontWeight.bold,
@@ -752,12 +786,22 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            comment.comment,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.deltaTeal,
+          // Display comment, message, or nothing based on what's available
+          if (comment.comment != null && comment.comment!.isNotEmpty)
+            Text(
+              comment.comment!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.deltaTeal,
+              ),
+            )
+          else if (comment.message != null && comment.message!.isNotEmpty)
+            Text(
+              comment.message!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-          ),
         ],
       ),
     );

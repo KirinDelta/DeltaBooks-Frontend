@@ -25,6 +25,11 @@ class Book {
   /// Expected from backend as `library_id`. This may be null for
   /// global/search results that are not tied to a specific library.
   final int? libraryId;
+  /// ID of the library_book association for this book in a library context.
+  ///
+  /// Expected from backend as `library_book_id`. This may be null for
+  /// global/search results that are not tied to a specific library.
+  final int? libraryBookId;
   final String isbn;
   final String title;
   final String author;
@@ -34,6 +39,9 @@ class Book {
   final String? source; // 'internal', 'google_books', 'open_library'
   final String? genre;
   final String? seriesName;
+  final String? seriesVolume;
+  final String? notes; // Library-specific notes
+  final double? price; // Library-specific price
   
   // Reading status fields - TOP-LEVEL fields from API
   final bool isReadByMe; // is_read_by_me
@@ -43,6 +51,7 @@ class Book {
   final int totalCommentsCount; // total_comments_count
   final bool isReadByOthers; // is_read_by_others
   final List<BookComment> comments; // array of all comments from all users
+  final List<CircleInteraction> circleInteractions; // array of users who have read the book
   final bool isOwnedGlobally; // is_owned_globally - indicates if book is owned globally (in any library)
 
   /// Granular permissions for the current user on this book within a library.
@@ -57,6 +66,7 @@ class Book {
   Book({
     this.id,
     this.libraryId,
+    this.libraryBookId,
     required this.isbn,
     required this.title,
     required this.author,
@@ -66,6 +76,9 @@ class Book {
     this.source,
     this.genre,
     this.seriesName,
+    this.seriesVolume,
+    this.notes,
+    this.price,
     this.isReadByMe = false,
     this.myRating,
     this.myComment,
@@ -73,6 +86,7 @@ class Book {
     this.totalCommentsCount = 0,
     this.isReadByOthers = false,
     this.comments = const [],
+    this.circleInteractions = const [],
     this.isOwnedGlobally = false,
     this.permissions = const BookPermissions(),
   });
@@ -125,6 +139,14 @@ class Book {
           .toList();
     }
 
+    // Parse circle_interactions array
+    List<CircleInteraction> circleInteractions = [];
+    if (json['circle_interactions'] != null && json['circle_interactions'] is List) {
+      circleInteractions = (json['circle_interactions'] as List)
+          .map((interactionJson) => CircleInteraction.fromJson(interactionJson as Map<String, dynamic>))
+          .toList();
+    }
+
     // Parse permissions object for this book (if present)
     final permissions = BookPermissions.fromJson(
       json['permissions'] as Map<String, dynamic>?,
@@ -133,6 +155,7 @@ class Book {
     return Book(
       id: parseId(json['id']),
       libraryId: parseId(json['library_id']),
+      libraryBookId: parseId(json['library_book_id']),
       isbn: json['isbn'] as String? ?? '',
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',
@@ -141,7 +164,10 @@ class Book {
       description: json['description'] as String?,
       source: json['source'] as String?,
       genre: json['genre'] as String?,
-      seriesName: json['series_name'] as String?,
+      seriesName: json['series'] as String? ?? json['series_name'] as String?,
+      seriesVolume: json['series_volume'] as String?,
+      notes: json['notes'] as String?,
+      price: parseDouble(json['price']),
       // Top-level reading status fields
       isReadByMe: isReadByMe,
       myRating: myRating,
@@ -150,8 +176,58 @@ class Book {
       totalCommentsCount: totalCommentsCount,
       isReadByOthers: isReadByOthers,
       comments: comments,
+      circleInteractions: circleInteractions,
       isOwnedGlobally: isOwnedGlobally,
       permissions: permissions,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      if (libraryId != null) 'library_id': libraryId,
+      if (libraryBookId != null) 'library_book_id': libraryBookId,
+      'isbn': isbn,
+      'title': title,
+      'author': author,
+      if (coverUrl != null) 'cover_url': coverUrl,
+      'total_pages': totalPages,
+      if (description != null) 'description': description,
+      if (source != null) 'source': source,
+      if (genre != null) 'genre': genre,
+      if (seriesName != null) 'series': seriesName,
+      if (seriesVolume != null) 'series_volume': seriesVolume,
+    };
+  }
+}
+
+/// Represents a user who has read the book (from circle_interactions)
+class CircleInteraction {
+  final int userId;
+  final String? firstName;
+  final String? lastName;
+  final bool isRead;
+
+  CircleInteraction({
+    required this.userId,
+    this.firstName,
+    this.lastName,
+    this.isRead = true,
+  });
+
+  factory CircleInteraction.fromJson(Map<String, dynamic> json) {
+    int? parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return null;
+    }
+
+    return CircleInteraction(
+      userId: parseId(json['user_id']) ?? 0,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      isRead: json['is_read'] == true,
     );
   }
 }

@@ -37,7 +37,7 @@ class LibraryScreenState extends State<LibraryScreen> {
   Set<FilterOption> _activeFilters = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _isFilterBarExpanded = true;
+  bool _isFilterBarExpanded = false;
   final ScrollController _scrollController = ScrollController();
   String _previousSearchQuery = '';
   final ValueNotifier<int> _filteredBookCountNotifier = ValueNotifier<int>(0);
@@ -317,32 +317,53 @@ class LibraryScreenState extends State<LibraryScreen> {
                                     ),
                                   ),
                           ),
-                          // Sub-Cover Metadata
-                          if (book.totalPages > 0) ...[
+                          // Sub-Cover Metadata - Pages and Genre
+                          if (book.totalPages > 0 || (book.genre != null && book.genre!.isNotEmpty)) ...[
                             const SizedBox(height: 6),
                             SizedBox(
                               width: 60,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.menu_book_rounded,
-                                    size: 10,
-                                    color: AppColors.deltaTeal.withOpacity(0.4),
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Flexible(
-                                    child: Text(
-                                      '${book.totalPages} pgs',
+                                  // Pages row
+                                  if (book.totalPages > 0)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.menu_book_rounded,
+                                          size: 10,
+                                          color: AppColors.deltaTeal.withOpacity(0.4),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Flexible(
+                                          child: Text(
+                                            '${book.totalPages} pgs',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 10,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  // Genre (if available)
+                                  if (book.genre != null && book.genre!.isNotEmpty) ...[
+                                    if (book.totalPages > 0) const SizedBox(height: 2),
+                                    Text(
+                                      book.genre!,
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: AppColors.textTertiary,
-                                        fontSize: 10,
+                                        color: AppColors.textSecondary,
+                                        fontSize: 9,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -350,7 +371,7 @@ class LibraryScreenState extends State<LibraryScreen> {
                         ],
                       ),
                       const SizedBox(width: 16),
-                      // Middle: Expanded Column with Title, Author, Rating and Comments
+                      // Middle: Expanded Column with Title, Author, Series, Rating and Comments
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,6 +394,31 @@ class LibraryScreenState extends State<LibraryScreen> {
                                 fontSize: 13,
                               ),
                             ),
+                            // Series name (if available)
+                            if (book.seriesName != null && book.seriesName!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    '📚 ',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          fontSize: 14,
+                                        ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Series: ${book.seriesName!}',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 14,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             // Star Rating and Comment Count Row
                             Row(
@@ -456,17 +502,26 @@ class LibraryScreenState extends State<LibraryScreen> {
                     ),
                   ),
                 // Bottom right: Avatars
-                if (partnerHasRead)
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      alignment: WrapAlignment.end,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: _buildOtherReadersAvatars(book, currentUserId),
-                    ),
+                // Show if isReadByOthers is true (partner has read it)
+                if (book.isReadByOthers)
+                  Builder(
+                    builder: (context) {
+                      final avatars = _buildOtherReadersAvatars(book, currentUserId);
+                      if (avatars.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          alignment: WrapAlignment.end,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: avatars,
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
@@ -1143,41 +1198,44 @@ class LibraryScreenState extends State<LibraryScreen> {
 
 
   /// Build avatars for other people who have read the book
-  /// Extracts unique users from comments who are not the current user
+  /// Uses circle_interactions from backend (which includes all users who read the book)
   List<Widget> _buildOtherReadersAvatars(Book book, int? currentUserId) {
-    if (book.comments.isEmpty) {
-      return [];
-    }
-    
-    // Extract unique users from comments (excluding current user)
     final Set<int> seenUserIds = {};
     final List<Widget> avatars = [];
     
-    for (final comment in book.comments) {
-      final userId = comment.user.id;
-      if (userId != currentUserId && !seenUserIds.contains(userId)) {
-        seenUserIds.add(userId);
-        avatars.add(
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+    // If isReadByOthers is true, we MUST show avatars
+    if (!book.isReadByOthers) {
+      return avatars;
+    }
+    
+    // Use circle_interactions from backend - this contains all users who have read the book
+    if (book.circleInteractions.isNotEmpty) {
+      for (final interaction in book.circleInteractions) {
+        final userId = interaction.userId;
+        if (userId != currentUserId && !seenUserIds.contains(userId) && interaction.isRead) {
+          seenUserIds.add(userId);
+          avatars.add(
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: UserAvatar(
+                firstName: interaction.firstName,
+                lastName: interaction.lastName,
+                email: null, // Email not provided in circle_interactions
+                size: 24,
+                fallbackText: '?',
+              ),
             ),
-            child: UserAvatar(
-              firstName: comment.user.firstName,
-              lastName: comment.user.lastName,
-              email: comment.user.email,
-              size: 24,
-              fallbackText: '?',
-            ),
-          ),
-        );
+          );
+        }
       }
     }
     

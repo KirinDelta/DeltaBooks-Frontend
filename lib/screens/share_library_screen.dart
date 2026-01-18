@@ -339,18 +339,8 @@ class _ShareLibraryScreenState extends State<ShareLibraryScreen> {
                     return const SizedBox.shrink();
                   }
 
-                  // Determine ownership for the current user on this library using robust ID check.
-                  final authProvider =
-                      Provider.of<AuthProvider>(context, listen: false);
-                  final currentUserId = authProvider.userId;
-                  final ownerId = selected.ownerId ?? selected.userId;
-                  final isCurrentUserOwner = currentUserId != null &&
-                      ownerId != null &&
-                      currentUserId.toString() == ownerId.toString();
-
-                  // Debugging: verify ownership logic
-                  print(
-                      'DEBUG: User ID: ${authProvider.userId}, Owner ID: ${selected.ownerId}, isOwner: $isCurrentUserOwner');
+                  // Determine ownership for the current user on this library (use backend-computed field).
+                  final isCurrentUserOwner = selected.isOwner;
 
                   // Active library members come from the members endpoint.
                   final activeMembers = libraryProvider.activeMembers

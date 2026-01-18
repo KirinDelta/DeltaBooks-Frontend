@@ -291,4 +291,154 @@ class BookProvider with ChangeNotifier {
       return false;
     }
   }
+
+  /// Update a book in a library using PATCH request
+  /// Only library-specific fields can be updated (price, total_pages, series_name, series_volume, notes)
+  /// All fields must be wrapped in library_book hash
+  Future<Map<String, dynamic>?> updateBookInLibrary({
+    required int libraryBookId,
+    required int libraryId,
+    double? price,
+    int? totalPages, // Library-specific page count override
+    String? seriesName, // Library-specific series name override
+    String? seriesVolume, // Library-specific series volume
+    String? notes, // Library-specific notes
+  }) async {
+    try {
+      // Build library_book object - all fields must be inside library_book hash
+      final libraryBookData = <String, dynamic>{};
+      
+      // Library-specific fields only (according to API spec)
+      if (price != null) {
+        libraryBookData['price'] = price;
+      }
+      
+      if (totalPages != null && totalPages > 0) {
+        libraryBookData['total_pages'] = totalPages;
+      }
+      
+      if (seriesName != null) {
+        libraryBookData['series_name'] = seriesName.trim().isEmpty ? '' : seriesName.trim();
+      }
+      
+      if (seriesVolume != null) {
+        libraryBookData['series_volume'] = seriesVolume.trim().isEmpty ? '' : seriesVolume.trim();
+      }
+      
+      if (notes != null) {
+        libraryBookData['notes'] = notes.trim().isEmpty ? '' : notes.trim();
+      }
+
+      // Wrap in library_book hash as required by API
+      final body = <String, dynamic>{
+        'library_book': libraryBookData,
+      };
+
+      final response = await _apiService.patch(
+        '/api/v1/libraries/$libraryId/library_books/$libraryBookId',
+        body,
+      );
+      
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final responseData = jsonDecode(response.body);
+        return responseData as Map<String, dynamic>?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Update a library book using libraryId and bookId
+  /// Sends all metadata fields nested inside library_book object
+  /// Accepts data with keys: 'isbn', 'title', 'author', 'genre', 'total_pages', 
+  /// 'description', 'cover_url', 'series' (maps to series_name), 
+  /// 'seriesVolume' (maps to series_volume), 'notes'
+  Future<Map<String, dynamic>?> updateLibraryBook({
+    required String libraryId,
+    required String bookId,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      // Build library_book object with all provided data
+      final libraryBookData = <String, dynamic>{};
+      
+      // Map all fields from data to library_book payload
+      if (data.containsKey('isbn')) {
+        libraryBookData['isbn'] = data['isbn'];
+      }
+      
+      if (data.containsKey('title')) {
+        libraryBookData['title'] = data['title'];
+      }
+      
+      if (data.containsKey('author')) {
+        libraryBookData['author'] = data['author'];
+      }
+      
+      if (data.containsKey('genre')) {
+        libraryBookData['genre'] = data['genre'];
+      }
+      
+      if (data.containsKey('total_pages')) {
+        libraryBookData['total_pages'] = data['total_pages'];
+      }
+      
+      if (data.containsKey('description')) {
+        libraryBookData['description'] = data['description'];
+      }
+      
+      if (data.containsKey('cover_url')) {
+        libraryBookData['cover_url'] = data['cover_url'];
+      }
+      
+      // Map 'series' from data to 'series_name' in payload (API accepts both, prefer series_name)
+      if (data.containsKey('series')) {
+        libraryBookData['series_name'] = data['series'];
+      }
+      
+      // Map 'seriesVolume' from data to 'series_volume' in payload
+      if (data.containsKey('seriesVolume')) {
+        libraryBookData['series_volume'] = data['seriesVolume'];
+      }
+      
+      // Map 'notes' from data to 'notes' in payload
+      if (data.containsKey('notes')) {
+        libraryBookData['notes'] = data['notes'];
+      }
+      
+      // Map 'price' from data to 'price' in payload
+      if (data.containsKey('price')) {
+        libraryBookData['price'] = data['price'];
+      }
+
+      // Wrap in library_book hash as required by API
+      final body = <String, dynamic>{
+        'library_book': libraryBookData,
+      };
+
+      final response = await _apiService.patch(
+        '/api/v1/libraries/$libraryId/library_books/$bookId',
+        body,
+      );
+      
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final responseData = jsonDecode(response.body);
+        return responseData as Map<String, dynamic>?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Update local Book object in the provider for immediate UI feedback
+  /// This method notifies listeners so BookDetailScreen can reflect changes immediately
+  void updateLocalBook(int bookId, Map<String, dynamic> updatedData) {
+    // This is a placeholder - actual book updates happen in LibraryProvider
+    // We notify listeners so any components listening to BookProvider can react
+    notifyListeners();
+  }
 }

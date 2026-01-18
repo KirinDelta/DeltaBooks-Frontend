@@ -224,6 +224,31 @@ class SearchResultsScreen extends StatelessWidget {
                                   fontSize: 13,
                                 ),
                           ),
+                          // Series name (if available)
+                          if (book.seriesName != null && book.seriesName!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Text(
+                                  '📚 ',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        fontSize: 14,
+                                      ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Series: ${book.seriesName!}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 14,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: 8),
                           // Star Rating
                           Row(

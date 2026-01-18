@@ -61,6 +61,50 @@ class LibraryProvider with ChangeNotifier {
     await fetchLibraries();
   }
 
+  /// Update a book in the selected library for immediate UI feedback
+  /// Creates a new Library instance with the updated book
+  void updateBookInSelectedLibrary(int bookId, Book updatedBook) {
+    if (_selectedLibrary == null) return;
+    
+    // Create a new list of books with the updated book
+    final updatedBooks = _selectedLibrary!.books.map((book) {
+      if (book.id == bookId) {
+        return updatedBook;
+      }
+      return book;
+    }).toList();
+    
+    // Create a new Library instance with updated books
+    final updatedLibrary = Library(
+      id: _selectedLibrary!.id,
+      name: _selectedLibrary!.name,
+      description: _selectedLibrary!.description,
+      userId: _selectedLibrary!.userId,
+      ownerId: _selectedLibrary!.ownerId,
+      createdAt: _selectedLibrary!.createdAt,
+      updatedAt: _selectedLibrary!.updatedAt,
+      shared: _selectedLibrary!.shared,
+      books: updatedBooks,
+      isOwner: _selectedLibrary!.isOwner,
+      canAddBooksTopLevel: _selectedLibrary!.canAddBooksTopLevel,
+      canRemoveBooksTopLevel: _selectedLibrary!.canRemoveBooksTopLevel,
+      permissions: _selectedLibrary!.permissions,
+    );
+    
+    // Update the selected library
+    _selectedLibrary = updatedLibrary;
+    
+    // Also update in the libraries list
+    _libraries = _libraries.map((lib) {
+      if (lib.id == updatedLibrary.id) {
+        return updatedLibrary;
+      }
+      return lib;
+    }).toList();
+    
+    notifyListeners();
+  }
+
   /// Fetch the latest details for a single library, including permissions for
   /// the current user, and merge them into the cached list and selection.
   Future<void> fetchLibraryDetails(int? libraryId) async {

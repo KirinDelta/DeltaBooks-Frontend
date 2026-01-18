@@ -19,18 +19,36 @@ class Library {
   /// Expected to be provided by the backend as `is_owner`.
   final bool isOwner;
 
+  /// Top-level can_add_books permission for the current user.
+  ///
+  /// Expected from backend as `can_add_books` (top-level field).
+  final bool? canAddBooksTopLevel;
+
+  /// Top-level can_remove_books permission for the current user.
+  ///
+  /// Expected from backend as `can_remove_books` (top-level field).
+  final bool? canRemoveBooksTopLevel;
+
   /// Raw permissions map for the current user on this library.
   ///
   /// Populated from the `user_permissions` object returned by the backend.
   final Map<String, dynamic>? permissions;
 
-  /// Convenience fields derived from [permissions] for easier access.
-  bool get canAddBooks => permissions?['can_add_books'] == true;
+  /// Convenience fields for permissions - checks top-level first, then nested.
+  /// 
+  /// Supports both top-level `can_add_books` and nested `user_permissions.can_add` / `user_permissions.can_add_books`.
+  bool get canAddBooks =>
+      canAddBooksTopLevel == true ||
+      permissions?['can_add_books'] == true ||
+      permissions?['can_add'] == true;
 
-  /// Supports both `can_remove` and `can_remove_books` keys from backend.
+  /// Convenience fields for permissions - checks top-level first, then nested.
+  /// 
+  /// Supports both top-level `can_remove_books` and nested `user_permissions.can_remove` / `user_permissions.can_remove_books`.
   bool get canRemoveBooks =>
-      permissions?['can_remove'] == true ||
-      permissions?['can_remove_books'] == true;
+      canRemoveBooksTopLevel == true ||
+      permissions?['can_remove_books'] == true ||
+      permissions?['can_remove'] == true;
 
   Library({
     required this.id,
@@ -43,6 +61,8 @@ class Library {
     this.shared = false,
     this.books = const [],
     this.isOwner = false,
+    this.canAddBooksTopLevel,
+    this.canRemoveBooksTopLevel,
     this.permissions,
   });
 
@@ -70,7 +90,12 @@ class Library {
         // Fallback: treat non-shared libraries as owned by current user.
         !shared;
 
+    // Parse top-level permission fields (new API structure)
+    final bool? canAddBooksTopLevel = json['can_add_books'] as bool?;
+    final bool? canRemoveBooksTopLevel = json['can_remove_books'] as bool?;
+
     // Raw per-user permissions map (for invited partners, owners, etc.)
+    // Supports both old nested structure and new structure
     final Map<String, dynamic>? permissions =
         json['user_permissions'] as Map<String, dynamic>?;
     
@@ -89,6 +114,8 @@ class Library {
       shared: shared,
       books: books,
       isOwner: isOwner,
+      canAddBooksTopLevel: canAddBooksTopLevel,
+      canRemoveBooksTopLevel: canRemoveBooksTopLevel,
       permissions: permissions,
     );
   }
