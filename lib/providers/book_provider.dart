@@ -169,10 +169,20 @@ class BookProvider with ChangeNotifier {
         final responseData = jsonDecode(response.body);
         return responseData as Map<String, dynamic>;
       } else {
-        return null;
+        // Log error details for debugging
+        if (kDebugMode) {
+          print('addBookToLibrary failed: Status ${response.statusCode}');
+          print('Response body: ${response.body}');
+        }
+        // Re-throw to allow caller to see the actual error
+        throw Exception('Failed to add book: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      return null;
+      // Re-throw to allow caller to see the actual error
+      if (kDebugMode) {
+        print('addBookToLibrary exception: $e');
+      }
+      rethrow;
     }
   }
 

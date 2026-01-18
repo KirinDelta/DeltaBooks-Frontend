@@ -53,14 +53,20 @@ class _BookEditScreenState extends State<BookEditScreen> {
       _populateForm(widget.initialBook!);
     }
     
-    // Load selected library
+    // Load selected library - ensure we get fresh reference from allLibraries
     final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
     if (widget.editMode && widget.libraryId != null) {
       // In edit mode, use the libraryId passed in
       _selectedLibrary = libraryProvider.getLibraryById(widget.libraryId);
     } else {
       // In add mode, use the currently selected library
-      _selectedLibrary = libraryProvider.selectedLibrary;
+      // Try to get fresh reference from allLibraries to ensure permissions are up to date
+      final selectedLib = libraryProvider.selectedLibrary;
+      if (selectedLib != null) {
+        _selectedLibrary = libraryProvider.getLibraryById(selectedLib.id) ?? selectedLib;
+      } else {
+        _selectedLibrary = null;
+      }
     }
   }
 
@@ -169,8 +175,18 @@ class _BookEditScreenState extends State<BookEditScreen> {
       }
     } catch (e) {
       if (mounted) {
+        // Show actual error message if available
+        String errorMessage = l10n.addError;
+        if (e.toString().contains('Failed to add book:')) {
+          // Extract error message from exception
+          errorMessage = e.toString().split(': ').skip(1).join(': ');
+          // Try to extract more user-friendly error from response body
+          if (errorMessage.contains('permission') || errorMessage.contains('Permission')) {
+            errorMessage = "You don't have permission to add books to this library.";
+          }
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.addError)),
+          SnackBar(content: Text(errorMessage)),
         );
       }
     } finally {
@@ -431,6 +447,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
     final allLibraries = libraryProvider.allLibraries;
 
     // Find the matching library from allLibraries by ID to ensure reference equality
+    // This ensures we use a fresh library reference with up-to-date permissions
     Library? matchingSelectedLibrary;
     if (_selectedLibrary != null) {
       try {
@@ -444,7 +461,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
     }
 
     // Check if user has permissions for the selected library
-    // Use matchingSelectedLibrary if available, otherwise fall back to _selectedLibrary
+    // Use matchingSelectedLibrary if found (guaranteed fresh from allLibraries),
+    // otherwise use _selectedLibrary if it's not null (may be from dropdown selection)
     final Library? libraryForPermissions = matchingSelectedLibrary ?? _selectedLibrary;
     final bool isOwner = libraryForPermissions?.isOwner ?? false;
     final bool canAddBooks = libraryForPermissions?.canAddBooks ?? false;
@@ -797,6 +815,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 }).toList(),
                 onChanged: (Library? library) {
                   setState(() {
+                    // Ensure we use the library reference from allLibraries
+                    // This guarantees permissions are up to date
                     _selectedLibrary = library;
                   });
                 },
