@@ -162,5 +162,7 @@
   "eur": "EUR (Euro)",
   "usd": "USD (Dolar American)",
   "updateProfile": "Actualizează Profilul",
-  "owned": "DEȚINUTĂ"
+  "owned": "DEȚINUTĂ",
+  "scannerNotAvailableOnWeb": "Scanerul nu este disponibil pe web",
+  "scannerWebFallbackMessage": "Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos."
 }

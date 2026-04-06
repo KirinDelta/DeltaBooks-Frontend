@@ -651,5 +651,13 @@
   "owned": "OWNED",
   "@owned": {
     "description": "Badge text for books that are already owned"
+  },
+  "scannerNotAvailableOnWeb": "Scanner not available on web",
+  "@scannerNotAvailableOnWeb": {
+    "description": "Message shown on web when the barcode scanner is not available"
+  },
+  "scannerWebFallbackMessage": "Use the mobile app to scan barcodes, or add a book manually below.",
+  "@scannerWebFallbackMessage": {
+    "description": "Instruction shown on web directing users to use mobile or add manually"
   }
 }

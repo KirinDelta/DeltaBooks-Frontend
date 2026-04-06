@@ -496,4 +496,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get owned => 'OWNED';
+
+  @override
+  String get scannerNotAvailableOnWeb => 'Scanner not available on web';
+
+  @override
+  String get scannerWebFallbackMessage =>
+      'Use the mobile app to scan barcodes, or add a book manually below.';
 }
