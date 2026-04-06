@@ -28,7 +28,7 @@ class _LibraryStatisticsScreenState extends State<LibraryStatisticsScreen>
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
   int? _selectedYear;
-  StatsScope _currentScope = StatsScope.allUsers;
+  StatsScope _currentScope = StatsScope.justMe;
   final Map<String, bool> _expandedSections = {
     'authors': false,
     'progress': false,
@@ -184,15 +184,15 @@ class _LibraryStatisticsScreenState extends State<LibraryStatisticsScreen>
           Expanded(
             child: _buildScopeButton(
               context,
-              'All Users',
-              StatsScope.allUsers,
+              'Just Me',
+              StatsScope.justMe,
             ),
           ),
           Expanded(
             child: _buildScopeButton(
               context,
-              'Just Me',
-              StatsScope.justMe,
+              'All Users',
+              StatsScope.allUsers,
             ),
           ),
         ],
