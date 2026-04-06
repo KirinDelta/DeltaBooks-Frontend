@@ -157,12 +157,6 @@ class _LibraryStatisticsScreenState extends State<LibraryStatisticsScreen>
                     const SizedBox(height: 16),
                   ],
 
-                  // Year selector
-                  if (stats.availableYears.isNotEmpty) ...[
-                    _buildYearSelector(context, stats.availableYears),
-                    const SizedBox(height: 24),
-                  ],
-
                   // Swipeable stat cards
                   _buildSwipeableStatCards(context, stats, _currentScope),
                   const SizedBox(height: 24),
