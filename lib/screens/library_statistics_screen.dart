@@ -154,6 +154,12 @@ class _LibraryStatisticsScreenState extends State<LibraryStatisticsScreen>
                   // Scope selector (All Users / Just Me) - only for shared libraries
                   if (isShared) ...[
                     _buildScopeSelector(context),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Year selector
+                  if (stats.availableYears.isNotEmpty) ...[
+                    _buildYearSelector(context, stats.availableYears),
                     const SizedBox(height: 24),
                   ],
 
@@ -222,6 +228,38 @@ class _LibraryStatisticsScreenState extends State<LibraryStatisticsScreen>
     );
   }
 
+
+  Widget _buildYearSelector(BuildContext context, List<int> availableYears) {
+    final years = [...availableYears]..sort((a, b) => b.compareTo(a));
+
+    if (_selectedYear == null && years.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onYearChanged(years.first);
+      });
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: years.map((year) {
+          final isSelected = _selectedYear == year;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(year.toString()),
+              selected: isSelected,
+              onSelected: (_) => _onYearChanged(year),
+              selectedColor: AppColors.deepSeaBlue,
+              labelStyle: TextStyle(
+                color: isSelected ? AppColors.white : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
   Widget _buildSwipeableStatCards(BuildContext context, LibraryStats stats, StatsScope scope) {
     final isJustMe = scope == StatsScope.justMe;
