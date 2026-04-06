@@ -497,4 +497,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get owned => 'DEȚINUTĂ';
+
+  @override
+  String get scannerNotAvailableOnWeb => 'Scanerul nu este disponibil pe web';
+
+  @override
+  String get scannerWebFallbackMessage =>
+      'Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos.';
 }

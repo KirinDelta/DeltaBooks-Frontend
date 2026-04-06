@@ -1069,6 +1069,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OWNED'**
   String get owned;
+
+  /// Message shown on web when the barcode scanner is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Scanner not available on web'**
+  String get scannerNotAvailableOnWeb;
+
+  /// Instruction shown on web directing users to use mobile or add manually
+  ///
+  /// In en, this message translates to:
+  /// **'Use the mobile app to scan barcodes, or add a book manually below.'**
+  String get scannerWebFallbackMessage;
 }
 
 class _AppLocalizationsDelegate

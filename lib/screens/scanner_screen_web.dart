@@ -37,7 +37,7 @@ class ScannerWebStub extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Scanner not available on web',
+                  l10n.scannerNotAvailableOnWeb,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -45,7 +45,7 @@ class ScannerWebStub extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Use the mobile app to scan barcodes, or add a book manually below.',
+                  l10n.scannerWebFallbackMessage,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textTertiary,
                       ),
