@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import '../models/library.dart';
 import '../models/library_member.dart';
 import '../models/book.dart';
+import '../models/library_stats.dart';
+import '../models/book_stats.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
 
@@ -18,6 +20,14 @@ class LibraryProvider with ChangeNotifier {
   /// returns users who have already accepted an invitation.
   List<LibraryMember> _activeMembers = [];
   bool _isMembersLoading = false;
+
+  /// Statistics for a specific library.
+  LibraryStats? _libraryStats;
+  bool _isStatsLoading = false;
+
+  /// Personal statistics for the current user.
+  BookStats? _personalStats;
+  bool _isPersonalStatsLoading = false;
 
   // Combined list of all libraries (own + shared) from API
   List<Library> get libraries => _libraries;
@@ -40,6 +50,10 @@ class LibraryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAscending => _isAscending;
   bool get isMembersLoading => _isMembersLoading;
+  bool get isStatsLoading => _isStatsLoading;
+  LibraryStats? get libraryStats => _libraryStats;
+  bool get isPersonalStatsLoading => _isPersonalStatsLoading;
+  BookStats? get personalStats => _personalStats;
 
   /// Retrieve a library instance by its ID from the cached list.
   ///
@@ -411,6 +425,116 @@ class LibraryProvider with ChangeNotifier {
         print('Error updating member permissions: $e');
       }
       return 'Error: ${e.toString()}';
+    }
+  }
+
+  /// Fetch library statistics for a specific library.
+  ///
+  /// Calls `/api/v1/libraries/:id/stats?year=X&scope=Y` and stores the result in [_libraryStats].
+  /// [year] is optional - if provided, filters stats for that year.
+  /// [scope] is optional - if provided, filters stats by scope ('all' or 'personal'/'just_me').
+  Future<void> fetchLibraryStats(String libraryId, {int? year, String? scope}) async {
+    if (_isStatsLoading) return;
+
+    _isStatsLoading = true;
+    notifyListeners();
+
+    try {
+      _libraryStats = null;
+
+      // Build URL with optional year and scope parameters
+      String url = '/api/v1/libraries/$libraryId/stats';
+      final queryParams = <String>[];
+      if (year != null) {
+        queryParams.add('year=$year');
+      }
+      if (scope != null) {
+        queryParams.add('scope=$scope');
+      }
+      if (queryParams.isNotEmpty) {
+        url += '?${queryParams.join('&')}';
+      }
+
+      final response = await _apiService.get(url);
+
+      if (response.statusCode == 200) {
+        try {
+          final data = jsonDecode(response.body) as Map<String, dynamic>;
+          _libraryStats = LibraryStats.fromJson(data);
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error parsing library stats response: $e');
+            print('Response body: ${response.body}');
+          }
+          _libraryStats = null;
+        }
+      } else {
+        if (kDebugMode) {
+          print(
+              'Failed to fetch library stats: Status ${response.statusCode}');
+          print('Response body: ${response.body}');
+        }
+        _libraryStats = null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching library stats: $e');
+      }
+      _libraryStats = null;
+    } finally {
+      _isStatsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetch personal statistics for the current user.
+  ///
+  /// Calls `/api/v1/statistics/personal?year=X` and stores the result in [_personalStats].
+  /// [year] is optional - if provided, filters stats for that year.
+  Future<void> fetchPersonalStats({int? year}) async {
+    if (_isPersonalStatsLoading) return;
+
+    _isPersonalStatsLoading = true;
+    notifyListeners();
+
+    try {
+      _personalStats = null;
+
+      // Build URL with optional year parameter
+      String url = '/api/v1/statistics/personal';
+      if (year != null) {
+        url += '?year=$year';
+      }
+
+      final response = await _apiService.get(url);
+
+      if (response.statusCode == 200) {
+        try {
+          final data = jsonDecode(response.body) as Map<String, dynamic>;
+          _personalStats = BookStats.fromJson(data);
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error parsing personal stats response: $e');
+            print('Response body: ${response.body}');
+          }
+          _personalStats = null;
+        }
+      } else {
+        if (kDebugMode) {
+          print(
+              'Failed to fetch personal stats: Status ${response.statusCode}');
+          print('Response body: ${response.body}');
+        }
+        _personalStats = null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching personal stats: $e');
+      }
+      _personalStats = null;
+    } finally {
+      _isPersonalStatsLoading = false;
+      notifyListeners();
     }
   }
 

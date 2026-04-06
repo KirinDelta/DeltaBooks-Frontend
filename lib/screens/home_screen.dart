@@ -10,8 +10,8 @@ import '../models/library.dart';
 import '../theme/app_images.dart';
 import '../theme/app_colors.dart';
 import 'scanner_screen.dart';
-import 'stats_screen.dart';
 import 'library_screen.dart';
+import 'library_statistics_screen.dart';
 import 'share_library_screen.dart';
 import 'invitations_screen.dart';
 import 'libraries_screen.dart';
@@ -362,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           LibraryScreen(key: _libraryScreenKey),
           const ScannerScreen(),
-          const StatsScreen(),
+          _buildStatisticsTab(),
         ],
       ),
       bottomNavigationBar: Container(
@@ -431,6 +431,48 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildStatisticsTab() {
+    return Consumer<LibraryProvider>(
+      builder: (context, libraryProvider, _) {
+        final selectedLibrary = libraryProvider.selectedLibrary;
+
+        if (selectedLibrary == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.library_books_outlined,
+                  size: 64,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Select a library to view statistics',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Choose a library from the dropdown above',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return LibraryStatisticsScreen(
+          libraryId: selectedLibrary.id,
+        );
+      },
+    );
+  }
 
   Widget _buildDrawer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
