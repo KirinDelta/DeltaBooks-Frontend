@@ -1,5 +1,5 @@
 {
-  "buildCommand": "flutter build web --dart-define=API_BASE_URL=$API_BASE_URL",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "build/web",
   "framework": null
 }
