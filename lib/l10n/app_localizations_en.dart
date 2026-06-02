@@ -292,6 +292,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterCoverUrl => 'Enter cover image URL';
 
   @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'From Gallery';
+
+  @override
+  String get uploadingImage => 'Uploading image...';
+
+  @override
+  String get imageUploadFailed => 'Failed to upload image. Please try again.';
+
+  @override
+  String get orEnterUrl => 'Or enter cover URL manually';
+
+  @override
   String get description => 'Description';
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import '../services/cloudinary_service.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
 import '../models/book.dart';
@@ -41,6 +43,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
 
   Book? _currentBook;
   bool _isAdding = false;
+  bool _isUploadingImage = false;
   Library? _selectedLibrary;
   final _formKey = GlobalKey<FormState>();
 
@@ -367,9 +370,64 @@ class _BookEditScreenState extends State<BookEditScreen> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final failMessage = AppLocalizations.of(context)!.imageUploadFailed;
+
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+    if (file == null) return;
+
+    setState(() {
+      _isUploadingImage = true;
+      _coverUrlController.clear();
+    });
+
+    final url = await CloudinaryService.uploadImage(file);
+
+    if (!mounted) return;
+
+    if (url != null) {
+      setState(() {
+        _coverUrlController.text = url;
+        _isUploadingImage = false;
+      });
+    } else {
+      setState(() => _isUploadingImage = false);
+      messenger.showSnackBar(SnackBar(content: Text(failMessage)));
+    }
+  }
+
   Widget _buildCoverPreview() {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (_isUploadingImage) {
+      return Container(
+        height: 200,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(l10n.uploadingImage, style: TextStyle(color: Colors.grey[600])),
+            ],
+          ),
+        ),
+      );
+    }
+
     final coverUrl = _coverUrlController.text.trim();
-    
+
     if (coverUrl.isEmpty) {
       return Container(
         height: 200,
@@ -380,7 +438,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
         ),
         child: Center(
           child: Text(
-            AppLocalizations.of(context)!.noCoverImage,
+            l10n.noCoverImage,
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -477,9 +535,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
 
     // Button enabled if: form valid, library selected, has permissions, and not adding
     // In edit mode, library selection is not needed (already set)
-    final bool isAddEnabled = !_isAdding && 
-        formFieldsValid && 
-        (widget.editMode ? true : librarySelected) && 
+    final bool isAddEnabled = !_isAdding &&
+        !_isUploadingImage &&
+        formFieldsValid &&
+        (widget.editMode ? true : librarySelected) &&
         (widget.editMode ? true : hasPermissions);
 
     return Form(
@@ -496,8 +555,48 @@ class _BookEditScreenState extends State<BookEditScreen> {
             ),
             const SizedBox(height: 8),
             _buildCoverPreview(),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isAdding || _isUploadingImage
+                        ? null
+                        : () => _pickImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt, size: 18),
+                    label: Text(l10n.takePhoto),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.deepSeaBlue,
+                      side: const BorderSide(color: AppColors.borderLight),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isAdding || _isUploadingImage
+                        ? null
+                        : () => _pickImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library, size: 18),
+                    label: Text(l10n.chooseFromGallery),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.deepSeaBlue,
+                      side: const BorderSide(color: AppColors.borderLight),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
             // ISBN
             TextFormField(
               controller: _isbnController,
@@ -596,6 +695,13 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 16),
             
             // Cover URL
+            Text(
+              l10n.orEnterUrl,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _coverUrlController,
               decoration: InputDecoration(
@@ -995,7 +1101,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             // Add/Update button
             ElevatedButton(
               onPressed: widget.editMode
-                  ? (_isAdding ? null : _updateBook)
+                  ? (_isAdding || _isUploadingImage ? null : _updateBook)
                   : (isAddEnabled ? _addToLibrary : null),
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.editMode

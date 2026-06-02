@@ -292,6 +292,22 @@ class AppLocalizationsRo extends AppLocalizations {
   String get enterCoverUrl => 'Introduceți URL-ul imaginii de copertă';
 
   @override
+  String get takePhoto => 'Fă o poză';
+
+  @override
+  String get chooseFromGallery => 'Din galerie';
+
+  @override
+  String get uploadingImage => 'Se încarcă imaginea...';
+
+  @override
+  String get imageUploadFailed =>
+      'Eroare la încărcarea imaginii. Încearcă din nou.';
+
+  @override
+  String get orEnterUrl => 'Sau introduceți URL-ul copertei manual';
+
+  @override
   String get description => 'Descriere';
 
   @override

@@ -380,6 +380,26 @@
   "@enterCoverUrl": {
     "description": "Placeholder for cover URL input"
   },
+  "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Button to take a photo with the camera"
+  },
+  "chooseFromGallery": "From Gallery",
+  "@chooseFromGallery": {
+    "description": "Button to pick an image from the gallery"
+  },
+  "uploadingImage": "Uploading image...",
+  "@uploadingImage": {
+    "description": "Message shown while image is uploading"
+  },
+  "imageUploadFailed": "Failed to upload image. Please try again.",
+  "@imageUploadFailed": {
+    "description": "Error message when image upload fails"
+  },
+  "orEnterUrl": "Or enter cover URL manually",
+  "@orEnterUrl": {
+    "description": "Label before the manual cover URL input"
+  },
   "description": "Description",
   "@description": {
     "description": "Label for description field"
