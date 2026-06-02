@@ -132,6 +132,11 @@ class DeltaBooksApp extends StatelessWidget {
             ),
                 home: Consumer<AuthProvider>(
                   builder: (context, authProvider, _) {
+                    if (authProvider.isLoading) {
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    }
                     return authProvider.isAuthenticated
                         ? const HomeScreen()
                         : const LoginScreen();

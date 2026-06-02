@@ -9,12 +9,18 @@ import 'locale_provider.dart';
 class AuthProvider with ChangeNotifier {
   User? _user;
   bool _isAuthenticated = false;
+  bool _isLoading = true;
   final ApiService _apiService = ApiService();
   LocaleProvider? _localeProvider;
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
+  bool get isLoading => _isLoading;
   int? get userId => _user?.id;
+
+  AuthProvider() {
+    checkAuthStatus();
+  }
 
   void setLocaleProvider(LocaleProvider localeProvider) {
     _localeProvider = localeProvider;
@@ -186,10 +192,8 @@ class AuthProvider with ChangeNotifier {
     _isAuthenticated = token != null;
     if (_isAuthenticated) {
       if (_user == null) {
-        // Try to fetch profile if authenticated but user is null
         await fetchProfile();
       }
-      // Initialize language and currency from backend if available
       if (_localeProvider != null && _user != null) {
         await _localeProvider!.initializeFromUser(
           _user!.defaultLanguage,
@@ -197,6 +201,7 @@ class AuthProvider with ChangeNotifier {
         );
       }
     }
+    _isLoading = false;
     notifyListeners();
   }
 }
