@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
@@ -18,12 +19,18 @@ class CloudinaryService {
       final streamed = await request.send();
       final body = await streamed.stream.bytesToString();
 
+      if (kDebugMode) {
+        debugPrint('Cloudinary status: ${streamed.statusCode}');
+        debugPrint('Cloudinary response: $body');
+      }
+
       if (streamed.statusCode == 200) {
         final json = jsonDecode(body) as Map<String, dynamic>;
         return json['secure_url'] as String?;
       }
       return null;
-    } catch (_) {
+    } catch (e) {
+      if (kDebugMode) debugPrint('Cloudinary upload error: $e');
       return null;
     }
   }
