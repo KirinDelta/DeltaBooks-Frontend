@@ -9,6 +9,8 @@ import '../models/book.dart';
 import '../models/library.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
+import '../widgets/barcode_field_button.dart';
+import '../widgets/ocr_field_button.dart';
 
 class BookEditScreen extends StatefulWidget {
   final Book? initialBook;
@@ -618,6 +620,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: BarcodeFieldButton(controller: _isbnController),
               ),
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}), // Trigger rebuild for button state
@@ -651,6 +654,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: OcrFieldButton(controller: _titleController),
               ),
               onChanged: (_) => setState(() {}), // Trigger rebuild for button state
               validator: (value) {
@@ -683,6 +687,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: OcrFieldButton(controller: _authorController),
               ),
               onChanged: (_) => setState(() {}), // Trigger rebuild for button state
               validator: (value) {
@@ -749,6 +754,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: OcrFieldButton(
+                  controller: _totalPagesController,
+                  numericOnly: true,
+                ),
               ),
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}), // Trigger rebuild for button state
@@ -786,6 +795,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: OcrFieldButton(
+                  controller: _descriptionController,
+                  multiLine: true,
+                ),
               ),
               maxLines: 3,
             ),
@@ -813,6 +826,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 labelStyle: const TextStyle(color: AppColors.deltaTeal),
+                suffixIcon: OcrFieldButton(controller: _genreController),
               ),
               style: const TextStyle(color: AppColors.deltaTeal),
             ),
@@ -840,6 +854,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 labelStyle: const TextStyle(color: AppColors.deltaTeal),
+                suffixIcon: OcrFieldButton(controller: _seriesNameController),
               ),
               style: const TextStyle(color: AppColors.deltaTeal),
             ),
@@ -866,6 +881,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: OcrFieldButton(controller: _seriesVolumeController),
               ),
             ),
             const SizedBox(height: 24),
@@ -1021,6 +1037,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 prefixText: 'RON ',
+                suffixIcon: OcrFieldButton(
+                  controller: _priceController,
+                  decimalAllowed: true,
+                ),
               ),
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               validator: (value) {
@@ -1057,6 +1077,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
                     borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  suffixIcon: OcrFieldButton(
+                    controller: _libraryPagesController,
+                    numericOnly: true,
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
