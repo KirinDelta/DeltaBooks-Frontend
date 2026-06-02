@@ -36,11 +36,17 @@ class _OcrFieldButtonState extends State<OcrFieldButton> {
     final l10n = AppLocalizations.of(context)!;
 
     final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 90,
-      maxWidth: 1920,
-    );
+    final XFile? file;
+    try {
+      file = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+        maxWidth: 1920,
+      );
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.noTextDetected)));
+      return;
+    }
     if (file == null) return;
 
     setState(() => _processing = true);

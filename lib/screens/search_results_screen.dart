@@ -3,6 +3,7 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../models/book.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
+import '../utils/image_utils.dart';
 import 'book_detail_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -139,7 +140,7 @@ class SearchResultsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           child: book.coverUrl != null
                               ? Image.network(
-                                  book.coverUrl!,
+                                  proxiedCoverUrl(book.coverUrl)!,
                                   width: 60,
                                   height: 90,
                                   fit: BoxFit.cover,

@@ -10,6 +10,7 @@ import '../theme/app_images.dart';
 import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
+import '../utils/image_utils.dart';
 import '../widgets/mark_as_read_sheet.dart';
 import '../widgets/user_avatar.dart';
 import 'book_edit_screen.dart';
@@ -396,7 +397,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               color: AppColors.riverMist,
               child: book.coverUrl != null
                   ? Image.network(
-                      book.coverUrl!,
+                      proxiedCoverUrl(book.coverUrl)!,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => Center(
                         child: Icon(

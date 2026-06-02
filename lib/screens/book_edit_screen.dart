@@ -9,6 +9,7 @@ import '../models/book.dart';
 import '../models/library.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
+import '../utils/image_utils.dart';
 import '../widgets/barcode_field_button.dart';
 import '../widgets/ocr_field_button.dart';
 
@@ -450,7 +451,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.network(
-        coverUrl,
+        proxiedCoverUrl(coverUrl)!,
         height: 200,
         width: double.infinity,
         fit: BoxFit.cover,
