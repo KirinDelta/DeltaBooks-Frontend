@@ -662,6 +662,36 @@ abstract class AppLocalizations {
   /// **'Enter cover image URL'**
   String get enterCoverUrl;
 
+  /// Button to take a photo with the camera
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// Button to pick an image from the gallery
+  ///
+  /// In en, this message translates to:
+  /// **'From Gallery'**
+  String get chooseFromGallery;
+
+  /// Message shown while image is uploading
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading image...'**
+  String get uploadingImage;
+
+  /// Error message when image upload fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload image. Please try again.'**
+  String get imageUploadFailed;
+
+  /// Label before the manual cover URL input
+  ///
+  /// In en, this message translates to:
+  /// **'Or enter cover URL manually'**
+  String get orEnterUrl;
+
   /// Label for description field
   ///
   /// In en, this message translates to:
