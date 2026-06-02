@@ -72,6 +72,26 @@
   "@scanBarcode": {
     "description": "Instruction for scanning barcode"
   },
+  "scanFieldTooltip": "Scan with camera",
+  "@scanFieldTooltip": {
+    "description": "Tooltip for OCR camera button on a form field"
+  },
+  "scanBarcodeTip": "Scan barcode",
+  "@scanBarcodeTip": {
+    "description": "Tooltip for barcode scanner button on ISBN field"
+  },
+  "extractingText": "Extracting text...",
+  "@extractingText": {
+    "description": "Message shown while OCR is running"
+  },
+  "noTextDetected": "No text detected. Try again.",
+  "@noTextDetected": {
+    "description": "Shown when OCR finds nothing"
+  },
+  "pointCameraAtBarcode": "Point camera at barcode",
+  "@pointCameraAtBarcode": {
+    "description": "Hint shown inside the barcode scanner bottom sheet"
+  },
   "enterIsbnManually": "Enter ISBN manually",
   "@enterIsbnManually": {
     "description": "Label for manual ISBN input"

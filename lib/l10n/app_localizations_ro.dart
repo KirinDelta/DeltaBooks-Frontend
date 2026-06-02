@@ -64,6 +64,21 @@ class AppLocalizationsRo extends AppLocalizations {
   String get scanBarcode => 'Scanează codul de bare al cărții';
 
   @override
+  String get scanFieldTooltip => 'Scanează cu camera';
+
+  @override
+  String get scanBarcodeTip => 'Scanează cod de bare';
+
+  @override
+  String get extractingText => 'Se extrage textul...';
+
+  @override
+  String get noTextDetected => 'Nu s-a detectat text. Încearcă din nou.';
+
+  @override
+  String get pointCameraAtBarcode => 'Îndreptați camera spre codul de bare';
+
+  @override
   String get enterIsbnManually => 'Introduceți ISBN manual';
 
   @override

@@ -64,6 +64,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanBarcode => 'Scan the book\'s barcode';
 
   @override
+  String get scanFieldTooltip => 'Scan with camera';
+
+  @override
+  String get scanBarcodeTip => 'Scan barcode';
+
+  @override
+  String get extractingText => 'Extracting text...';
+
+  @override
+  String get noTextDetected => 'No text detected. Try again.';
+
+  @override
+  String get pointCameraAtBarcode => 'Point camera at barcode';
+
+  @override
   String get enterIsbnManually => 'Enter ISBN manually';
 
   @override

@@ -206,6 +206,36 @@ abstract class AppLocalizations {
   /// **'Scan the book\'s barcode'**
   String get scanBarcode;
 
+  /// Tooltip for OCR camera button on a form field
+  ///
+  /// In en, this message translates to:
+  /// **'Scan with camera'**
+  String get scanFieldTooltip;
+
+  /// Tooltip for barcode scanner button on ISBN field
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode'**
+  String get scanBarcodeTip;
+
+  /// Message shown while OCR is running
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting text...'**
+  String get extractingText;
+
+  /// Shown when OCR finds nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No text detected. Try again.'**
+  String get noTextDetected;
+
+  /// Hint shown inside the barcode scanner bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera at barcode'**
+  String get pointCameraAtBarcode;
+
   /// Label for manual ISBN input
   ///
   /// In en, this message translates to:
