@@ -50,7 +50,7 @@ class _OcrFieldButtonState extends State<OcrFieldButton> {
     if (file == null) return;
 
     setState(() => _processing = true);
-    final raw = await OcrService.extractText(file);
+    final raw = await OcrService.extractText(file, allBlocks: widget.multiLine);
     if (!mounted) return;
     setState(() => _processing = false);
 

@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 external JSPromise<JSObject> _recognize(JSAny? image, JSString lang);
 
 class OcrService {
-  static Future<String?> extractText(XFile file) async {
+  static Future<String?> extractText(XFile file, {bool allBlocks = false}) async {
     try {
       // file.path on Flutter web is a blob URL; Tesseract.js accepts it directly.
       final result = await _recognize(file.path.toJS, 'eng'.toJS).toDart;
