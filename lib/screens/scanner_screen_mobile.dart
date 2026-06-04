@@ -120,6 +120,25 @@ class _ScannerMobileState extends State<ScannerMobile> {
                       ),
                       child: Text(l10n.retry),
                     ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final Widget destination = widget.wishlistMode
+                            ? const WishlistAddScreen()
+                            : const ManualEntryScreen();
+                        final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+                        if (result == true && mounted) {
+                          if (widget.wishlistMode) {
+                            Navigator.pop(context, true);
+                          } else {
+                            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                            await libraryProvider.fetchLibraries();
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.keyboard),
+                      label: Text(l10n.addManually),
+                    ),
                   ],
                 )
               : CircularProgressIndicator(color: AppColors.goldLeaf),
