@@ -111,6 +111,8 @@ class AuthProvider with ChangeNotifier {
         final data = jsonDecode(response.body);
         _user = User.fromJson(data);
         notifyListeners();
+      } else if (response.statusCode == 401) {
+        await logout();
       }
     } catch (e) {
       // Silently fail - profile fetch is optional
