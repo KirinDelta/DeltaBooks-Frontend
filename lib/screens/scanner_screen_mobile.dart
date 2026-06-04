@@ -5,9 +5,12 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
 import '../theme/app_colors.dart';
 import 'manual_entry_screen.dart';
+import 'wishlist_add_screen.dart';
 
 class ScannerMobile extends StatefulWidget {
-  const ScannerMobile({super.key});
+  final bool wishlistMode;
+
+  const ScannerMobile({super.key, this.wishlistMode = false});
 
   @override
   State<ScannerMobile> createState() => _ScannerMobileState();
@@ -66,18 +69,21 @@ class _ScannerMobileState extends State<ScannerMobile> {
     final barcode = capture.barcodes.first;
 
     if (barcode.rawValue != null && mounted) {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ManualEntryScreen(
-            initialIsbn: barcode.rawValue!,
-          ),
-        ),
-      );
+      final isbn = barcode.rawValue!;
+      final Widget destination = widget.wishlistMode
+          ? WishlistAddScreen(initialIsbn: isbn)
+          : ManualEntryScreen(initialIsbn: isbn);
+
+      final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
 
       if (result == true && mounted) {
-        final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-        await libraryProvider.fetchLibraries();
+        if (!widget.wishlistMode) {
+          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          await libraryProvider.fetchLibraries();
+        } else {
+          Navigator.pop(context, true);
+          return;
+        }
       }
     }
 
@@ -156,16 +162,18 @@ class _ScannerMobileState extends State<ScannerMobile> {
                 child: FloatingActionButton.extended(
                   heroTag: 'add_manual_fab',
                   onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ManualEntryScreen(),
-                      ),
-                    );
+                    final Widget destination = widget.wishlistMode
+                        ? const WishlistAddScreen()
+                        : const ManualEntryScreen();
+                    final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
 
                     if (result == true && mounted) {
-                      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-                      await libraryProvider.fetchLibraries();
+                      if (widget.wishlistMode) {
+                        Navigator.pop(context, true);
+                      } else {
+                        final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                        await libraryProvider.fetchLibraries();
+                      }
                     }
                   },
                   icon: const Icon(Icons.keyboard),
