@@ -394,6 +394,13 @@ class AppLocalizationsRo extends AppLocalizations {
   String get addManually => 'Adaugă Manual';
 
   @override
+  String get cameraPermissionDenied =>
+      'Accesul la cameră este necesar pentru scanarea codurilor de bare. Activați-l în setările dispozitivului.';
+
+  @override
+  String get retry => 'Reîncearcă';
+
+  @override
   String get markAsRead => 'Marchează ca Citit';
 
   @override

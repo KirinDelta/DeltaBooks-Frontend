@@ -860,6 +860,18 @@ abstract class AppLocalizations {
   /// **'Add Manually'**
   String get addManually;
 
+  /// Message shown when camera permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is required to scan barcodes. Please enable it in your device settings.'**
+  String get cameraPermissionDenied;
+
+  /// Button label to retry an action
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
   /// Button to mark a book as read
   ///
   /// In en, this message translates to:

@@ -512,6 +512,14 @@
   "@addManually": {
     "description": "Button label for adding book manually"
   },
+  "cameraPermissionDenied": "Camera access is required to scan barcodes. Please enable it in your device settings.",
+  "@cameraPermissionDenied": {
+    "description": "Message shown when camera permission is denied"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button label to retry an action"
+  },
   "markAsRead": "Mark as Read",
   "@markAsRead": {
     "description": "Button to mark a book as read"
