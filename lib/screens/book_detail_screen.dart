@@ -10,6 +10,7 @@ import '../theme/app_images.dart';
 import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
+import '../providers/wishlist_provider.dart';
 import '../utils/image_utils.dart';
 import '../widgets/mark_as_read_sheet.dart';
 import '../widgets/user_avatar.dart';
@@ -712,6 +713,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    _WishlistButton(book: book),
                     const SizedBox(height: 20),
                   ],
                 ],
@@ -951,6 +954,57 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _WishlistButton extends StatefulWidget {
+  final Book book;
+  const _WishlistButton({required this.book});
+
+  @override
+  State<_WishlistButton> createState() => _WishlistButtonState();
+}
+
+class _WishlistButtonState extends State<_WishlistButton> {
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final bookId = widget.book.id;
+    if (bookId == null) return const SizedBox.shrink();
+
+    final isWishlisted = wishlistProvider.isWishlisted(bookId);
+
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _loading
+            ? null
+            : () async {
+                setState(() => _loading = true);
+                if (isWishlisted) {
+                  final item = wishlistProvider.items.firstWhere((i) => i.book.id == bookId);
+                  await wishlistProvider.removeFromWishlist(item.id);
+                  if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.removedFromWishlist)));
+                } else {
+                  final ok = await wishlistProvider.addToWishlist(bookId);
+                  if (mounted && ok) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addedToWishlist)));
+                }
+                if (mounted) setState(() => _loading = false);
+              },
+        icon: _loading
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            : Icon(isWishlisted ? Icons.bookmark : Icons.bookmark_border),
+        label: Text(isWishlisted ? l10n.removeFromWishlist : l10n.addToWishlist),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.deepSeaBlue,
+          side: const BorderSide(color: AppColors.deepSeaBlue),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
       ),
     );
   }

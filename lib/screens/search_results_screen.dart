@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import '../models/book.dart';
+import '../providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
 import '../utils/image_utils.dart';
@@ -9,11 +11,13 @@ import 'book_detail_screen.dart';
 class SearchResultsScreen extends StatelessWidget {
   final List<Book> books;
   final String searchQuery;
+  final bool wishlistMode;
 
   const SearchResultsScreen({
     super.key,
     required this.books,
     required this.searchQuery,
+    this.wishlistMode = false,
   });
 
   @override
@@ -105,6 +109,23 @@ class SearchResultsScreen extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: () async {
+                if (wishlistMode) {
+                  // In wishlist mode: add book directly to wishlist
+                  final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+                  final l10n = AppLocalizations.of(context)!;
+                  if (book.id != null) {
+                    if (wishlistProvider.isWishlisted(book.id!)) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.alreadyInWishlist)));
+                    } else {
+                      final ok = await wishlistProvider.addToWishlist(book.id!);
+                      if (ok && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addedToWishlist)));
+                        Navigator.pop(context, true);
+                      }
+                    }
+                  }
+                  return;
+                }
                 // Navigate to preview (BookDetailScreen with isSearchPreview: true)
                 final result = await Navigator.push(
                   context,
@@ -115,7 +136,7 @@ class SearchResultsScreen extends StatelessWidget {
                     ),
                   ),
                 );
-                
+
                 // If book was added, pop back to manual entry screen
                 if (result == true) {
                   Navigator.pop(context, true);

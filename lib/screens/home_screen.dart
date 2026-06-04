@@ -16,6 +16,7 @@ import 'share_library_screen.dart';
 import 'invitations_screen.dart';
 import 'libraries_screen.dart';
 import 'profile_screen.dart';
+import 'wishlist_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -363,6 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
           LibraryScreen(key: _libraryScreenKey),
           const ScannerScreen(),
           _buildStatisticsTab(),
+          const WishlistScreen(),
         ],
       ),
       bottomNavigationBar: Container(
@@ -383,6 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildNavItem(Icons.library_books, l10n.myLibrary, 0),
               _buildNavItem(Icons.qr_code_scanner, l10n.scan, 1),
               _buildNavItem(Icons.bar_chart, l10n.statistics, 2),
+              _buildNavItem(Icons.bookmark_outline, l10n.wishlist, 3),
             ],
           ),
         ),

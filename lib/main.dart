@@ -7,6 +7,7 @@ import 'providers/book_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/invitation_provider.dart';
 import 'providers/library_provider.dart';
+import 'providers/wishlist_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'theme/app_colors.dart';
@@ -27,6 +28,7 @@ class DeltaBooksApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
       ],
       child: Builder(
         builder: (context) {

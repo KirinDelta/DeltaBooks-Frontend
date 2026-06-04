@@ -266,10 +266,10 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// Button to add book to library
+  /// Button to add a book to a library
   ///
   /// In en, this message translates to:
-  /// **'Add to library'**
+  /// **'Add to Library'**
   String get addToLibrary;
 
   /// Author label
@@ -1153,6 +1153,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// Wishlist tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get wishlist;
+
+  /// Button to add a book to the wishlist
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Wishlist'**
+  String get addToWishlist;
+
+  /// Snackbar confirmation after adding to wishlist
+  ///
+  /// In en, this message translates to:
+  /// **'Added to wishlist'**
+  String get addedToWishlist;
+
+  /// Button to remove a book from the wishlist
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Wishlist'**
+  String get removeFromWishlist;
+
+  /// Snackbar confirmation after removing from wishlist
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from wishlist'**
+  String get removedFromWishlist;
+
+  /// Empty state message for the wishlist screen
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on your wishlist yet.\nTap + to add a book you want to read.'**
+  String get wishlistEmpty;
+
+  /// CTA button to move a wishlist item into a library
+  ///
+  /// In en, this message translates to:
+  /// **'I got it — add to library'**
+  String get iGotIt;
+
+  /// Snackbar confirmation after moving wishlist item to library
+  ///
+  /// In en, this message translates to:
+  /// **'Book moved to library'**
+  String get movedToLibrary;
+
+  /// Low priority label
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get priorityLow;
+
+  /// Medium priority label
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get priorityMedium;
+
+  /// High priority label
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get priorityHigh;
+
+  /// Priority field label
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get priority;
+
+  /// Note field label on wishlist entry
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get wishlistNote;
+
+  /// Hint text for wishlist note field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. saw this at the bookstore'**
+  String get wishlistNoteHint;
+
+  /// Title for the partner wishlist screen
+  ///
+  /// In en, this message translates to:
+  /// **'Partner\'s Wishlist'**
+  String get partnerWishlist;
+
+  /// Snackbar when book is already wishlisted
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your wishlist'**
+  String get alreadyInWishlist;
+
+  /// Sort option: date added
+  ///
+  /// In en, this message translates to:
+  /// **'Date Added'**
+  String get sortByDate;
+
+  /// Sort option: priority
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get sortByPriority;
+
+  /// Sort option: title
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get sortByTitle;
+
+  /// Sort button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sort;
+
+  /// Generic remove button label
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
 }
 
 class _AppLocalizationsDelegate
