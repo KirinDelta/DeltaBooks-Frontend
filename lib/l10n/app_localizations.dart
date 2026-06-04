@@ -1141,6 +1141,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use the mobile app to scan barcodes, or add a book manually below.'**
   String get scannerWebFallbackMessage;
+
+  /// Error shown when the scanner fails to open the camera, typically due to missing permission
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is required to scan barcodes. Please enable camera permission in your device settings.'**
+  String get cameraPermissionDenied;
+
+  /// Button label to retry a failed action
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

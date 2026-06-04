@@ -699,5 +699,13 @@
   "scannerWebFallbackMessage": "Use the mobile app to scan barcodes, or add a book manually below.",
   "@scannerWebFallbackMessage": {
     "description": "Instruction shown on web directing users to use mobile or add manually"
+  },
+  "cameraPermissionDenied": "Camera access is required to scan barcodes. Please enable camera permission in your device settings.",
+  "@cameraPermissionDenied": {
+    "description": "Error shown when the scanner fails to open the camera, typically due to missing permission"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button label to retry a failed action"
   }
 }

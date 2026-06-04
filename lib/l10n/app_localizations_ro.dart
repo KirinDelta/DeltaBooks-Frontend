@@ -535,4 +535,11 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get scannerWebFallbackMessage =>
       'Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos.';
+
+  @override
+  String get cameraPermissionDenied =>
+      'Accesul la cameră este necesar pentru a scana coduri de bare. Te rugăm să activezi permisiunea pentru cameră în setările dispozitivului.';
+
+  @override
+  String get retry => 'Reîncearcă';
 }
