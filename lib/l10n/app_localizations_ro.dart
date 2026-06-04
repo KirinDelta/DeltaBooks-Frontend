@@ -94,7 +94,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get cancel => 'Anulează';
 
   @override
-  String get addToLibrary => 'Adaugă la bibliotecă';
+  String get addToLibrary => 'Adaugă în bibliotecă';
 
   @override
   String get author => 'Autor';
@@ -542,4 +542,68 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get retry => 'Reîncearcă';
+
+  @override
+  String get wishlist => 'Listă de dorințe';
+
+  @override
+  String get addToWishlist => 'Adaugă la liste';
+
+  @override
+  String get addedToWishlist => 'Adăugat la lista de dorințe';
+
+  @override
+  String get removeFromWishlist => 'Elimină din listă';
+
+  @override
+  String get removedFromWishlist => 'Eliminat din lista de dorințe';
+
+  @override
+  String get wishlistEmpty =>
+      'Lista ta de dorințe e goală.\nApasă + pentru a adăuga o carte.';
+
+  @override
+  String get iGotIt => 'Am luat-o — adaugă în bibliotecă';
+
+  @override
+  String get movedToLibrary => 'Cartea a fost mutată în bibliotecă';
+
+  @override
+  String get priorityLow => 'Scăzut';
+
+  @override
+  String get priorityMedium => 'Mediu';
+
+  @override
+  String get priorityHigh => 'Ridicat';
+
+  @override
+  String get priority => 'Prioritate';
+
+  @override
+  String get wishlistNote => 'Notă';
+
+  @override
+  String get wishlistNoteHint => 'ex. am văzut-o în librărie';
+
+  @override
+  String get partnerWishlist => 'Lista partenerului';
+
+  @override
+  String get alreadyInWishlist => 'Deja în lista de dorințe';
+
+  @override
+  String get sortByDate => 'Data adăugării';
+
+  @override
+  String get sortByPriority => 'Prioritate';
+
+  @override
+  String get sortByTitle => 'Titlu';
+
+  @override
+  String get sort => 'Sortează';
+
+  @override
+  String get remove => 'Elimină';
 }

@@ -94,7 +94,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get addToLibrary => 'Add to library';
+  String get addToLibrary => 'Add to Library';
 
   @override
   String get author => 'Author';
@@ -540,4 +540,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get wishlist => 'Wishlist';
+
+  @override
+  String get addToWishlist => 'Add to Wishlist';
+
+  @override
+  String get addedToWishlist => 'Added to wishlist';
+
+  @override
+  String get removeFromWishlist => 'Remove from Wishlist';
+
+  @override
+  String get removedFromWishlist => 'Removed from wishlist';
+
+  @override
+  String get wishlistEmpty =>
+      'Nothing on your wishlist yet.\nTap + to add a book you want to read.';
+
+  @override
+  String get iGotIt => 'I got it — add to library';
+
+  @override
+  String get movedToLibrary => 'Book moved to library';
+
+  @override
+  String get priorityLow => 'Low';
+
+  @override
+  String get priorityMedium => 'Medium';
+
+  @override
+  String get priorityHigh => 'High';
+
+  @override
+  String get priority => 'Priority';
+
+  @override
+  String get wishlistNote => 'Note';
+
+  @override
+  String get wishlistNoteHint => 'e.g. saw this at the bookstore';
+
+  @override
+  String get partnerWishlist => 'Partner\'s Wishlist';
+
+  @override
+  String get alreadyInWishlist => 'Already in your wishlist';
+
+  @override
+  String get sortByDate => 'Date Added';
+
+  @override
+  String get sortByPriority => 'Priority';
+
+  @override
+  String get sortByTitle => 'Title';
+
+  @override
+  String get sort => 'Sort';
+
+  @override
+  String get remove => 'Remove';
 }
