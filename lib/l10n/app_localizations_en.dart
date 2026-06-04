@@ -533,4 +533,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scannerWebFallbackMessage =>
       'Use the mobile app to scan barcodes, or add a book manually below.';
+
+  @override
+  String get cameraPermissionDenied =>
+      'Camera access is required to scan barcodes. Please enable camera permission in your device settings.';
+
+  @override
+  String get retry => 'Retry';
 }

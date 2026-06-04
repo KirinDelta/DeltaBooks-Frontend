@@ -17,6 +17,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
   MobileScannerController? _controller;
   bool _isScanning = false;
   bool _isInitialized = false;
+  String? _initError;
 
   @override
   void initState() {
@@ -25,8 +26,14 @@ class _ScannerMobileState extends State<ScannerMobile> {
   }
 
   Future<void> _initializeScanner() async {
+    setState(() {
+      _isInitialized = false;
+      _initError = null;
+    });
     try {
-      _controller = MobileScannerController();
+      _controller?.dispose();
+      _controller = MobileScannerController(autoStart: false);
+      await _controller!.start();
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -36,6 +43,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
       if (mounted) {
         setState(() {
           _isInitialized = false;
+          _initError = e.toString();
         });
       }
     }
@@ -83,7 +91,32 @@ class _ScannerMobileState extends State<ScannerMobile> {
     if (!_isInitialized || _controller == null) {
       return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.goldLeaf),
+          child: _initError != null
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.camera_alt_outlined, size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        l10n.cameraPermissionDenied,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _initializeScanner,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.goldLeaf,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(l10n.retry),
+                    ),
+                  ],
+                )
+              : CircularProgressIndicator(color: AppColors.goldLeaf),
         ),
       );
     }
