@@ -392,6 +392,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addManually => 'Add Manually';
 
   @override
+  String get cameraPermissionDenied =>
+      'Camera access is required to scan barcodes. Please enable it in your device settings.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
   String get markAsRead => 'Mark as Read';
 
   @override
