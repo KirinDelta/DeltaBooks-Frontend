@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import 'feature_flag_provider.dart';
 import 'locale_provider.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -12,6 +13,7 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = true;
   final ApiService _apiService = ApiService();
   LocaleProvider? _localeProvider;
+  FeatureFlagProvider? _featureFlagProvider;
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
@@ -24,6 +26,10 @@ class AuthProvider with ChangeNotifier {
 
   void setLocaleProvider(LocaleProvider localeProvider) {
     _localeProvider = localeProvider;
+  }
+
+  void setFeatureFlagProvider(FeatureFlagProvider featureFlagProvider) {
+    _featureFlagProvider = featureFlagProvider;
   }
 
   Future<bool> login(String email, String password) async {
@@ -44,8 +50,9 @@ class AuthProvider with ChangeNotifier {
         if (authHeader != null) {
           final token = authHeader.replaceFirst('Bearer ', '');
           await prefs.setString('auth_token', token);
+          _featureFlagProvider?.fetchFlags(token);
         }
-        
+
         // Fetch full user profile with settings
         await fetchProfile();
         
@@ -84,6 +91,7 @@ class AuthProvider with ChangeNotifier {
         if (authHeader != null) {
           final token = authHeader.replaceFirst('Bearer ', '');
           await prefs.setString('auth_token', token);
+          _featureFlagProvider?.fetchFlags(token);
           notifyListeners();
           return true;
         } else {
@@ -183,6 +191,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     _user = null;
     _isAuthenticated = false;
+    _featureFlagProvider?.reset();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     notifyListeners();

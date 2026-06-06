@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
+import 'providers/feature_flag_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/invitation_provider.dart';
 import 'providers/library_provider.dart';
@@ -25,6 +26,7 @@ class DeltaBooksApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => FeatureFlagProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
@@ -35,7 +37,9 @@ class DeltaBooksApp extends StatelessWidget {
           // Initialize locale provider reference in auth provider
           final authProvider = Provider.of<AuthProvider>(context, listen: false);
           final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+          final featureFlagProvider = Provider.of<FeatureFlagProvider>(context, listen: false);
           authProvider.setLocaleProvider(localeProvider);
+          authProvider.setFeatureFlagProvider(featureFlagProvider);
           
           return Consumer<LocaleProvider>(
             builder: (context, localeProvider, _) {
