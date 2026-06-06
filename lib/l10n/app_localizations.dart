@@ -1315,6 +1315,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Money spent'**
   String get moneySpent;
+
+  /// Bottom nav tab label for the home/dashboard tab
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// Bottom nav tab label for the library/shelves tab
+  ///
+  /// In en, this message translates to:
+  /// **'Shelves'**
+  String get shelves;
+
+  /// Bottom nav tab label for the profile tab
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// Tag shown on shared/partner libraries in the library selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get shared;
+
+  /// Tooltip for the settings icon that opens library management
+  ///
+  /// In en, this message translates to:
+  /// **'Manage libraries'**
+  String get manageLibraries;
+
+  /// Menu item on the You screen that opens the profile editor
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// Page count label, e.g. '312 pages'
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages'**
+  String pagesCount(int count);
 }
 
 class _AppLocalizationsDelegate

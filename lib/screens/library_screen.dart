@@ -241,7 +241,6 @@ class LibraryScreenState extends State<LibraryScreen> {
         
         // Determine if current user has read it - use new field
         final hasRead = book.isReadByMe;
-        final partnerHasRead = book.isReadByOthers;
         
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1079,131 +1078,6 @@ class LibraryScreenState extends State<LibraryScreen> {
       );
     }
   }
-
-  void _showSortBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  'Sort Books',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.deltaTeal,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildSortOption(
-                context,
-                'Recent',
-                SortOption.recent,
-                Icons.access_time,
-              ),
-              _buildSortOption(
-                context,
-                'Rating',
-                SortOption.rating,
-                Icons.star,
-              ),
-              _buildSortOption(
-                context,
-                'Pages',
-                SortOption.pages,
-                Icons.menu_book,
-              ),
-              _buildSortOption(
-                context,
-                'Title',
-                SortOption.title,
-                Icons.sort_by_alpha,
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSortOption(
-    BuildContext context,
-    String label,
-    SortOption option,
-    IconData icon,
-  ) {
-    final isSelected = _currentSort == option;
-    
-    return Consumer<LibraryProvider>(
-      builder: (context, libraryProvider, _) {
-        return ListTile(
-          leading: Icon(
-            icon,
-            color: isSelected ? AppColors.deepSeaBlue : AppColors.textSecondary,
-          ),
-          title: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? AppColors.deepSeaBlue : AppColors.deltaTeal,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected) ...[
-                Icon(Icons.check, color: AppColors.deepSeaBlue),
-                const SizedBox(width: 8),
-              ],
-              IconButton(
-                icon: Icon(
-                  libraryProvider.isAscending 
-                      ? Icons.arrow_upward 
-                      : Icons.arrow_downward,
-                  color: AppColors.deepSeaBlue,
-                  size: 20,
-                ),
-                onPressed: () {
-                  libraryProvider.toggleSortDirection();
-                },
-                tooltip: libraryProvider.isAscending 
-                    ? 'Ascending' 
-                    : 'Descending',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-          onTap: () {
-            setState(() {
-              _currentSort = option;
-            });
-            Navigator.pop(context);
-          },
-        );
-      },
-    );
-  }
-
 
   /// Build avatars for other people who have read the book
   /// Uses circle_interactions from backend (which includes all users who read the book)

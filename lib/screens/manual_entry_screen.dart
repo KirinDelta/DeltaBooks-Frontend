@@ -29,7 +29,6 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final TextEditingController _authorController = TextEditingController();
   
   bool _isSearching = false;
-  bool _showTitleAuthorFields = false;
 
   @override
   void initState() {

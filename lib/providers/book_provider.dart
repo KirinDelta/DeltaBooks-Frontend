@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../models/book.dart';
 import '../models/user_book.dart';
 import '../services/api_service.dart';
-import 'library_provider.dart';
 import 'dart:convert';
 
 class BookProvider with ChangeNotifier {

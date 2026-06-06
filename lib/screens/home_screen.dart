@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.goldLeaf.withOpacity(0.1),
+                      color: AppColors.goldLeaf.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.qr_code_scanner,
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.deepSeaBlue.withOpacity(0.1),
+                      color: AppColors.deepSeaBlue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.edit_outlined,
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Theme.of(context)
                                   .colorScheme
                                   .primary
-                                  .withOpacity(0.1)
+                                  .withValues(alpha: 0.1)
                               : Theme.of(context)
                                   .colorScheme
                                   .surfaceContainerHighest,
@@ -280,11 +280,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .tertiary
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '(Shared)',
+                                '(${l10n.shared})',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color:
@@ -412,9 +412,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     if (isSelectedShared) ...[
                                       const SizedBox(width: 6),
-                                      const Text(
-                                        '(Shared)',
-                                        style: TextStyle(
+                                      Text(
+                                        '(${l10n.shared})',
+                                        style: const TextStyle(
                                           fontSize: 12.0,
                                           color: Colors.white70,
                                           fontStyle: FontStyle.italic,
@@ -545,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return IconButton(
                       icon: const Icon(Icons.person_add_outlined,
                           color: Colors.white),
-                      tooltip: 'Share library',
+                      tooltip: l10n.shareLibrary,
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -560,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.settings_outlined,
                       color: Colors.white),
-                  tooltip: 'Manage libraries',
+                  tooltip: l10n.manageLibraries,
                   onPressed: () async {
                     final libraryProvider = Provider.of<LibraryProvider>(
                         context,
@@ -661,13 +661,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_outlined, Icons.home, 'Home', 0),
+            _buildNavItem(Icons.home_outlined, Icons.home, l10n.home, 0),
             _buildNavItem(
-                Icons.library_books_outlined, Icons.library_books, 'Shelves', 1),
+                Icons.library_books_outlined, Icons.library_books, l10n.shelves, 1),
             const SizedBox(width: 48), // FAB notch gap
             _buildNavItem(
                 Icons.bookmark_outline, Icons.bookmark, l10n.wishlist, 2),
-            _buildNavItem(Icons.person_outline, Icons.person, 'You', 3),
+            _buildNavItem(Icons.person_outline, Icons.person, l10n.you, 3),
           ],
         ),
       ),

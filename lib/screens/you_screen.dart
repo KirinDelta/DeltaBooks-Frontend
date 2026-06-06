@@ -102,12 +102,11 @@ class YouScreen extends StatelessWidget {
               onTap: () => _navigateToStats(context, libraryProvider),
             ),
 
-            // Edit Profile — label flagged for Phase 6 localisation
             ListTile(
               leading: const Icon(Icons.edit_outlined, color: AppColors.deltaTeal),
-              title: const Text(
-                'Edit Profile',
-                style: TextStyle(color: AppColors.deltaTeal),
+              title: Text(
+                l10n.editProfile,
+                style: const TextStyle(color: AppColors.deltaTeal),
               ),
               trailing: const Icon(Icons.chevron_right,
                   color: AppColors.textSecondary),

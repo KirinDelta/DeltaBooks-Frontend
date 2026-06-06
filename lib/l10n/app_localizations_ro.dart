@@ -624,4 +624,27 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get moneySpent => 'Bani cheltuiți';
+
+  @override
+  String get home => 'Acasă';
+
+  @override
+  String get shelves => 'Rafturi';
+
+  @override
+  String get you => 'Tu';
+
+  @override
+  String get shared => 'Partajată';
+
+  @override
+  String get manageLibraries => 'Gestionează bibliotecile';
+
+  @override
+  String get editProfile => 'Editează Profilul';
+
+  @override
+  String pagesCount(int count) {
+    return '$count pagini';
+  }
 }

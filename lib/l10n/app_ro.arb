@@ -206,5 +206,12 @@
   "readingStatus": "Status lectură",
   "currentlyReading": "Citesc acum",
   "noBooksInProgress": "Nicio carte în progres",
-  "moneySpent": "Bani cheltuiți"
+  "moneySpent": "Bani cheltuiți",
+  "home": "Acasă",
+  "shelves": "Rafturi",
+  "you": "Tu",
+  "shared": "Partajată",
+  "manageLibraries": "Gestionează bibliotecile",
+  "editProfile": "Editează Profilul",
+  "pagesCount": "{count} pagini"
 }

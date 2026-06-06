@@ -190,6 +190,7 @@ class _AddBookConfirmationScreenState
   }
 
   Widget _buildBookPreview(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final book = widget.book;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +231,7 @@ class _AddBookConfirmationScreenState
               if (book.totalPages > 0) ...[
                 const SizedBox(height: 4),
                 Text(
-                  '${book.totalPages} pages',
+                  l10n.pagesCount(book.totalPages),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textTertiary,
                       ),

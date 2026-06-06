@@ -622,4 +622,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moneySpent => 'Money spent';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get shelves => 'Shelves';
+
+  @override
+  String get you => 'You';
+
+  @override
+  String get shared => 'Shared';
+
+  @override
+  String get manageLibraries => 'Manage libraries';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String pagesCount(int count) {
+    return '$count pages';
+  }
 }

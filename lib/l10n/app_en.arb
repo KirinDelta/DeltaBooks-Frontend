@@ -771,5 +771,24 @@
   "noBooksInProgress": "No books in progress",
   "@noBooksInProgress": { "description": "Empty state for currently reading section" },
   "moneySpent": "Money spent",
-  "@moneySpent": { "description": "Dashboard stat card label for total money spent on books" }
+  "@moneySpent": { "description": "Dashboard stat card label for total money spent on books" },
+  "home": "Home",
+  "@home": { "description": "Bottom nav tab label for the home/dashboard tab" },
+  "shelves": "Shelves",
+  "@shelves": { "description": "Bottom nav tab label for the library/shelves tab" },
+  "you": "You",
+  "@you": { "description": "Bottom nav tab label for the profile tab" },
+  "shared": "Shared",
+  "@shared": { "description": "Tag shown on shared/partner libraries in the library selector" },
+  "manageLibraries": "Manage libraries",
+  "@manageLibraries": { "description": "Tooltip for the settings icon that opens library management" },
+  "editProfile": "Edit Profile",
+  "@editProfile": { "description": "Menu item on the You screen that opens the profile editor" },
+  "pagesCount": "{count} pages",
+  "@pagesCount": {
+    "description": "Page count label, e.g. '312 pages'",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }
