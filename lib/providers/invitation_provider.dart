@@ -45,7 +45,10 @@ class InvitationProvider with ChangeNotifier {
 
   Future<Map<String, dynamic>?> searchUserByEmail(String email) async {
     try {
-      final response = await _apiService.get('/api/v1/users/search?email=$email');
+      final response = await _apiService.getWithParams(
+        '/api/v1/users/search',
+        {'email': email},
+      );
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       }
