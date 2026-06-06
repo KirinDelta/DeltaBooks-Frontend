@@ -393,7 +393,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cameraPermissionDenied =>
-      'Camera access is required to scan barcodes. Please enable it in your device settings.';
+      'Camera access is required to scan barcodes. Please enable camera permission in your device settings.';
 
   @override
   String get retry => 'Retry';
@@ -542,13 +542,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the mobile app to scan barcodes, or add a book manually below.';
 
   @override
-  String get cameraPermissionDenied =>
-      'Camera access is required to scan barcodes. Please enable camera permission in your device settings.';
-
-  @override
-  String get retry => 'Retry';
-
-  @override
   String get wishlist => 'Wishlist';
 
   @override
@@ -611,4 +604,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remove => 'Remove';
+
+  @override
+  String get addBook => 'Add Book';
+
+  @override
+  String get addTo => 'Add to';
+
+  @override
+  String get readingStatus => 'Reading status';
+
+  @override
+  String get currentlyReading => 'Currently reading';
+
+  @override
+  String get noBooksInProgress => 'No books in progress';
+
+  @override
+  String get moneySpent => 'Money spent';
 }

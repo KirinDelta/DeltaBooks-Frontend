@@ -395,7 +395,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get cameraPermissionDenied =>
-      'Accesul la cameră este necesar pentru scanarea codurilor de bare. Activați-l în setările dispozitivului.';
+      'Accesul la cameră este necesar pentru a scana coduri de bare. Te rugăm să activezi permisiunea pentru cameră în setările dispozitivului.';
 
   @override
   String get retry => 'Reîncearcă';
@@ -544,13 +544,6 @@ class AppLocalizationsRo extends AppLocalizations {
       'Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos.';
 
   @override
-  String get cameraPermissionDenied =>
-      'Accesul la cameră este necesar pentru a scana coduri de bare. Te rugăm să activezi permisiunea pentru cameră în setările dispozitivului.';
-
-  @override
-  String get retry => 'Reîncearcă';
-
-  @override
   String get wishlist => 'Listă de dorințe';
 
   @override
@@ -613,4 +606,22 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get remove => 'Elimină';
+
+  @override
+  String get addBook => 'Adaugă carte';
+
+  @override
+  String get addTo => 'Adaugă în';
+
+  @override
+  String get readingStatus => 'Status lectură';
+
+  @override
+  String get currentlyReading => 'Citesc acum';
+
+  @override
+  String get noBooksInProgress => 'Nicio carte în progres';
+
+  @override
+  String get moneySpent => 'Bani cheltuiți';
 }

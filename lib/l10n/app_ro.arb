@@ -203,5 +203,8 @@
   "remove": "Elimină",
   "addBook": "Adaugă carte",
   "addTo": "Adaugă în",
-  "readingStatus": "Status lectură"
+  "readingStatus": "Status lectură",
+  "currentlyReading": "Citesc acum",
+  "noBooksInProgress": "Nicio carte în progres",
+  "moneySpent": "Bani cheltuiți"
 }

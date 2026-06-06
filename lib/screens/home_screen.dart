@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import '../models/book_stats.dart';
+import '../models/library.dart';
+import '../models/user_book.dart';
 import '../providers/book_provider.dart';
 import '../providers/invitation_provider.dart';
 import '../providers/library_provider.dart';
-import '../models/library.dart';
 import '../theme/app_images.dart';
 import '../theme/app_colors.dart';
+import '../utils/image_utils.dart';
+import 'book_detail_screen.dart';
+import 'invitations_screen.dart';
 import 'libraries_screen.dart';
 import 'library_screen.dart';
 import 'manual_entry_screen.dart';
@@ -33,6 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<LibraryProvider>(context, listen: false).fetchLibraries();
+      Provider.of<LibraryProvider>(context, listen: false).fetchPersonalStats();
+      Provider.of<BookProvider>(context, listen: false).fetchMyBooks();
       Provider.of<InvitationProvider>(context, listen: false).fetchInvitations();
     });
   }
@@ -506,6 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isShelvesTab = _currentTabIndex == 1;
+    final isHomeTab = _currentTabIndex == 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -567,7 +576,59 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ]
-            : null,
+            : isHomeTab
+                ? [
+                    Consumer<InvitationProvider>(
+                      builder: (context, invProvider, _) {
+                        final count = invProvider.pendingReceivedCount;
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.notifications_outlined,
+                                  color: Colors.white),
+                              tooltip: l10n.invitations,
+                              onPressed: () async {
+                                final ip = Provider.of<InvitationProvider>(
+                                    context,
+                                    listen: false);
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const InvitationsScreen()),
+                                );
+                                if (mounted) ip.fetchInvitations();
+                              },
+                            ),
+                            if (count > 0)
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    count > 9 ? '9+' : '$count',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ]
+                : null,
         bottom: isShelvesTab ? _buildLibrarySelectorBar(context) : null,
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
@@ -578,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentTabIndex,
         children: [
-          const _HomePlaceholder(),
+          const _HomeDashboard(),
           LibraryScreen(key: _libraryScreenKey),
           const WishlistScreen(),
           const YouScreen(),
@@ -614,13 +675,285 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder();
+class _HomeDashboard extends StatelessWidget {
+  const _HomeDashboard();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Home', style: TextStyle(fontSize: 24)),
+    final l10n = AppLocalizations.of(context)!;
+
+    return Consumer2<LibraryProvider, BookProvider>(
+      builder: (context, libraryProvider, bookProvider, _) {
+        final stats = libraryProvider.personalStats;
+        final isStatsLoading = libraryProvider.isPersonalStatsLoading;
+        final readingBooks = bookProvider.myBooks
+            .where((ub) => ub.status == BookStatus.reading)
+            .toList();
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isStatsLoading && stats == null)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else
+                _buildStatCards(context, l10n, stats),
+              const SizedBox(height: 28),
+              Text(
+                l10n.currentlyReading,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.deltaTeal,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              if (bookProvider.isLoading && readingBooks.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (readingBooks.isEmpty)
+                _buildEmptyReading(context, l10n)
+              else
+                ...readingBooks.map((ub) => _buildReadingCard(context, ub)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCards(
+      BuildContext context, AppLocalizations l10n, BookStats? stats) {
+    final currencyFormat =
+        NumberFormat.currency(symbol: 'RON ', decimalDigits: 0);
+
+    return Row(
+      children: [
+        Expanded(
+          child: _statCard(
+            context,
+            icon: Icons.library_books,
+            color: AppColors.deepSeaBlue,
+            value: stats != null ? '${stats.totalBooks}' : '—',
+            label: l10n.totalBooks,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _statCard(
+            context,
+            icon: Icons.menu_book,
+            color: AppColors.deltaTeal,
+            value: stats != null ? '${stats.totalPages}' : '—',
+            label: l10n.totalPagesRead,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _statCard(
+            context,
+            icon: Icons.payments_outlined,
+            color: AppColors.goldLeaf,
+            value: stats != null ? currencyFormat.format(stats.totalValue) : '—',
+            label: l10n.moneySpent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.deltaTeal,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyReading(BuildContext context, AppLocalizations l10n) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.riverMist.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.auto_stories_outlined,
+              size: 40, color: AppColors.textTertiary),
+          const SizedBox(height: 12),
+          Text(
+            l10n.noBooksInProgress,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadingCard(BuildContext context, UserBook ub) {
+    final book = ub.book;
+    final hasProgress = ub.currentPage != null &&
+        ub.currentPage! > 0 &&
+        book.totalPages > 0;
+    final progress =
+        hasProgress ? (ub.currentPage! / book.totalPages).clamp(0.0, 1.0) : 0.0;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookDetailScreen(
+            book: book,
+            libraryId: book.libraryId,
+          ),
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: book.coverUrl != null
+                  ? Image.network(
+                      proxiedCoverUrl(book.coverUrl)!,
+                      width: 48,
+                      height: 68,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _coverPlaceholder(),
+                    )
+                  : _coverPlaceholder(),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    book.title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.deltaTeal,
+                        ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    book.author,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (hasProgress) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.riverMist,
+                        valueColor:
+                            const AlwaysStoppedAnimation(AppColors.goldLeaf),
+                        minHeight: 4,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${ub.currentPage} / ${book.totalPages}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textTertiary,
+                            fontSize: 11,
+                          ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right,
+                color: AppColors.textTertiary, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _coverPlaceholder() {
+    return Container(
+      width: 48,
+      height: 68,
+      decoration: const BoxDecoration(
+        color: AppColors.riverMist,
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+      ),
+      child: const Icon(Icons.book, color: AppColors.textTertiary, size: 22),
     );
   }
 }

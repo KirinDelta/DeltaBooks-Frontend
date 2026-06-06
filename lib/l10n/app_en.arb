@@ -765,5 +765,11 @@
   "addTo": "Add to",
   "@addTo": { "description": "Section header for destination picker on add book screen" },
   "readingStatus": "Reading status",
-  "@readingStatus": { "description": "Section header for reading status picker on add book screen" }
+  "@readingStatus": { "description": "Section header for reading status picker on add book screen" },
+  "currentlyReading": "Currently reading",
+  "@currentlyReading": { "description": "Dashboard section header for in-progress books" },
+  "noBooksInProgress": "No books in progress",
+  "@noBooksInProgress": { "description": "Empty state for currently reading section" },
+  "moneySpent": "Money spent",
+  "@moneySpent": { "description": "Dashboard stat card label for total money spent on books" }
 }
