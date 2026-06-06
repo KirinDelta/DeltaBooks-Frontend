@@ -39,6 +39,18 @@ class ApiService {
     );
   }
 
+  // Use this overload when query parameters come from user input — values are
+  // percent-encoded automatically by Uri, preventing query-string injection.
+  Future<http.Response> getWithParams(
+    String path,
+    Map<String, String> queryParams,
+  ) async {
+    final headers = await _getHeaders();
+    final base = Uri.parse('$baseUrl$path');
+    final uri = base.replace(queryParameters: queryParams);
+    return await http.get(uri, headers: headers);
+  }
+
   Future<http.Response> put(String endpoint, Map<String, dynamic> body) async {
     final headers = await _getHeaders();
     return await http.put(

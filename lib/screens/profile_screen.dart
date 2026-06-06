@@ -195,6 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // First Name
                       TextFormField(
                         controller: _firstNameController,
+                        validator: (value) =>
+                            (value == null || value.trim().isEmpty) ? l10n.required : null,
                         decoration: InputDecoration(
                           labelText: l10n.firstName,
                           labelStyle: const TextStyle(color: AppColors.deltaTeal),
@@ -220,6 +222,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // Last Name
                       TextFormField(
                         controller: _lastNameController,
+                        validator: (value) =>
+                            (value == null || value.trim().isEmpty) ? l10n.required : null,
                         decoration: InputDecoration(
                           labelText: l10n.lastName,
                           labelStyle: const TextStyle(color: AppColors.deltaTeal),
@@ -245,6 +249,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // Username
                       TextFormField(
                         controller: _usernameController,
+                        validator: (value) =>
+                            (value == null || value.trim().isEmpty) ? l10n.required : null,
                         decoration: InputDecoration(
                           labelText: l10n.username,
                           labelStyle: const TextStyle(color: AppColors.deltaTeal),
@@ -268,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
                       
                       // Email (read-only)
-                      TextFormField(
+                      TextFormField( // input-safety: ok — field is disabled/read-only
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         enabled: false,
