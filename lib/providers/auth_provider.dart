@@ -211,6 +211,9 @@ class AuthProvider with ChangeNotifier {
           _user!.defaultCurrency,
         );
       }
+      if (token != null) {
+        _featureFlagProvider?.fetchFlags(token);
+      }
     }
     _isLoading = false;
     notifyListeners();

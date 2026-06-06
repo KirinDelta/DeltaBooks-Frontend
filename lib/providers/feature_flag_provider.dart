@@ -61,4 +61,10 @@ class FeatureFlagProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  @override
+  void dispose() {
+    _client.close();
+    super.dispose();
+  }
 }
