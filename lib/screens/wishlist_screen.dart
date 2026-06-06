@@ -5,9 +5,7 @@ import '../models/wishlist_item.dart';
 import '../providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/image_utils.dart';
-import 'wishlist_add_screen.dart';
 import 'wishlist_detail_screen.dart';
-import 'scanner_screen.dart';
 
 enum _SortMode { date, priority, title }
 
@@ -72,46 +70,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
     );
   }
 
-  void _showAddSheet() {
-    final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-            ListTile(
-              leading: const Icon(Icons.qr_code_scanner, color: AppColors.deepSeaBlue),
-              title: Text(l10n.scanBarcode),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const ScannerScreen(wishlistMode: true)));
-                if (result == true && mounted) {
-                  Provider.of<WishlistProvider>(context, listen: false).fetchWishlist();
-                }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.keyboard, color: AppColors.deepSeaBlue),
-              title: Text(l10n.addManually),
-              onTap: () async {
-                Navigator.pop(ctx);
-                final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistAddScreen()));
-                if (result == true && mounted) {
-                  Provider.of<WishlistProvider>(context, listen: false).fetchWishlist();
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _confirmDelete(WishlistItem item) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -146,11 +104,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
         actions: [
           IconButton(icon: const Icon(Icons.sort), onPressed: _showSortSheet, tooltip: l10n.sort),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSheet,
-        heroTag: 'wishlist_fab',
-        child: const Icon(Icons.add),
       ),
       body: Consumer<WishlistProvider>(
         builder: (context, provider, _) {
