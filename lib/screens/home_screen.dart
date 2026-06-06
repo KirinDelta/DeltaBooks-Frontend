@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
@@ -33,6 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentTabIndex = 0;
   final GlobalKey<LibraryScreenState> _libraryScreenKey =
       GlobalKey<LibraryScreenState>();
+
+  final GlobalKey<NavigatorState> _homeNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _shelvesNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _wishlistNavKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _youNavKey = GlobalKey<NavigatorState>();
+
+  List<GlobalKey<NavigatorState>> get _navKeys =>
+      [_homeNavKey, _shelvesNavKey, _wishlistNavKey, _youNavKey];
 
   @override
   void initState() {
@@ -120,12 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.grey[600], fontSize: 13)),
                   onTap: () async {
                     Navigator.pop(sheetContext);
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ManualEntryScreen(addMode: true),
-                      ),
-                    );
+                    final result = await _navKeys[_currentTabIndex]
+                        .currentState!
+                        .push(MaterialPageRoute(
+                          builder: (_) =>
+                              const ManualEntryScreen(addMode: true),
+                        ));
                     if (result == true && mounted) {
                       libraryProvider.fetchLibraries();
                     }
@@ -215,8 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             horizontal: 16, vertical: 8),
                         onTap: () async {
                           Navigator.pop(context);
-                          await Navigator.push(
-                            context,
+                          await _shelvesNavKey.currentState!.push(
                             MaterialPageRoute(
                                 builder: (_) => const LibrariesScreen()),
                           );
@@ -367,8 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: allLibraries.isEmpty
                       ? InkWell(
                           onTap: () async {
-                            await Navigator.push(
-                              context,
+                            await _shelvesNavKey.currentState!.push(
                               MaterialPageRoute(
                                   builder: (_) => const LibrariesScreen()),
                             );
@@ -477,7 +484,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = _currentTabIndex == index;
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _currentTabIndex = index),
+        onTap: () {
+          if (_currentTabIndex == index) {
+            _navKeys[index].currentState?.popUntil((route) => route.isFirst);
+          } else {
+            setState(() => _currentTabIndex = index);
+          }
+        },
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -516,7 +529,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final isShelvesTab = _currentTabIndex == 1;
     final isHomeTab = _currentTabIndex == 0;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final navState = _navKeys[_currentTabIndex].currentState;
+        if (navState?.canPop() == true) {
+          navState!.pop();
+        } else if (_currentTabIndex != 0) {
+          setState(() => _currentTabIndex = 0);
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         toolbarHeight: 56.0,
         title: Align(
@@ -546,8 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.person_add_outlined,
                           color: Colors.white),
                       tooltip: l10n.shareLibrary,
-                      onPressed: () => Navigator.push(
-                        context,
+                      onPressed: () => _shelvesNavKey.currentState!.push(
                         MaterialPageRoute(
                           builder: (_) =>
                               ShareLibraryScreen(selectedLibrary: selected),
@@ -565,8 +590,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     final libraryProvider = Provider.of<LibraryProvider>(
                         context,
                         listen: false);
-                    await Navigator.push(
-                      context,
+                    await _shelvesNavKey.currentState!.push(
                       MaterialPageRoute(
                           builder: (_) => const LibrariesScreen()),
                     );
@@ -592,8 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final ip = Provider.of<InvitationProvider>(
                                     context,
                                     listen: false);
-                                await Navigator.push(
-                                  context,
+                                await _homeNavKey.currentState!.push(
                                   MaterialPageRoute(
                                       builder: (_) =>
                                           const InvitationsScreen()),
@@ -639,10 +662,30 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentTabIndex,
         children: [
-          const _HomeDashboard(),
-          LibraryScreen(key: _libraryScreenKey),
-          const WishlistScreen(),
-          const YouScreen(),
+          Navigator(
+            key: _homeNavKey,
+            onGenerateRoute: (_) => MaterialPageRoute(
+              builder: (_) => const _HomeDashboard(),
+            ),
+          ),
+          Navigator(
+            key: _shelvesNavKey,
+            onGenerateRoute: (_) => MaterialPageRoute(
+              builder: (_) => LibraryScreen(key: _libraryScreenKey),
+            ),
+          ),
+          Navigator(
+            key: _wishlistNavKey,
+            onGenerateRoute: (_) => MaterialPageRoute(
+              builder: (_) => const WishlistScreen(),
+            ),
+          ),
+          Navigator(
+            key: _youNavKey,
+            onGenerateRoute: (_) => MaterialPageRoute(
+              builder: (_) => const YouScreen(),
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -670,6 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildNavItem(Icons.person_outline, Icons.person, l10n.you, 3),
           ],
         ),
+      ),
       ),
     );
   }
