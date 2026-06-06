@@ -9,6 +9,7 @@ import '../theme/app_images.dart';
 import '../theme/app_colors.dart';
 import 'libraries_screen.dart';
 import 'library_screen.dart';
+import 'share_library_screen.dart';
 import 'wishlist_screen.dart';
 import 'you_screen.dart';
 
@@ -76,8 +77,52 @@ class _HomeScreenState extends State<HomeScreen> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: allLibraries.length,
+                  itemCount: allLibraries.length + 1,
                   itemBuilder: (context, index) {
+                    // Last item: create new library
+                    if (index == allLibraries.length) {
+                      return ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          l10n.createLibrary,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LibrariesScreen()),
+                          );
+                          if (mounted) {
+                            await libraryProvider.fetchLibraries();
+                          }
+                        },
+                      );
+                    }
+
                     final library = allLibraries[index];
                     final isShared = libraryProvider.isSharedLibrary(library);
                     final isSelected = selectedLibrary?.id == library.id;
@@ -383,6 +428,50 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        actions: isShelvesTab
+            ? [
+                // Share icon — only when the selected library is owned by the user
+                Consumer<LibraryProvider>(
+                  builder: (context, libraryProvider, _) {
+                    final selected = libraryProvider.selectedLibrary;
+                    if (selected == null || !selected.isOwner) {
+                      return const SizedBox.shrink();
+                    }
+                    return IconButton(
+                      icon: const Icon(Icons.person_add_outlined,
+                          color: Colors.white),
+                      tooltip: 'Share library',
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ShareLibraryScreen(selectedLibrary: selected),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                // Gear icon — always visible on Shelves tab
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined,
+                      color: Colors.white),
+                  tooltip: 'Manage libraries',
+                  onPressed: () async {
+                    final libraryProvider = Provider.of<LibraryProvider>(
+                        context,
+                        listen: false);
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const LibrariesScreen()),
+                    );
+                    if (mounted) {
+                      libraryProvider.fetchLibraries();
+                    }
+                  },
+                ),
+              ]
+            : null,
         bottom: isShelvesTab ? _buildLibrarySelectorBar(context) : null,
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
