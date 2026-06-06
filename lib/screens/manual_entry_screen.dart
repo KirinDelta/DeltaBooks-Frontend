@@ -4,16 +4,19 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
 import '../theme/app_colors.dart';
+import 'add_book_confirmation_screen.dart';
 import 'book_edit_screen.dart';
 import 'search_results_screen.dart';
 import 'book_detail_screen.dart';
 
 class ManualEntryScreen extends StatefulWidget {
   final String? initialIsbn;
+  final bool addMode;
 
   const ManualEntryScreen({
     super.key,
     this.initialIsbn,
+    this.addMode = false,
   });
 
   @override
@@ -26,7 +29,6 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final TextEditingController _authorController = TextEditingController();
   
   bool _isSearching = false;
-  bool _showTitleAuthorFields = false;
 
   @override
   void initState() {
@@ -71,38 +73,34 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             SnackBar(content: Text(l10n.bookNotFound)),
           );
         } else if (books.length == 1) {
-          // Single result: navigate directly to preview
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-          builder: (context) => BookDetailScreen(
-            book: books[0],
-            isSearchPreview: true,
-          ),
+              builder: (context) => widget.addMode
+                  ? AddBookConfirmationScreen(book: books[0])
+                  : BookDetailScreen(book: books[0], isSearchPreview: true),
             ),
           );
-          
-          // Refresh libraries if book was added
           if (result == true && mounted) {
-            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            final libraryProvider =
+                Provider.of<LibraryProvider>(context, listen: false);
             await libraryProvider.fetchLibraries();
             Navigator.pop(context, true);
           }
         } else {
-          // Multiple results: navigate to search results screen
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SearchResultsScreen(
                 books: books,
                 searchQuery: isbn,
+                addMode: widget.addMode,
               ),
             ),
           );
-          
-          // Refresh libraries if book was added
           if (result == true && mounted) {
-            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            final libraryProvider =
+                Provider.of<LibraryProvider>(context, listen: false);
             await libraryProvider.fetchLibraries();
             Navigator.pop(context, true);
           }
@@ -148,14 +146,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             SnackBar(content: Text(l10n.bookNotFound)),
           );
         } else {
-          // Always show search results screen for title/author searches
-          final searchQuery = [title, author].where((s) => s.isNotEmpty).join(' / ');
+          final searchQuery =
+              [title, author].where((s) => s.isNotEmpty).join(' / ');
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SearchResultsScreen(
                 books: books,
                 searchQuery: searchQuery,
+                addMode: widget.addMode,
               ),
             ),
           );

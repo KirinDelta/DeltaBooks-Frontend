@@ -6,18 +6,21 @@ import '../providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
 import '../utils/image_utils.dart';
+import 'add_book_confirmation_screen.dart';
 import 'book_detail_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
   final List<Book> books;
   final String searchQuery;
   final bool wishlistMode;
+  final bool addMode;
 
   const SearchResultsScreen({
     super.key,
     required this.books,
     required this.searchQuery,
     this.wishlistMode = false,
+    this.addMode = false,
   });
 
   @override
@@ -110,23 +113,35 @@ class SearchResultsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               onTap: () async {
                 if (wishlistMode) {
-                  // In wishlist mode: add book directly to wishlist
-                  final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+                  final wishlistProvider =
+                      Provider.of<WishlistProvider>(context, listen: false);
                   final l10n = AppLocalizations.of(context)!;
                   if (book.id != null) {
                     if (wishlistProvider.isWishlisted(book.id!)) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.alreadyInWishlist)));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.alreadyInWishlist)));
                     } else {
                       final ok = await wishlistProvider.addToWishlist(book.id!);
                       if (ok && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addedToWishlist)));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.addedToWishlist)));
                         Navigator.pop(context, true);
                       }
                     }
                   }
                   return;
                 }
-                // Navigate to preview (BookDetailScreen with isSearchPreview: true)
+                if (addMode) {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddBookConfirmationScreen(book: book),
+                    ),
+                  );
+                  if (result == true) Navigator.pop(context, true);
+                  return;
+                }
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -136,11 +151,7 @@ class SearchResultsScreen extends StatelessWidget {
                     ),
                   ),
                 );
-
-                // If book was added, pop back to manual entry screen
-                if (result == true) {
-                  Navigator.pop(context, true);
-                }
+                if (result == true) Navigator.pop(context, true);
               },
               child: Padding(
                 padding: EdgeInsets.only(

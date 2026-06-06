@@ -23,6 +23,10 @@ enum FilterOption {
   inCircle,
 }
 
+// Persistent status tab at the top of the Shelves screen.
+// All | Unread | Read — labels flagged for Phase 6 localisation.
+enum _StatusTab { all, unread, read }
+
 class LibraryScreen extends StatefulWidget {
   final GlobalKey<LibraryScreenState>? libraryScreenKey;
   
@@ -36,6 +40,7 @@ class LibraryScreenState extends State<LibraryScreen> {
   int? _lastLibraryId;
   SortOption _currentSort = SortOption.recent;
   Set<FilterOption> _activeFilters = {};
+  _StatusTab _statusTab = _StatusTab.all;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isFilterBarExpanded = false;
@@ -204,7 +209,9 @@ class LibraryScreenState extends State<LibraryScreen> {
       onRefresh: _refreshData,
       child: Column(
         children: [
-          // Floating filter bar - always at the top
+          // Persistent status tabs: All | Unread | Read
+          _buildStatusTabs(),
+          // Collapsible search / sort / filter bar
           _buildFloatingFilterBar(context, l10n, filteredAndSortedBooks),
           // Books list or empty state - takes remaining space
           Expanded(
@@ -234,7 +241,6 @@ class LibraryScreenState extends State<LibraryScreen> {
         
         // Determine if current user has read it - use new field
         final hasRead = book.isReadByMe;
-        final partnerHasRead = book.isReadByOthers;
         
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -538,9 +544,21 @@ class LibraryScreenState extends State<LibraryScreen> {
 
   List<Book> _applyFiltersAndSort(List<Book> books) {
     final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-    
-    // First apply search filter if there's a query
+
+    // Apply status tab filter first
     List<Book> filtered = books;
+    switch (_statusTab) {
+      case _StatusTab.unread:
+        filtered = filtered.where((b) => !b.isReadByMe).toList();
+        break;
+      case _StatusTab.read:
+        filtered = filtered.where((b) => b.isReadByMe).toList();
+        break;
+      case _StatusTab.all:
+        break;
+    }
+
+    // Then apply search filter if there's a query
     if (_searchQuery.trim().isNotEmpty) {
       filtered = libraryProvider.filterBooksBySearch(filtered, _searchQuery);
     }
@@ -618,6 +636,46 @@ class LibraryScreenState extends State<LibraryScreen> {
     }
     
     return sorted;
+  }
+
+  Widget _buildStatusTabs() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Row(
+        children: [
+          _buildStatusTab('All', _StatusTab.all),
+          const SizedBox(width: 8),
+          _buildStatusTab('Unread', _StatusTab.unread),
+          const SizedBox(width: 8),
+          _buildStatusTab('Read', _StatusTab.read),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusTab(String label, _StatusTab tab) {
+    final isSelected = _statusTab == tab;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) {
+        setState(() => _statusTab = tab);
+        _resetScrollPosition();
+      },
+      selectedColor: AppColors.deepSeaBlue,
+      backgroundColor: AppColors.riverMist,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : AppColors.deltaTeal,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        fontSize: 13,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      side: BorderSide.none,
+      showCheckmark: false,
+    );
   }
 
   Widget _buildFloatingFilterBar(BuildContext context, AppLocalizations l10n, List<Book> filteredBooks) {
@@ -870,58 +928,6 @@ class LibraryScreenState extends State<LibraryScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            // Unread filter
-            FilterChip(
-              label: const Text('Unread'),
-              selected: _activeFilters.contains(FilterOption.unread),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _activeFilters.add(FilterOption.unread);
-                  } else {
-                    _activeFilters.remove(FilterOption.unread);
-                  }
-                });
-                _resetScrollPosition();
-              },
-              selectedColor: AppColors.deepSeaBlue.withOpacity(0.2),
-              checkmarkColor: AppColors.deepSeaBlue,
-              labelStyle: TextStyle(
-                color: _activeFilters.contains(FilterOption.unread)
-                    ? AppColors.deepSeaBlue 
-                    : AppColors.deltaTeal,
-                fontWeight: _activeFilters.contains(FilterOption.unread)
-                    ? FontWeight.bold 
-                    : FontWeight.normal,
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Read filter
-            FilterChip(
-              label: const Text('Read'),
-              selected: _activeFilters.contains(FilterOption.read),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _activeFilters.add(FilterOption.read);
-                  } else {
-                    _activeFilters.remove(FilterOption.read);
-                  }
-                });
-                _resetScrollPosition();
-              },
-              selectedColor: AppColors.goldLeaf.withOpacity(0.2),
-              checkmarkColor: AppColors.goldLeaf,
-              labelStyle: TextStyle(
-                color: _activeFilters.contains(FilterOption.read)
-                    ? AppColors.goldLeaf 
-                    : AppColors.deltaTeal,
-                fontWeight: _activeFilters.contains(FilterOption.read)
-                    ? FontWeight.bold 
-                    : FontWeight.normal,
-              ),
-            ),
-            const SizedBox(width: 8),
             // In Circle filter
             FilterChip(
               label: const Text('In Circle'),
@@ -1072,131 +1078,6 @@ class LibraryScreenState extends State<LibraryScreen> {
       );
     }
   }
-
-  void _showSortBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  'Sort Books',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.deltaTeal,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildSortOption(
-                context,
-                'Recent',
-                SortOption.recent,
-                Icons.access_time,
-              ),
-              _buildSortOption(
-                context,
-                'Rating',
-                SortOption.rating,
-                Icons.star,
-              ),
-              _buildSortOption(
-                context,
-                'Pages',
-                SortOption.pages,
-                Icons.menu_book,
-              ),
-              _buildSortOption(
-                context,
-                'Title',
-                SortOption.title,
-                Icons.sort_by_alpha,
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSortOption(
-    BuildContext context,
-    String label,
-    SortOption option,
-    IconData icon,
-  ) {
-    final isSelected = _currentSort == option;
-    
-    return Consumer<LibraryProvider>(
-      builder: (context, libraryProvider, _) {
-        return ListTile(
-          leading: Icon(
-            icon,
-            color: isSelected ? AppColors.deepSeaBlue : AppColors.textSecondary,
-          ),
-          title: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? AppColors.deepSeaBlue : AppColors.deltaTeal,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected) ...[
-                Icon(Icons.check, color: AppColors.deepSeaBlue),
-                const SizedBox(width: 8),
-              ],
-              IconButton(
-                icon: Icon(
-                  libraryProvider.isAscending 
-                      ? Icons.arrow_upward 
-                      : Icons.arrow_downward,
-                  color: AppColors.deepSeaBlue,
-                  size: 20,
-                ),
-                onPressed: () {
-                  libraryProvider.toggleSortDirection();
-                },
-                tooltip: libraryProvider.isAscending 
-                    ? 'Ascending' 
-                    : 'Descending',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-          onTap: () {
-            setState(() {
-              _currentSort = option;
-            });
-            Navigator.pop(context);
-          },
-        );
-      },
-    );
-  }
-
 
   /// Build avatars for other people who have read the book
   /// Uses circle_interactions from backend (which includes all users who read the book)

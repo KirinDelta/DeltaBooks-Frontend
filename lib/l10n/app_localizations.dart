@@ -860,13 +860,13 @@ abstract class AppLocalizations {
   /// **'Add Manually'**
   String get addManually;
 
-  /// Message shown when camera permission is denied
+  /// Error shown when the scanner fails to open the camera, typically due to missing permission
   ///
   /// In en, this message translates to:
-  /// **'Camera access is required to scan barcodes. Please enable it in your device settings.'**
+  /// **'Camera access is required to scan barcodes. Please enable camera permission in your device settings.'**
   String get cameraPermissionDenied;
 
-  /// Button label to retry an action
+  /// Button label to retry a failed action
   ///
   /// In en, this message translates to:
   /// **'Retry'**
@@ -1154,18 +1154,6 @@ abstract class AppLocalizations {
   /// **'Use the mobile app to scan barcodes, or add a book manually below.'**
   String get scannerWebFallbackMessage;
 
-  /// Error shown when the scanner fails to open the camera, typically due to missing permission
-  ///
-  /// In en, this message translates to:
-  /// **'Camera access is required to scan barcodes. Please enable camera permission in your device settings.'**
-  String get cameraPermissionDenied;
-
-  /// Button label to retry a failed action
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get retry;
-
   /// Wishlist tab label
   ///
   /// In en, this message translates to:
@@ -1291,6 +1279,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get remove;
+
+  /// Title for add book confirmation screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add Book'**
+  String get addBook;
+
+  /// Section header for destination picker on add book screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add to'**
+  String get addTo;
+
+  /// Section header for reading status picker on add book screen
+  ///
+  /// In en, this message translates to:
+  /// **'Reading status'**
+  String get readingStatus;
+
+  /// Dashboard section header for in-progress books
+  ///
+  /// In en, this message translates to:
+  /// **'Currently reading'**
+  String get currentlyReading;
+
+  /// Empty state for currently reading section
+  ///
+  /// In en, this message translates to:
+  /// **'No books in progress'**
+  String get noBooksInProgress;
+
+  /// Dashboard stat card label for total money spent on books
+  ///
+  /// In en, this message translates to:
+  /// **'Money spent'**
+  String get moneySpent;
+
+  /// Bottom nav tab label for the home/dashboard tab
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// Bottom nav tab label for the library/shelves tab
+  ///
+  /// In en, this message translates to:
+  /// **'Shelves'**
+  String get shelves;
+
+  /// Bottom nav tab label for the profile tab
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// Tag shown on shared/partner libraries in the library selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get shared;
+
+  /// Tooltip for the settings icon that opens library management
+  ///
+  /// In en, this message translates to:
+  /// **'Manage libraries'**
+  String get manageLibraries;
+
+  /// Menu item on the You screen that opens the profile editor
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// Page count label, e.g. '312 pages'
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages'**
+  String pagesCount(int count);
 }
 
 class _AppLocalizationsDelegate
