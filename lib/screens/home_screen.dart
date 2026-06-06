@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import 'libraries_screen.dart';
 import 'library_screen.dart';
 import 'wishlist_screen.dart';
+import 'you_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -395,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const _HomePlaceholder(),
           LibraryScreen(key: _libraryScreenKey),
           const WishlistScreen(),
-          const _YouPlaceholder(),
+          const YouScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -443,13 +444,3 @@ class _HomePlaceholder extends StatelessWidget {
   }
 }
 
-class _YouPlaceholder extends StatelessWidget {
-  const _YouPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Profile', style: TextStyle(fontSize: 24)),
-    );
-  }
-}
