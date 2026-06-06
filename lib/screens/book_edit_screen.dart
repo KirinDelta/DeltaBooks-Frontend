@@ -708,7 +708,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _coverUrlController,
               decoration: InputDecoration(
                 labelText: '${l10n.coverImageUrl} (${l10n.optional.toLowerCase()})',
@@ -776,7 +776,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 16),
             
             // Description
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _descriptionController,
               decoration: InputDecoration(
                 labelText: '${l10n.description} (${l10n.optional.toLowerCase()})',
@@ -806,7 +806,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 16),
             
             // Genre
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _genreController,
               decoration: InputDecoration(
                 labelText: 'Genre (${l10n.optional.toLowerCase()})',
@@ -834,7 +834,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 16),
             
             // Series Name (library-specific override)
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _seriesNameController,
               decoration: InputDecoration(
                 labelText: 'Series Name (${l10n.optional.toLowerCase()}, library-specific)',
@@ -862,7 +862,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             const SizedBox(height: 16),
             
             // Series Volume (library-specific)
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _seriesVolumeController,
               decoration: InputDecoration(
                 labelText: 'Series Volume (${l10n.optional.toLowerCase()}, library-specific)',
@@ -1098,7 +1098,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             ],
             
             // Notes (library-specific)
-            TextFormField( // input-safety: ok — optional field
+            TextFormField(
               controller: _notesController,
               decoration: InputDecoration(
                 labelText: 'Notes (${l10n.optional.toLowerCase()}, library-specific)',

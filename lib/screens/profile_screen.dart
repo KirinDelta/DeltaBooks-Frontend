@@ -274,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
                       
                       // Email (read-only)
-                      TextFormField( // input-safety: ok — field is disabled/read-only
+                      TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         enabled: false,

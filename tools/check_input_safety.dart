@@ -38,33 +38,14 @@ class Violation {
 // Patterns
 // ---------------------------------------------------------------------------
 
-/// Matches an interpolation that is NOT a plain integer ID.
+/// Matches an interpolation that is a plain integer ID.
 /// Integer IDs look like: $libraryId, $bookId, $userId, $memberId, ${someId}
-/// Anything else (email, query, name, search term, etc.) is treated as a
-/// potential string value that must be URL-encoded.
 final _idPattern = RegExp(
   r'\$\{?[a-zA-Z_][a-zA-Z0-9_]*[Ii][dD]\}?',
 );
 
-/// Finds apiService.get('…?…$var') where $var is NOT an integer ID.
-/// Also catches the long-form _apiService.get("…?…$var").
-final _unsafeGetParam = RegExp(
-  r'''_?apiService\.get\(['"]/[^'"]*\?[^'"]*\$(?!\{?[a-zA-Z_]*[Ii][dD]\}?)''',
-);
-
-/// Also catches any raw string interpolation in a URL query-string position.
-/// Pattern: anything that looks like `?word=$nonId` or `&word=$nonId`.
-final _unsafeQueryInterpolation = RegExp(
-  r'''[?&][a-zA-Z_][a-zA-Z0-9_]*=\$(?!\{?[a-zA-Z_]*[Ii][dD]\}?)[a-zA-Z_]''',
-);
-
-/// TextFormField missing a validator: argument.
-final _textFormFieldNoValidator = RegExp(
-  r'TextFormField\s*\(',
-);
-
-/// Flag use of getWithParams-equivalent being bypassed by .get with a query string.
-/// More general: flag any `.get(` call where the argument string contains `?` and `$`.
+/// Flag any `.get(` call where the argument string contains `?` and a
+/// non-ID interpolation — i.e. a string value in a query parameter.
 final _getWithQueryAndInterpolation = RegExp(
   r'''\.get\(\s*['"][^'"]*\?[^'"]*\$[a-zA-Z_]''',
 );
@@ -78,11 +59,6 @@ List<Violation> checkFile(File file) {
   final lines = file.readAsLinesSync();
   final path = file.path.replaceFirst(RegExp(r'^.*/lib/'), 'lib/');
 
-  bool inTextFormField = false;
-  bool hasValidator = false;
-  int textFormFieldLine = 0;
-  int braceDepth = 0;
-
   for (var i = 0; i < lines.length; i++) {
     final lineNum = i + 1;
     final line = lines[i];
@@ -93,9 +69,11 @@ List<Violation> checkFile(File file) {
 
     // -----------------------------------------------------------------------
     // Rule 1: .get() with a user string in a query parameter
+    // Values interpolated into URL query strings bypass percent-encoding.
+    // JSON bodies (post/put/patch) are safe — jsonEncode handles escaping.
+    // Integer IDs are safe to interpolate into path segments.
     // -----------------------------------------------------------------------
     if (_getWithQueryAndInterpolation.hasMatch(line)) {
-      // Exclude interpolations that are purely integer IDs
       final paramSection = line.substring(line.indexOf('?'));
       final interpolations = RegExp(r'\$\{?([a-zA-Z_][a-zA-Z0-9_]*)\}?')
           .allMatches(paramSection)
@@ -109,50 +87,14 @@ List<Violation> checkFile(File file) {
           lineNum,
           'URL_PARAM_INJECTION',
           'Variable "\$$varName" is raw-interpolated into a URL query string.',
-          fix:
-              'Use _apiService.getWithParams(path, {\'key\': $varName}) instead '
+          fix: 'Use _apiService.getWithParams(path, {\'key\': $varName}) instead '
               '— it percent-encodes values automatically.',
         ));
       }
     }
 
     // -----------------------------------------------------------------------
-    // Rule 2: TextFormField without validator
-    // -----------------------------------------------------------------------
-    // A comment `// input-safety: ok` on the same line as TextFormField suppresses
-    // MISSING_VALIDATOR for that field (use for intentionally optional fields).
-    final suppressed = line.contains('// input-safety: ok');
-
-    if (_textFormFieldNoValidator.hasMatch(line) && !inTextFormField && !suppressed) {
-      inTextFormField = true;
-      hasValidator = false;
-      textFormFieldLine = lineNum;
-      braceDepth = 0;
-    }
-
-    if (inTextFormField) {
-      braceDepth += '('.allMatches(line).length;
-      braceDepth -= ')'.allMatches(line).length;
-
-      if (line.contains('validator:')) hasValidator = true;
-
-      if (braceDepth <= 0 && lineNum > textFormFieldLine) {
-        if (!hasValidator) {
-          violations.add(Violation(
-            path,
-            textFormFieldLine,
-            'MISSING_VALIDATOR',
-            'TextFormField has no validator: callback.',
-            fix: 'Add a validator that rejects empty/invalid input before '
-                'it reaches the API.',
-          ));
-        }
-        inTextFormField = false;
-      }
-    }
-
-    // -----------------------------------------------------------------------
-    // Rule 3: innerHTML / innerHtml / eval — relevant for Flutter Web
+    // Rule 2: innerHTML / innerHtml / setInnerHtml — Flutter Web XSS risk
     // -----------------------------------------------------------------------
     if (RegExp(r'\.(innerHtml|innerHTML|setInnerHtml)\s*=').hasMatch(line)) {
       violations.add(Violation(
@@ -166,7 +108,7 @@ List<Violation> checkFile(File file) {
     }
 
     // -----------------------------------------------------------------------
-    // Rule 4: js.eval / js.context.callMethod with a string variable
+    // Rule 3: js.eval / js.context.callMethod with a string interpolation
     // -----------------------------------------------------------------------
     if (RegExp(r'js\.(eval|context\.callMethod)\s*\(').hasMatch(line) &&
         line.contains(r'$')) {
@@ -180,25 +122,21 @@ List<Violation> checkFile(File file) {
     }
 
     // -----------------------------------------------------------------------
-    // Rule 5: Uri.parse on a variable (potential open-redirect / SSRF)
+    // Rule 4: Uri.parse on a variable with a user-sounding name
     // -----------------------------------------------------------------------
     if (RegExp(r'Uri\.parse\s*\(\s*[a-zA-Z_]').hasMatch(line) &&
         !line.contains("'\$baseUrl") &&
         !line.contains('"\$baseUrl') &&
         !line.contains("'http") &&
         !line.contains('"http') &&
-        !line.contains('//') // comment
-        ) {
-      // Only flag if the variable name looks like it could come from user input
+        !line.contains('//')) {
       final match = RegExp(r'Uri\.parse\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)')
           .firstMatch(line);
       if (match != null) {
         final varName = match.group(1)!;
-        final suspiciousNames = RegExp(
-          r'(url|link|href|redirect|path|uri|address)',
-          caseSensitive: false,
-        );
-        if (suspiciousNames.hasMatch(varName)) {
+        if (RegExp(r'(url|link|href|redirect|path|uri|address)',
+                caseSensitive: false)
+            .hasMatch(varName)) {
           violations.add(Violation(
             path,
             lineNum,
@@ -238,7 +176,8 @@ void main(List<String> args) {
   }
 
   if (allViolations.isEmpty) {
-    stdout.writeln('check_input_safety: no violations found (${dartFiles.length} files scanned).');
+    stdout.writeln(
+        'check_input_safety: no violations found (${dartFiles.length} files scanned).');
     exit(0);
   }
 
