@@ -302,6 +302,44 @@ class BookProvider with ChangeNotifier {
     }
   }
 
+  /// Set reading status for a book in a library (unread=no-op, reading or finished=POST/PUT user_book)
+  Future<bool> setBookStatus({
+    required int bookId,
+    required int libraryId,
+    required String status,
+  }) async {
+    if (status == 'unread') return true;
+    try {
+      UserBook? existingUserBook;
+      try {
+        await fetchMyBooks(libraryId: libraryId);
+        existingUserBook = _myBooks.firstWhere(
+          (ub) => ub.book.id == bookId,
+          orElse: () => throw StateError('Not found'),
+        );
+      } catch (_) {
+        existingUserBook = null;
+      }
+
+      final userBookData = <String, dynamic>{'status': status};
+      final requestBody = <String, dynamic>{'user_book': userBookData};
+
+      if (existingUserBook == null) {
+        userBookData['book_id'] = bookId;
+        requestBody['library_id'] = libraryId;
+      }
+
+      final response = existingUserBook != null
+          ? await _apiService.put(
+              '/api/v1/user_books/${existingUserBook.id}', requestBody)
+          : await _apiService.post('/api/v1/user_books', requestBody);
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Update a book in a library using PATCH request
   /// Only library-specific fields can be updated (price, total_pages, series_name, series_volume, notes)
   /// All fields must be wrapped in library_book hash

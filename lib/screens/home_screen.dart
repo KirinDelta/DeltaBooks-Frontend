@@ -9,6 +9,8 @@ import '../theme/app_images.dart';
 import '../theme/app_colors.dart';
 import 'libraries_screen.dart';
 import 'library_screen.dart';
+import 'manual_entry_screen.dart';
+import 'scanner_screen.dart';
 import 'share_library_screen.dart';
 import 'wishlist_screen.dart';
 import 'you_screen.dart';
@@ -33,6 +35,100 @@ class _HomeScreenState extends State<HomeScreen> {
       Provider.of<LibraryProvider>(context, listen: false).fetchLibraries();
       Provider.of<InvitationProvider>(context, listen: false).fetchInvitations();
     });
+  }
+
+  void _showAddBookSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.goldLeaf.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.qr_code_scanner,
+                        color: AppColors.goldLeaf),
+                  ),
+                  title: Text(l10n.scanBarcodeTip,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 16)),
+                  subtitle: Text(l10n.scanBarcode,
+                      style: TextStyle(
+                          color: Colors.grey[600], fontSize: 13)),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ScannerScreen(addMode: true),
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      libraryProvider.fetchLibraries();
+                    }
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.deepSeaBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.edit_outlined,
+                        color: AppColors.deepSeaBlue),
+                  ),
+                  title: Text(l10n.addManually,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 16)),
+                  subtitle: Text(l10n.searchByIsbn,
+                      style: TextStyle(
+                          color: Colors.grey[600], fontSize: 13)),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ManualEntryScreen(addMode: true),
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      libraryProvider.fetchLibraries();
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showLibrarySelector(
@@ -489,11 +585,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Coming soon')),
-          );
-        },
+        onPressed: () => _showAddBookSheet(context),
         backgroundColor: AppColors.goldLeaf,
         foregroundColor: Colors.white,
         elevation: 4,

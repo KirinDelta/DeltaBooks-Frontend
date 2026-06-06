@@ -759,5 +759,11 @@
   "sort": "Sort",
   "@sort": { "description": "Sort button tooltip" },
   "remove": "Remove",
-  "@remove": { "description": "Generic remove button label" }
+  "@remove": { "description": "Generic remove button label" },
+  "addBook": "Add Book",
+  "@addBook": { "description": "Title for add book confirmation screen" },
+  "addTo": "Add to",
+  "@addTo": { "description": "Section header for destination picker on add book screen" },
+  "readingStatus": "Reading status",
+  "@readingStatus": { "description": "Section header for reading status picker on add book screen" }
 }

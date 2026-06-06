@@ -200,5 +200,8 @@
   "sortByPriority": "Prioritate",
   "sortByTitle": "Titlu",
   "sort": "Sortează",
-  "remove": "Elimină"
+  "remove": "Elimină",
+  "addBook": "Adaugă carte",
+  "addTo": "Adaugă în",
+  "readingStatus": "Status lectură"
 }

@@ -9,8 +9,13 @@ import 'wishlist_add_screen.dart';
 
 class ScannerMobile extends StatefulWidget {
   final bool wishlistMode;
+  final bool addMode;
 
-  const ScannerMobile({super.key, this.wishlistMode = false});
+  const ScannerMobile({
+    super.key,
+    this.wishlistMode = false,
+    this.addMode = false,
+  });
 
   @override
   State<ScannerMobile> createState() => _ScannerMobileState();
@@ -72,13 +77,15 @@ class _ScannerMobileState extends State<ScannerMobile> {
       final isbn = barcode.rawValue!;
       final Widget destination = widget.wishlistMode
           ? WishlistAddScreen(initialIsbn: isbn)
-          : ManualEntryScreen(initialIsbn: isbn);
+          : ManualEntryScreen(initialIsbn: isbn, addMode: widget.addMode);
 
-      final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+      final result = await Navigator.push(
+          context, MaterialPageRoute(builder: (_) => destination));
 
       if (result == true && mounted) {
-        if (!widget.wishlistMode) {
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+        if (!widget.wishlistMode && !widget.addMode) {
+          final libraryProvider =
+              Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.fetchLibraries();
         } else {
           Navigator.pop(context, true);
@@ -125,14 +132,17 @@ class _ScannerMobileState extends State<ScannerMobile> {
                       onPressed: () async {
                         final Widget destination = widget.wishlistMode
                             ? const WishlistAddScreen()
-                            : const ManualEntryScreen();
-                        final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+                            : ManualEntryScreen(addMode: widget.addMode);
+                        final result = await Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => destination));
                         if (result == true && mounted) {
-                          if (widget.wishlistMode) {
-                            Navigator.pop(context, true);
-                          } else {
-                            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                          if (!widget.wishlistMode && !widget.addMode) {
+                            final libraryProvider =
+                                Provider.of<LibraryProvider>(context,
+                                    listen: false);
                             await libraryProvider.fetchLibraries();
+                          } else {
+                            Navigator.pop(context, true);
                           }
                         }
                       },
@@ -183,15 +193,17 @@ class _ScannerMobileState extends State<ScannerMobile> {
                   onPressed: () async {
                     final Widget destination = widget.wishlistMode
                         ? const WishlistAddScreen()
-                        : const ManualEntryScreen();
-                    final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
-
+                        : ManualEntryScreen(addMode: widget.addMode);
+                    final result = await Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => destination));
                     if (result == true && mounted) {
-                      if (widget.wishlistMode) {
-                        Navigator.pop(context, true);
-                      } else {
-                        final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+                      if (!widget.wishlistMode && !widget.addMode) {
+                        final libraryProvider = Provider.of<LibraryProvider>(
+                            context,
+                            listen: false);
                         await libraryProvider.fetchLibraries();
+                      } else {
+                        Navigator.pop(context, true);
                       }
                     }
                   },
