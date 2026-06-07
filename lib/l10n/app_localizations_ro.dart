@@ -756,4 +756,64 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get featureFlagsAdminDescription =>
       'Acțiunile de activare/dezactivare necesită endpoint-uri admin (POST /admin/feature_flags/:name/enable|disable|enable_for_user) care nu sunt încă implementate. Folosește Flipper UI la /admin/flipper în acest timp.';
+
+  @override
+  String get flagOn => 'Activat';
+
+  @override
+  String get flagOff => 'Dezactivat';
+
+  @override
+  String get flagConditional => 'Condiționat';
+
+  @override
+  String get enableGlobally => 'Activează global';
+
+  @override
+  String get disableGlobally => 'Dezactivează global';
+
+  @override
+  String get manageFlagActors => 'Gestionează utilizatori';
+
+  @override
+  String get enabledForUsers => 'Activat pentru utilizatori:';
+
+  @override
+  String get disableForUser => 'Dezactivează pentru utilizator';
+
+  @override
+  String get setPercentage => 'Setează % din actori';
+
+  @override
+  String get percentageHint => '0–100';
+
+  @override
+  String percentageActors(int percentage) {
+    return '$percentage% din actori';
+  }
+
+  @override
+  String get percentageUpdated => 'Procentaj actualizat';
+
+  @override
+  String get percentageDisabled => 'Poarta procentuală dezactivată';
+
+  @override
+  String get flagUpdated => 'Flag actualizat';
+
+  @override
+  String get errorUpdatingFlag => 'Eroare la actualizarea flag-ului';
+
+  @override
+  String get invalidPercentage => 'Introduceți o valoare între 0 și 100';
+
+  @override
+  String enableForUserSuccess(String email) {
+    return 'Activat pentru $email';
+  }
+
+  @override
+  String disableForUserSuccess(String email) {
+    return 'Dezactivat pentru $email';
+  }
 }
