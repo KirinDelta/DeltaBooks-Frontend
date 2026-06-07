@@ -790,5 +790,9 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+  "enableCameraAccess": "Enable Camera Access",
+  "@enableCameraAccess": { "description": "Button label to trigger the browser camera permission prompt" },
+  "tapToEnableCamera": "Tap the button below to allow camera access for scanning.",
+  "@tapToEnableCamera": { "description": "Instruction shown on web before the camera permission prompt is triggered" }
 }

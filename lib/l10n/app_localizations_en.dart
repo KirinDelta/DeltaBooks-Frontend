@@ -645,4 +645,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String pagesCount(int count) {
     return '$count pages';
   }
+
+  @override
+  String get enableCameraAccess => 'Enable Camera Access';
+
+  @override
+  String get tapToEnableCamera =>
+      'Tap the button below to allow camera access for scanning.';
 }

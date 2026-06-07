@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
@@ -25,12 +26,20 @@ class _ScannerMobileState extends State<ScannerMobile> {
   MobileScannerController? _controller;
   bool _isScanning = false;
   bool _isInitialized = false;
+  // On web the camera must be started by a user gesture; tracks whether the
+  // user has tapped the enable button yet.
+  bool _webStartRequested = false;
   String? _initError;
 
   @override
   void initState() {
     super.initState();
-    _initializeScanner();
+    // On web, browsers block camera access without a user gesture, so we wait
+    // for the user to tap before calling start(). On mobile the OS handles the
+    // permission dialog from initState safely.
+    if (!kIsWeb) {
+      _initializeScanner();
+    }
   }
 
   Future<void> _initializeScanner() async {
@@ -97,18 +106,92 @@ class _ScannerMobileState extends State<ScannerMobile> {
     setState(() => _isScanning = false);
   }
 
+  Future<void> _navigateManual() async {
+    final Widget destination = widget.wishlistMode
+        ? const WishlistAddScreen()
+        : ManualEntryScreen(addMode: widget.addMode);
+    final result = await Navigator.push(
+        context, MaterialPageRoute(builder: (_) => destination));
+    if (result == true && mounted) {
+      if (!widget.wishlistMode && !widget.addMode) {
+        final libraryProvider =
+            Provider.of<LibraryProvider>(context, listen: false);
+        await libraryProvider.fetchLibraries();
+      } else {
+        Navigator.pop(context, true);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    // Web: show enable-camera prompt before any start() call has been made.
+    if (kIsWeb && !_webStartRequested) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.deepSeaBlue,
+          foregroundColor: Colors.white,
+          title: Text(l10n.scanBarcode),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.camera_alt_outlined,
+                    size: 64, color: AppColors.goldLeaf),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.tapToEnableCamera,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() => _webStartRequested = true);
+                    _initializeScanner();
+                  },
+                  icon: const Icon(Icons.camera_alt),
+                  label: Text(l10n.enableCameraAccess),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.goldLeaf,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _navigateManual,
+                  icon: const Icon(Icons.keyboard),
+                  label: Text(l10n.addManually),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Loading or error state.
     if (!_isInitialized || _controller == null) {
       return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.deepSeaBlue,
+          foregroundColor: Colors.white,
+          title: Text(l10n.scanBarcode),
+        ),
         body: Center(
           child: _initError != null
               ? Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.camera_alt_outlined, size: 48, color: Colors.grey),
+                    const Icon(Icons.camera_alt_outlined,
+                        size: 48, color: Colors.grey),
                     const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -120,7 +203,10 @@ class _ScannerMobileState extends State<ScannerMobile> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _initializeScanner,
+                      onPressed: () {
+                        if (kIsWeb) setState(() => _webStartRequested = false);
+                        _initializeScanner();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.goldLeaf,
                         foregroundColor: Colors.white,
@@ -129,23 +215,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
-                      onPressed: () async {
-                        final Widget destination = widget.wishlistMode
-                            ? const WishlistAddScreen()
-                            : ManualEntryScreen(addMode: widget.addMode);
-                        final result = await Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => destination));
-                        if (result == true && mounted) {
-                          if (!widget.wishlistMode && !widget.addMode) {
-                            final libraryProvider =
-                                Provider.of<LibraryProvider>(context,
-                                    listen: false);
-                            await libraryProvider.fetchLibraries();
-                          } else {
-                            Navigator.pop(context, true);
-                          }
-                        }
-                      },
+                      onPressed: _navigateManual,
                       icon: const Icon(Icons.keyboard),
                       label: Text(l10n.addManually),
                     ),
@@ -156,6 +226,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
       );
     }
 
+    // Scanning state — full-screen camera with overlaid controls.
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -164,9 +235,23 @@ class _ScannerMobileState extends State<ScannerMobile> {
               controller: _controller!,
               onDetect: _handleBarcode,
             ),
+            // Back button top-left.
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Material(
+                color: Colors.black45,
+                borderRadius: BorderRadius.circular(20),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+            // Instruction card top-center.
             Positioned(
               top: 16,
-              left: 16,
+              left: 72,
               right: 16,
               child: Card(
                 color: Colors.white.withOpacity(0.95),
@@ -183,6 +268,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
                 ),
               ),
             ),
+            // Manual entry FAB bottom-center.
             Positioned(
               bottom: 24,
               left: 0,
@@ -190,23 +276,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
               child: Center(
                 child: FloatingActionButton.extended(
                   heroTag: 'add_manual_fab',
-                  onPressed: () async {
-                    final Widget destination = widget.wishlistMode
-                        ? const WishlistAddScreen()
-                        : ManualEntryScreen(addMode: widget.addMode);
-                    final result = await Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => destination));
-                    if (result == true && mounted) {
-                      if (!widget.wishlistMode && !widget.addMode) {
-                        final libraryProvider = Provider.of<LibraryProvider>(
-                            context,
-                            listen: false);
-                        await libraryProvider.fetchLibraries();
-                      } else {
-                        Navigator.pop(context, true);
-                      }
-                    }
-                  },
+                  onPressed: _navigateManual,
                   icon: const Icon(Icons.keyboard),
                   label: Text(l10n.addManually),
                   backgroundColor: AppColors.goldLeaf,
