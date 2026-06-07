@@ -5,6 +5,7 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../services/cloudinary_service.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
+import '../providers/wishlist_provider.dart';
 import '../models/book.dart';
 import '../models/library.dart';
 import '../theme/app_colors.dart';
@@ -47,32 +48,23 @@ class _BookEditScreenState extends State<BookEditScreen> {
   Book? _currentBook;
   bool _isAdding = false;
   bool _isUploadingImage = false;
+  // Only used in edit mode to display the current library.
   Library? _selectedLibrary;
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.initialBook != null) {
       _currentBook = widget.initialBook;
       _populateForm(widget.initialBook!);
     }
-    
-    // Load selected library - ensure we get fresh reference from allLibraries
-    final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+
+    // In edit mode, resolve the library reference for display.
     if (widget.editMode && widget.libraryId != null) {
-      // In edit mode, use the libraryId passed in
+      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
       _selectedLibrary = libraryProvider.getLibraryById(widget.libraryId);
-    } else {
-      // In add mode, use the currently selected library
-      // Try to get fresh reference from allLibraries to ensure permissions are up to date
-      final selectedLib = libraryProvider.selectedLibrary;
-      if (selectedLib != null) {
-        _selectedLibrary = libraryProvider.getLibraryById(selectedLib.id) ?? selectedLib;
-      } else {
-        _selectedLibrary = null;
-      }
     }
   }
 
@@ -84,14 +76,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
     _descriptionController.text = book.description ?? '';
     _totalPagesController.text = book.totalPages > 0 ? book.totalPages.toString() : '';
     _genreController.text = book.genre ?? '';
-    // Populate series name and volume from combined data (prioritizing override)
     _seriesNameController.text = book.seriesName ?? '';
     _seriesVolumeController.text = book.seriesVolume ?? '';
-    // Populate notes from book model
     _notesController.text = book.notes ?? '';
-    // Populate price from book model
     if (book.price != null) {
-      // Format price to remove unnecessary decimal places (e.g., 29.0 -> 29, 29.99 -> 29.99)
       final priceStr = book.price!.toStringAsFixed(book.price!.truncateToDouble() == book.price! ? 0 : 2);
       _priceController.text = priceStr;
     } else {
@@ -116,26 +104,120 @@ class _BookEditScreenState extends State<BookEditScreen> {
     super.dispose();
   }
 
-  Future<void> _addToLibrary() async {
-    final l10n = AppLocalizations.of(context)!;
-    
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  // Shows the destination picker bottom sheet. Called from the save button in add mode.
+  // Returns after the sheet is dismissed; if the user picked a destination the add
+  // action runs and the screen pops on success. If the sheet is dismissed without a
+  // selection, nothing happens and the user returns to the form with edits intact.
+  Future<void> _showDestinationSheet() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedLibrary == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectLibraryFirst)),
-      );
-      return;
+    final l10n = AppLocalizations.of(context)!;
+    final allLibraries =
+        Provider.of<LibraryProvider>(context, listen: false).allLibraries;
+
+    int? chosenLibraryId;
+    bool chooseWishlist = false;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+                child: Text(
+                  l10n.addBook,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.deltaTeal,
+                      ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    ...allLibraries.map((library) {
+                      return ListTile(
+                        leading: Icon(
+                          library.isOwner ? Icons.library_books : Icons.people,
+                          color: AppColors.deltaTeal,
+                        ),
+                        title: Text(library.name),
+                        onTap: () {
+                          chosenLibraryId = library.id;
+                          Navigator.pop(sheetContext);
+                        },
+                      );
+                    }),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.bookmark_border,
+                        color: AppColors.deltaTeal,
+                      ),
+                      title: Text(l10n.addToWishlist),
+                      // Wishlist requires the book to already exist in the backend.
+                      // When the book was looked up via ISBN/search, it has an id.
+                      // For fully manual entries (no lookup), the wishlist option is disabled.
+                      enabled: _currentBook?.id != null,
+                      onTap: _currentBook?.id == null
+                          ? null
+                          : () {
+                              chooseWishlist = true;
+                              Navigator.pop(sheetContext);
+                            },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+
+    if (chosenLibraryId != null) {
+      await _addToLibrary(chosenLibraryId!);
+    } else if (chooseWishlist) {
+      await _addToWishlist();
     }
+    // Dismissed without selection — do nothing (edits intact).
+  }
+
+  Future<void> _addToLibrary(int libraryId) async {
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isAdding = true);
 
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      
-      // Parse form values
+
       final isbn = _isbnController.text.trim();
       final title = _titleController.text.trim();
       final author = _authorController.text.trim();
@@ -159,52 +241,75 @@ class _BookEditScreenState extends State<BookEditScreen> {
         seriesName: seriesName.isNotEmpty ? seriesName : null,
         price: price,
         libraryTotalPages: libraryTotalPages,
-        libraryId: _selectedLibrary!.id,
+        libraryId: libraryId,
       );
 
       if (mounted) {
         if (result != null) {
-          // Refresh libraries
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+          final libraryProvider =
+              Provider.of<LibraryProvider>(context, listen: false);
           await libraryProvider.fetchLibraries();
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.bookAdded)),
-          );
-          
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.bookAdded)));
           Navigator.pop(context, true);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.addError)),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.addError)));
         }
       }
     } catch (e) {
       if (mounted) {
-        // Show actual error message if available
         String errorMessage = l10n.addError;
         if (e.toString().contains('Failed to add book:')) {
-          // Extract error message from exception
           errorMessage = e.toString().split(': ').skip(1).join(': ');
-          // Try to extract more user-friendly error from response body
-          if (errorMessage.contains('permission') || errorMessage.contains('Permission')) {
-            errorMessage = "You don't have permission to add books to this library.";
+          if (errorMessage.contains('permission') ||
+              errorMessage.contains('Permission')) {
+            errorMessage =
+                "You don't have permission to add books to this library.";
           }
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(errorMessage)));
       }
     } finally {
-      if (mounted) {
-        setState(() => _isAdding = false);
+      if (mounted) setState(() => _isAdding = false);
+    }
+  }
+
+  Future<void> _addToWishlist() async {
+    final l10n = AppLocalizations.of(context)!;
+    final bookId = _currentBook?.id;
+    if (bookId == null) return;
+
+    setState(() => _isAdding = true);
+
+    try {
+      final wishlistProvider =
+          Provider.of<WishlistProvider>(context, listen: false);
+      if (wishlistProvider.isWishlisted(bookId)) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.alreadyInWishlist)));
+        return;
       }
+      final ok = await wishlistProvider.addToWishlist(bookId);
+      if (!mounted) return;
+      if (ok) {
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.addError)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.addError)));
+      }
+    } finally {
+      if (mounted) setState(() => _isAdding = false);
     }
   }
 
   Future<void> _updateBook() async {
-    final l10n = AppLocalizations.of(context)!;
-    
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -216,11 +321,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
       return;
     }
 
-    // Determine the library_book_id to use for the update
-    // In library context, the API might return 'id' as the library_book_id
-    // Try libraryBookId first, then fall back to book id if libraryBookId is null
     final libraryBookId = _currentBook?.libraryBookId ?? _currentBook?.id;
-    
+
     if (libraryBookId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid book or library: Book ID is missing. Please refresh and try again.')),
@@ -232,8 +334,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
 
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      
-      // Parse all form values for full metadata editing
+
       final isbn = _isbnController.text.trim();
       final title = _titleController.text.trim();
       final author = _authorController.text.trim();
@@ -247,64 +348,18 @@ class _BookEditScreenState extends State<BookEditScreen> {
       final price = double.tryParse(_priceController.text.trim());
 
       final updateData = <String, dynamic>{};
-      
-      // Include all fields that can be updated
-      if (isbn.isNotEmpty) {
-        updateData['isbn'] = isbn;
-      }
-      if (title.isNotEmpty) {
-        updateData['title'] = title;
-      }
-      if (author.isNotEmpty) {
-        updateData['author'] = author;
-      }
-      if (genre.isNotEmpty) {
-        updateData['genre'] = genre;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['genre'] = '';
-      }
-      if (totalPages > 0) {
-        updateData['total_pages'] = totalPages;
-      }
-      if (description.isNotEmpty) {
-        updateData['description'] = description;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['description'] = '';
-      }
-      if (coverUrl.isNotEmpty) {
-        updateData['cover_url'] = coverUrl;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['cover_url'] = '';
-      }
-      // Send 'series' (not 'series_name') - provider will map it to 'series_name'
-      if (seriesName.isNotEmpty) {
-        updateData['series'] = seriesName;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['series'] = '';
-      }
-      // Send 'seriesVolume' - provider will map it to 'series_volume'
-      if (seriesVolume.isNotEmpty) {
-        updateData['seriesVolume'] = seriesVolume;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['seriesVolume'] = '';
-      }
-      // Send 'notes' - provider will pass it through as 'notes'
-      if (notes.isNotEmpty) {
-        updateData['notes'] = notes;
-      } else {
-        // Allow clearing by sending empty string
-        updateData['notes'] = '';
-      }
-      
-      // Send 'price' - library-specific price
-      if (price != null) {
-        updateData['price'] = price;
-      }
+
+      if (isbn.isNotEmpty) updateData['isbn'] = isbn;
+      if (title.isNotEmpty) updateData['title'] = title;
+      if (author.isNotEmpty) updateData['author'] = author;
+      updateData['genre'] = genre.isNotEmpty ? genre : '';
+      if (totalPages > 0) updateData['total_pages'] = totalPages;
+      updateData['description'] = description.isNotEmpty ? description : '';
+      updateData['cover_url'] = coverUrl.isNotEmpty ? coverUrl : '';
+      updateData['series'] = seriesName.isNotEmpty ? seriesName : '';
+      updateData['seriesVolume'] = seriesVolume.isNotEmpty ? seriesVolume : '';
+      updateData['notes'] = notes.isNotEmpty ? notes : '';
+      if (price != null) updateData['price'] = price;
 
       final result = await bookProvider.updateLibraryBook(
         libraryId: widget.libraryId!.toString(),
@@ -314,7 +369,6 @@ class _BookEditScreenState extends State<BookEditScreen> {
 
       if (mounted) {
         if (result != null) {
-          // Create updated Book object with all updated values for immediate UI feedback
           final updatedBook = Book(
             id: _currentBook!.id,
             libraryId: _currentBook!.libraryId,
@@ -341,18 +395,15 @@ class _BookEditScreenState extends State<BookEditScreen> {
             isOwnedGlobally: _currentBook!.isOwnedGlobally,
             permissions: _currentBook!.permissions,
           );
-          
-          // Update local Book object in LibraryProvider for immediate UI feedback
-          final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+
+          final libraryProvider =
+              Provider.of<LibraryProvider>(context, listen: false);
           libraryProvider.updateBookInSelectedLibrary(_currentBook!.id!, updatedBook);
-          
-          // Refresh libraries and library details to get updated book data from server
           await libraryProvider.fetchLibraryDetails(widget.libraryId!);
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Book updated successfully')),
           );
-          
           Navigator.pop(context, true);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -367,9 +418,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isAdding = false);
-      }
+      if (mounted) setState(() => _isAdding = false);
     }
   }
 
@@ -501,48 +550,31 @@ class _BookEditScreenState extends State<BookEditScreen> {
     );
   }
 
-
   Widget _buildEditForm() {
     final l10n = AppLocalizations.of(context)!;
     final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
     final allLibraries = libraryProvider.allLibraries;
 
-    // Find the matching library from allLibraries by ID to ensure reference equality
-    // This ensures we use a fresh library reference with up-to-date permissions
+    // In edit mode, resolve a fresh library reference for the display dropdown.
     Library? matchingSelectedLibrary;
-    if (_selectedLibrary != null) {
+    if (widget.editMode && _selectedLibrary != null) {
       try {
         matchingSelectedLibrary = allLibraries.firstWhere(
           (lib) => lib.id == _selectedLibrary!.id,
         );
-      } catch (e) {
-        // Library not found in allLibraries, keep it as null
+      } catch (_) {
         matchingSelectedLibrary = null;
       }
     }
 
-    // Check if user has permissions for the selected library
-    // Use matchingSelectedLibrary if found (guaranteed fresh from allLibraries),
-    // otherwise use _selectedLibrary if it's not null (may be from dropdown selection)
-    final Library? libraryForPermissions = matchingSelectedLibrary ?? _selectedLibrary;
-    final bool isOwner = libraryForPermissions?.isOwner ?? false;
-    final bool canAddBooks = libraryForPermissions?.canAddBooks ?? false;
-    final bool hasPermissions = isOwner || canAddBooks;
-    final bool librarySelected = libraryForPermissions != null;
-    
-    // Check if required form fields are filled (basic validation check)
     final bool formFieldsValid = _isbnController.text.trim().isNotEmpty &&
         _titleController.text.trim().isNotEmpty &&
         _authorController.text.trim().isNotEmpty &&
         _totalPagesController.text.trim().isNotEmpty;
 
-    // Button enabled if: form valid, library selected, has permissions, and not adding
-    // In edit mode, library selection is not needed (already set)
-    final bool isAddEnabled = !_isAdding &&
-        !_isUploadingImage &&
-        formFieldsValid &&
-        (widget.editMode ? true : librarySelected) &&
-        (widget.editMode ? true : hasPermissions);
+    // In add mode the library is chosen via the bottom sheet, so no library
+    // selection or permission check is needed here.
+    final bool isAddEnabled = !_isAdding && !_isUploadingImage && formFieldsValid;
 
     return Form(
       key: _formKey,
@@ -624,7 +656,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 suffixIcon: BarcodeFieldButton(controller: _isbnController),
               ),
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}), // Trigger rebuild for button state
+              onChanged: (_) => setState(() {}),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return l10n.isbnRequired;
@@ -633,7 +665,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Title
             TextFormField(
               controller: _titleController,
@@ -657,7 +689,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 suffixIcon: OcrFieldButton(controller: _titleController),
               ),
-              onChanged: (_) => setState(() {}), // Trigger rebuild for button state
+              onChanged: (_) => setState(() {}),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return l10n.titleRequired;
@@ -666,7 +698,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Author
             TextFormField(
               controller: _authorController,
@@ -690,7 +722,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 suffixIcon: OcrFieldButton(controller: _authorController),
               ),
-              onChanged: (_) => setState(() {}), // Trigger rebuild for button state
+              onChanged: (_) => setState(() {}),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return l10n.authorRequired;
@@ -699,7 +731,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Cover URL
             Text(
               l10n.orEnterUrl,
@@ -730,10 +762,10 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
               keyboardType: TextInputType.url,
-              onChanged: (_) => setState(() {}), // Refresh cover preview
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
-            
+
             // Total Pages
             TextFormField(
               controller: _totalPagesController,
@@ -761,7 +793,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 ),
               ),
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}), // Trigger rebuild for button state
+              onChanged: (_) => setState(() {}),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return l10n.pagesRequired;
@@ -774,7 +806,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Description
             TextFormField(
               controller: _descriptionController,
@@ -804,7 +836,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            
+
             // Genre
             TextFormField(
               controller: _genreController,
@@ -832,8 +864,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
               style: const TextStyle(color: AppColors.deltaTeal),
             ),
             const SizedBox(height: 16),
-            
-            // Series Name (library-specific override)
+
+            // Series Name
             TextFormField(
               controller: _seriesNameController,
               decoration: InputDecoration(
@@ -860,8 +892,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
               style: const TextStyle(color: AppColors.deltaTeal),
             ),
             const SizedBox(height: 16),
-            
-            // Series Volume (library-specific)
+
+            // Series Volume
             TextFormField(
               controller: _seriesVolumeController,
               decoration: InputDecoration(
@@ -886,72 +918,9 @@ class _BookEditScreenState extends State<BookEditScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
-            // Library selection (disabled in edit mode)
-            if (!widget.editMode) ...[
-              Text(
-                l10n.selectLibrary,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<Library>(
-                value: matchingSelectedLibrary,
-                decoration: InputDecoration(
-                  labelText: l10n.library,
-                  filled: true,
-                  fillColor: AppColors.riverMist,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.borderLight),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.borderLight),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                ),
-                items: allLibraries.map((library) {
-                  final isShared = libraryProvider.isSharedLibrary(library);
-                  return DropdownMenuItem<Library>(
-                    value: library,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isShared ? Icons.share : Icons.library_books,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            library.name + (isShared ? ' (Shared)' : ''),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (Library? library) {
-                  setState(() {
-                    // Ensure we use the library reference from allLibraries
-                    // This guarantees permissions are up to date
-                    _selectedLibrary = library;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return l10n.selectLibraryFirst;
-                  }
-                  return null;
-                },
-              ),
-            ] else ...[
-              // Show current library in edit mode (disabled/display only)
+
+            // Library display: edit mode only (read-only — destination is fixed).
+            if (widget.editMode) ...[
               Text(
                 l10n.library,
                 style: Theme.of(context).textTheme.titleSmall,
@@ -999,24 +968,12 @@ class _BookEditScreenState extends State<BookEditScreen> {
                     ),
                   );
                 }).toList(),
-                onChanged: null, // Disabled in edit mode
+                onChanged: null, // Disabled — library is fixed in edit mode.
               ),
+              const SizedBox(height: 16),
             ],
-            // Show warning if library selected but user doesn't have permissions
-            if (librarySelected && !hasPermissions)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  "You don't have permission to add books to this shared library.",
-                  style: TextStyle(
-                    color: Colors.orange[700],
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 16),
-            
-            // Price (library-specific)
+
+            // Price
             TextFormField(
               controller: _priceController,
               decoration: InputDecoration(
@@ -1043,7 +1000,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                   decimalAllowed: true,
                 ),
               ),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (value) {
                 if (value != null && value.trim().isNotEmpty) {
                   final price = double.tryParse(value.trim());
@@ -1055,8 +1012,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
-            // Library-specific total pages override (only shown when adding, not editing)
+
+            // Library-specific total pages override (add mode only)
             if (!widget.editMode) ...[
               TextFormField(
                 controller: _libraryPagesController,
@@ -1096,8 +1053,8 @@ class _BookEditScreenState extends State<BookEditScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            
-            // Notes (library-specific)
+
+            // Notes
             TextFormField(
               controller: _notesController,
               decoration: InputDecoration(
@@ -1122,12 +1079,12 @@ class _BookEditScreenState extends State<BookEditScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 24),
-            
-            // Add/Update button
+
+            // Save / Update button
             ElevatedButton(
               onPressed: widget.editMode
                   ? (_isAdding || _isUploadingImage ? null : _updateBook)
-                  : (isAddEnabled ? _addToLibrary : null),
+                  : (isAddEnabled ? _showDestinationSheet : null),
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.editMode
                     ? (_isAdding ? Colors.grey : AppColors.goldLeaf)
@@ -1142,7 +1099,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (_isAdding)
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -1157,12 +1114,12 @@ class _BookEditScreenState extends State<BookEditScreen> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 8),
-                    Icon(widget.editMode ? Icons.update : Icons.add, size: 20),
+                    Icon(widget.editMode ? Icons.update : Icons.check, size: 20),
                   ],
                   const SizedBox(width: 8),
                   Text(widget.editMode
                       ? (_isAdding ? 'Updating...' : 'Update Book')
-                      : (_isAdding ? l10n.searching : l10n.addToLibrary)),
+                      : (_isAdding ? l10n.searching : l10n.save)),
                 ],
               ),
             ),
@@ -1175,7 +1132,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.editMode ? 'Edit Book' : l10n.createManually),
