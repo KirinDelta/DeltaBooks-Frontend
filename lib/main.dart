@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
 import 'providers/feature_flag_provider.dart';
@@ -31,6 +32,7 @@ class DeltaBooksApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: Builder(
         builder: (context) {

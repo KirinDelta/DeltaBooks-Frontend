@@ -24,6 +24,7 @@ class FeatureFlagProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool isEnabled(String flag) => _flags.isEnabled(flag);
+  Map<String, bool> get allFlags => Map.unmodifiable(_flags.flags);
 
   Future<void> fetchFlags(String token) async {
     _isLoading = true;

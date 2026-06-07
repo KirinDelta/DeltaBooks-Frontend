@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/library_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/user_avatar.dart';
+import 'admin/admin_users_screen.dart';
 import 'library_statistics_screen.dart';
 import 'profile_screen.dart';
 
@@ -89,6 +90,26 @@ class YouScreen extends StatelessWidget {
             ),
 
             const Divider(height: 1, color: AppColors.borderLight),
+
+            // Admin panel — only visible when the current user is an admin
+            if (user?.admin == true) ...[
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings_outlined,
+                    color: AppColors.goldLeaf),
+                title: Text(
+                  l10n.adminPanel,
+                  style: const TextStyle(color: AppColors.deltaTeal),
+                ),
+                trailing: const Icon(Icons.chevron_right,
+                    color: AppColors.textSecondary),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AdminUsersScreen()),
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
+            ],
 
             // Statistics
             ListTile(
