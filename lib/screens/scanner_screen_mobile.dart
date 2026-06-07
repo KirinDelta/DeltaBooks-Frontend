@@ -26,22 +26,18 @@ class _ScannerMobileState extends State<ScannerMobile> {
   MobileScannerController? _controller;
   bool _isScanning = false;
   bool _isInitialized = false;
-  // On web the camera must be started by a user gesture; tracks whether the
-  // user has tapped the enable button yet.
   bool _webStartRequested = false;
   String? _initError;
 
   @override
   void initState() {
     super.initState();
-    // On web, browsers block camera access without a user gesture, so we wait
-    // for the user to tap before calling start(). On mobile the OS handles the
-    // permission dialog from initState safely.
     if (!kIsWeb) {
       _initializeScanner();
     }
   }
 
+  // Mobile-only: autoStart: false + manual start() as required by CLAUDE.md.
   Future<void> _initializeScanner() async {
     setState(() {
       _isInitialized = false;
@@ -64,6 +60,30 @@ class _ScannerMobileState extends State<ScannerMobile> {
         });
       }
     }
+  }
+
+  // Web-only: use autoStart: true so the MobileScanner widget calls attach()
+  // before start() runs. Calling start() manually (before the widget mounts)
+  // causes a 500 ms controllerNotAttached timeout — the permission dialog
+  // is never shown. This matches how BarcodeFieldButton works.
+  void _startWebCamera() {
+    _controller?.dispose();
+    _controller = MobileScannerController(autoStart: true);
+    setState(() {
+      _webStartRequested = true;
+      _isInitialized = true;
+      _initError = null;
+    });
+  }
+
+  void _resetWebCamera() {
+    _controller?.dispose();
+    _controller = null;
+    setState(() {
+      _webStartRequested = false;
+      _isInitialized = false;
+      _initError = null;
+    });
   }
 
   @override
@@ -151,10 +171,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() => _webStartRequested = true);
-                    _initializeScanner();
-                  },
+                  onPressed: _startWebCamera,
                   icon: const Icon(Icons.camera_alt),
                   label: Text(l10n.enableCameraAccess),
                   style: ElevatedButton.styleFrom(
@@ -177,7 +194,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
       );
     }
 
-    // Loading or error state.
+    // Mobile loading or error state (never reached on web).
     if (!_isInitialized || _controller == null) {
       return Scaffold(
         appBar: AppBar(
@@ -203,10 +220,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        if (kIsWeb) setState(() => _webStartRequested = false);
-                        _initializeScanner();
-                      },
+                      onPressed: _initializeScanner,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.goldLeaf,
                         foregroundColor: Colors.white,
@@ -234,6 +248,44 @@ class _ScannerMobileState extends State<ScannerMobile> {
             MobileScanner(
               controller: _controller!,
               onDetect: _handleBarcode,
+              // On web, MobileScanner's errorBuilder handles permission denial
+              // so the user can retry without leaving the screen.
+              errorBuilder: kIsWeb
+                  ? (context, error) => Center(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 32),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.camera_alt_outlined,
+                                  size: 48, color: Colors.grey),
+                              const SizedBox(height: 12),
+                              Text(
+                                l10n.cameraPermissionDenied,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _resetWebCamera,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.goldLeaf,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(l10n.retry),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: _navigateManual,
+                                icon: const Icon(Icons.keyboard),
+                                label: Text(l10n.addManually),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                  : null,
             ),
             // Back button top-left.
             Positioned(
