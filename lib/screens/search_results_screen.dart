@@ -6,7 +6,7 @@ import '../providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
 import '../utils/image_utils.dart';
-import 'add_book_confirmation_screen.dart';
+import 'book_edit_screen.dart';
 import 'book_detail_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -135,8 +135,7 @@ class SearchResultsScreen extends StatelessWidget {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          AddBookConfirmationScreen(book: book),
+                      builder: (context) => BookEditScreen(initialBook: book),
                     ),
                   );
                   if (result == true) Navigator.pop(context, true);

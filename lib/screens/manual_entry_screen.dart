@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
+import '../models/book.dart';
 import '../providers/book_provider.dart';
 import '../providers/library_provider.dart';
 import '../theme/app_colors.dart';
-import 'add_book_confirmation_screen.dart';
 import 'book_edit_screen.dart';
 import 'search_results_screen.dart';
 import 'book_detail_screen.dart';
@@ -27,7 +27,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final TextEditingController _isbnController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
-  
+
   bool _isSearching = false;
 
   @override
@@ -35,7 +35,6 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     super.initState();
     if (widget.initialIsbn != null) {
       _isbnController.text = widget.initialIsbn!;
-      // Auto-search if ISBN is provided
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _searchByIsbn();
       });
@@ -53,7 +52,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Future<void> _searchByIsbn() async {
     final l10n = AppLocalizations.of(context)!;
     final isbn = _isbnController.text.trim();
-    
+
     if (isbn.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.enterIsbnError)),
@@ -66,18 +65,31 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
       final books = await bookProvider.searchBooks(isbn: isbn);
-      
+
       if (mounted) {
         if (books.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.bookNotFound)),
+          // ISBN not found — navigate to edit screen with just the ISBN pre-filled.
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookEditScreen(
+                initialBook: Book(isbn: isbn, title: '', author: '', totalPages: 0),
+              ),
+            ),
           );
+          if (result == true && mounted) {
+            final libraryProvider =
+                Provider.of<LibraryProvider>(context, listen: false);
+            await libraryProvider.fetchLibraries();
+            Navigator.pop(context, true);
+          }
         } else if (books.length == 1) {
+          // Single result — go straight to edit screen (add mode) or detail screen (view mode).
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => widget.addMode
-                  ? AddBookConfirmationScreen(book: books[0])
+                  ? BookEditScreen(initialBook: books[0])
                   : BookDetailScreen(book: books[0], isSearchPreview: true),
             ),
           );
@@ -123,7 +135,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final title = _titleController.text.trim();
     final author = _authorController.text.trim();
-    
+
     if (title.isEmpty && author.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.atLeastOneSearchField)),
@@ -139,7 +151,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         title: title.isNotEmpty ? title : null,
         author: author.isNotEmpty ? author : null,
       );
-      
+
       if (mounted) {
         if (books.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -158,10 +170,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
             ),
           );
-          
-          // Refresh libraries if book was added
           if (result == true && mounted) {
-            final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+            final libraryProvider =
+                Provider.of<LibraryProvider>(context, listen: false);
             await libraryProvider.fetchLibraries();
             Navigator.pop(context, true);
           }
@@ -187,10 +198,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         builder: (context) => const BookEditScreen(),
       ),
     );
-    
-    // Refresh libraries if book was added
     if (result == true && mounted) {
-      final libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+      final libraryProvider =
+          Provider.of<LibraryProvider>(context, listen: false);
       await libraryProvider.fetchLibraries();
       Navigator.pop(context, true);
     }
@@ -199,7 +209,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.searchByIsbn),
@@ -251,7 +261,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isSearching ? null : _searchByIsbn,
                   icon: _isSearching
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -271,7 +281,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   ),
                 ),
               ),
-              
+
               // OR separator
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -302,7 +312,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   ],
                 ),
               ),
-              
+
               // Title and Author search section
               Text(
                 l10n.searchByTitleAuthor,
@@ -368,7 +378,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isSearching ? null : _searchByTitleAuthor,
                   icon: _isSearching
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -388,9 +398,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Create Manually button
               SizedBox(
                 width: double.infinity,
