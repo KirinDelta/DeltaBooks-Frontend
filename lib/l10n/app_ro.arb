@@ -268,5 +268,7 @@
   "errorUpdatingFlag": "Eroare la actualizarea flag-ului",
   "invalidPercentage": "Introduceți o valoare între 0 și 100",
   "enableForUserSuccess": "Activat pentru {email}",
-  "disableForUserSuccess": "Dezactivat pentru {email}"
+  "disableForUserSuccess": "Dezactivat pentru {email}",
+  "selectTheCorrectBook": "Selectează cartea corectă",
+  "noneOfThese": "Niciuna dintre acestea"
 }

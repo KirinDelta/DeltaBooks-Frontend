@@ -814,4 +814,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String disableForUserSuccess(String email) {
     return 'Disabled for $email';
   }
+
+  @override
+  String get selectTheCorrectBook => 'Select the correct book';
+
+  @override
+  String get noneOfThese => 'None of these';
 }

@@ -913,5 +913,13 @@
     "placeholders": {
       "email": { "type": "String" }
     }
+  },
+  "selectTheCorrectBook": "Select the correct book",
+  "@selectTheCorrectBook": {
+    "description": "AppBar title shown when the user is picking from LLM-suggested candidates for a scanned ISBN"
+  },
+  "noneOfThese": "None of these",
+  "@noneOfThese": {
+    "description": "Button shown in LLM-candidates mode to skip all suggestions and enter book details manually"
   }
 }

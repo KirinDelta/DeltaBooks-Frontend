@@ -816,4 +816,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String disableForUserSuccess(String email) {
     return 'Dezactivat pentru $email';
   }
+
+  @override
+  String get selectTheCorrectBook => 'Selectează cartea corectă';
+
+  @override
+  String get noneOfThese => 'Niciuna dintre acestea';
 }

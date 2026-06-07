@@ -100,6 +100,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             Navigator.pop(context, true);
           }
         } else {
+          final isLlmCandidates = books.any((b) => b.source == 'llm');
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -107,6 +108,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 books: books,
                 searchQuery: isbn,
                 addMode: widget.addMode,
+                isLlmCandidatesMode: isLlmCandidates,
+                fallbackIsbn: isLlmCandidates ? isbn : null,
               ),
             ),
           );

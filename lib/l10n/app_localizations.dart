@@ -1675,6 +1675,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Disabled for {email}'**
   String disableForUserSuccess(String email);
+
+  /// AppBar title shown when the user is picking from LLM-suggested candidates for a scanned ISBN
+  ///
+  /// In en, this message translates to:
+  /// **'Select the correct book'**
+  String get selectTheCorrectBook;
+
+  /// Button shown in LLM-candidates mode to skip all suggestions and enter book details manually
+  ///
+  /// In en, this message translates to:
+  /// **'None of these'**
+  String get noneOfThese;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,8 @@ class SearchResultsScreen extends StatelessWidget {
   final String searchQuery;
   final bool wishlistMode;
   final bool addMode;
+  final bool isLlmCandidatesMode;
+  final String? fallbackIsbn;
 
   const SearchResultsScreen({
     super.key,
@@ -21,6 +23,8 @@ class SearchResultsScreen extends StatelessWidget {
     required this.searchQuery,
     this.wishlistMode = false,
     this.addMode = false,
+    this.isLlmCandidatesMode = false,
+    this.fallbackIsbn,
   });
 
   @override
@@ -29,11 +33,41 @@ class SearchResultsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Search Results'),
+        title: Text(isLlmCandidatesMode ? l10n.selectTheCorrectBook : 'Search Results'),
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
       ),
       backgroundColor: AppColors.white,
+      bottomNavigationBar: isLlmCandidatesMode
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: OutlinedButton(
+                  onPressed: () async {
+                    final isbn = fallbackIsbn ?? '';
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookEditScreen(
+                          initialBook: Book(isbn: isbn, title: '', author: '', totalPages: 0),
+                        ),
+                      ),
+                    );
+                    if (result == true) Navigator.pop(context, true);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.deepSeaBlue,
+                    side: const BorderSide(color: AppColors.deepSeaBlue, width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(l10n.noneOfThese),
+                ),
+              ),
+            )
+          : null,
       body: books.isEmpty
           ? Stack(
               children: [
