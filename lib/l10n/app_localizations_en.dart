@@ -754,4 +754,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get featureFlagsAdminDescription =>
       'Toggle and per-user actions require admin API endpoints (POST /admin/feature_flags/:name/enable|disable|enable_for_user) that are not yet implemented. Use the Flipper UI at /admin/flipper in the meantime.';
+
+  @override
+  String get flagOn => 'On';
+
+  @override
+  String get flagOff => 'Off';
+
+  @override
+  String get flagConditional => 'Conditional';
+
+  @override
+  String get enableGlobally => 'Enable globally';
+
+  @override
+  String get disableGlobally => 'Disable globally';
+
+  @override
+  String get manageFlagActors => 'Manage users';
+
+  @override
+  String get enabledForUsers => 'Enabled for users:';
+
+  @override
+  String get disableForUser => 'Disable for user';
+
+  @override
+  String get setPercentage => 'Set % of actors';
+
+  @override
+  String get percentageHint => '0–100';
+
+  @override
+  String percentageActors(int percentage) {
+    return '$percentage% of actors';
+  }
+
+  @override
+  String get percentageUpdated => 'Percentage updated';
+
+  @override
+  String get percentageDisabled => 'Percentage gate disabled';
+
+  @override
+  String get flagUpdated => 'Flag updated';
+
+  @override
+  String get errorUpdatingFlag => 'Error updating flag';
+
+  @override
+  String get invalidPercentage => 'Enter a value between 0 and 100';
+
+  @override
+  String enableForUserSuccess(String email) {
+    return 'Enabled for $email';
+  }
+
+  @override
+  String disableForUserSuccess(String email) {
+    return 'Disabled for $email';
+  }
 }

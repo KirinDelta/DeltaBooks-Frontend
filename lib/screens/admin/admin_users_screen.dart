@@ -5,6 +5,7 @@ import 'package:deltabooks/l10n/app_localizations.dart';
 import '../../models/admin_user.dart';
 import '../../providers/admin_provider.dart';
 import '../../theme/app_colors.dart';
+import 'admin_feature_flags_screen.dart';
 import 'admin_user_detail_screen.dart';
 
 class AdminUsersScreen extends StatefulWidget {
@@ -89,6 +90,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         title: Text(l10n.adminUsers),
         backgroundColor: AppColors.deepSeaBlue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.toggle_on_outlined, color: Colors.white),
+            tooltip: l10n.adminFeatureFlags,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AdminFeatureFlagsScreen()),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [

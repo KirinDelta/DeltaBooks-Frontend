@@ -249,5 +249,24 @@
   "joinedOn": "Înscris",
   "noFeatureFlags": "Nu există feature flags definite.",
   "featureFlagsAdminNote": "Endpoint-uri backend necesare",
-  "featureFlagsAdminDescription": "Acțiunile de activare/dezactivare necesită endpoint-uri admin (POST /admin/feature_flags/:name/enable|disable|enable_for_user) care nu sunt încă implementate. Folosește Flipper UI la /admin/flipper în acest timp."
+  "featureFlagsAdminDescription": "Acțiunile de activare/dezactivare necesită endpoint-uri admin (POST /admin/feature_flags/:name/enable|disable|enable_for_user) care nu sunt încă implementate. Folosește Flipper UI la /admin/flipper în acest timp.",
+
+  "flagOn": "Activat",
+  "flagOff": "Dezactivat",
+  "flagConditional": "Condiționat",
+  "enableGlobally": "Activează global",
+  "disableGlobally": "Dezactivează global",
+  "manageFlagActors": "Gestionează utilizatori",
+  "enabledForUsers": "Activat pentru utilizatori:",
+  "disableForUser": "Dezactivează pentru utilizator",
+  "setPercentage": "Setează % din actori",
+  "percentageHint": "0–100",
+  "percentageActors": "{percentage}% din actori",
+  "percentageUpdated": "Procentaj actualizat",
+  "percentageDisabled": "Poarta procentuală dezactivată",
+  "flagUpdated": "Flag actualizat",
+  "errorUpdatingFlag": "Eroare la actualizarea flag-ului",
+  "invalidPercentage": "Introduceți o valoare între 0 și 100",
+  "enableForUserSuccess": "Activat pentru {email}",
+  "disableForUserSuccess": "Dezactivat pentru {email}"
 }

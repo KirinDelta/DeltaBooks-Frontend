@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import '../models/admin_feature_flag.dart';
 import '../models/admin_user.dart';
 import '../services/api_service.dart';
 
@@ -151,6 +152,91 @@ class AdminProvider with ChangeNotifier {
 
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  // ── Feature flags ──────────────────────────────────────────────────────────
+
+  List<AdminFeatureFlag> _featureFlags = [];
+  bool _isFlagsLoading = false;
+  String? _flagsError;
+
+  List<AdminFeatureFlag> get featureFlags => _featureFlags;
+  bool get isFlagsLoading => _isFlagsLoading;
+  String? get flagsError => _flagsError;
+
+  Future<void> fetchFeatureFlags() async {
+    _isFlagsLoading = true;
+    _flagsError = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.get('/admin/feature_flags');
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final raw = (json['feature_flags'] as List<dynamic>?) ?? [];
+        _featureFlags =
+            raw.map((f) => AdminFeatureFlag.fromJson(f as Map<String, dynamic>)).toList();
+      } else {
+        final json = jsonDecode(response.body) as Map<String, dynamic>?;
+        _flagsError = json?['error'] as String? ?? 'Error fetching feature flags';
+      }
+    } catch (e) {
+      _flagsError = 'Error fetching feature flags';
+      if (kDebugMode) rethrow;
+    } finally {
+      _isFlagsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> enableFlag(String name) => _postFlagAction('/admin/feature_flags/$name/enable', {});
+
+  Future<bool> disableFlag(String name) => _postFlagAction('/admin/feature_flags/$name/disable', {});
+
+  Future<bool> enableFlagForUser(String name, String email) =>
+      _postFlagAction('/admin/feature_flags/$name/enable_for_user', {'email': email});
+
+  Future<bool> disableFlagForUser(String name, String email) =>
+      _postFlagAction('/admin/feature_flags/$name/disable_for_user', {'email': email});
+
+  Future<bool> enablePercentageOfActors(String name, int percentage) =>
+      _postFlagAction('/admin/feature_flags/$name/enable_percentage_of_actors',
+          {'percentage': percentage});
+
+  Future<bool> disablePercentageOfActors(String name) =>
+      _postFlagAction('/admin/feature_flags/$name/disable_percentage_of_actors', {});
+
+  Future<bool> _postFlagAction(String path, Map<String, dynamic> body) async {
+    try {
+      final response = await _apiService.post(path, body);
+      if (response.statusCode == 200) {
+        final updated =
+            AdminFeatureFlag.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+        _updateFlagInList(updated);
+        return true;
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>?;
+      _flagsError = json?['error'] as String? ?? 'Error updating feature flag';
+      notifyListeners();
+    } catch (e) {
+      _flagsError = 'Error updating feature flag';
+      notifyListeners();
+      if (kDebugMode) rethrow;
+    }
+    return false;
+  }
+
+  void _updateFlagInList(AdminFeatureFlag updated) {
+    final idx = _featureFlags.indexWhere((f) => f.name == updated.name);
+    if (idx != -1) {
+      _featureFlags = List.from(_featureFlags)..[idx] = updated;
+    }
+    notifyListeners();
+  }
+
+  void clearFlagsError() {
+    _flagsError = null;
     notifyListeners();
   }
 }

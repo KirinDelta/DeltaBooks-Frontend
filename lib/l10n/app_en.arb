@@ -861,5 +861,57 @@
   "featureFlagsAdminNote": "Backend endpoints required",
   "@featureFlagsAdminNote": { "description": "Short note on the feature flags screen explaining backend endpoints are not yet implemented" },
   "featureFlagsAdminDescription": "Toggle and per-user actions require admin API endpoints (POST /admin/feature_flags/:name/enable|disable|enable_for_user) that are not yet implemented. Use the Flipper UI at /admin/flipper in the meantime.",
-  "@featureFlagsAdminDescription": { "description": "Detailed description on the feature flags screen explaining what is missing from the backend" }
+  "@featureFlagsAdminDescription": { "description": "Detailed description on the feature flags screen explaining what is missing from the backend" },
+
+  "flagOn": "On",
+  "@flagOn": { "description": "State badge label when a feature flag is fully enabled" },
+  "flagOff": "Off",
+  "@flagOff": { "description": "State badge label when a feature flag is fully disabled" },
+  "flagConditional": "Conditional",
+  "@flagConditional": { "description": "State badge label when a feature flag is conditionally enabled (actors or percentage)" },
+  "enableGlobally": "Enable globally",
+  "@enableGlobally": { "description": "Button to enable a feature flag for all users" },
+  "disableGlobally": "Disable globally",
+  "@disableGlobally": { "description": "Button to disable a feature flag for all users" },
+  "manageFlagActors": "Manage users",
+  "@manageFlagActors": { "description": "Button that opens the per-user enable/disable sheet for a feature flag" },
+  "enabledForUsers": "Enabled for users:",
+  "@enabledForUsers": { "description": "Label before the list of actors a flag is enabled for" },
+  "disableForUser": "Disable for user",
+  "@disableForUser": { "description": "Button to disable a feature flag for a specific user" },
+  "setPercentage": "Set % of actors",
+  "@setPercentage": { "description": "Button/dialog title to set the percentage-of-actors gate on a feature flag" },
+  "percentageHint": "0–100",
+  "@percentageHint": { "description": "Hint text for the percentage input field" },
+  "percentageActors": "{percentage}% of actors",
+  "@percentageActors": {
+    "description": "Label showing the current percentage-of-actors gate value",
+    "placeholders": {
+      "percentage": { "type": "int" }
+    }
+  },
+  "percentageUpdated": "Percentage updated",
+  "@percentageUpdated": { "description": "Snackbar message after successfully setting a percentage-of-actors gate" },
+  "percentageDisabled": "Percentage gate disabled",
+  "@percentageDisabled": { "description": "Snackbar message after clearing a percentage-of-actors gate" },
+  "flagUpdated": "Flag updated",
+  "@flagUpdated": { "description": "Snackbar message after successfully toggling a feature flag globally" },
+  "errorUpdatingFlag": "Error updating flag",
+  "@errorUpdatingFlag": { "description": "Snackbar message when a feature flag update fails" },
+  "invalidPercentage": "Enter a value between 0 and 100",
+  "@invalidPercentage": { "description": "Validation error shown when the percentage input is out of range" },
+  "enableForUserSuccess": "Enabled for {email}",
+  "@enableForUserSuccess": {
+    "description": "Snackbar shown after enabling a feature flag for a specific user",
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "disableForUserSuccess": "Disabled for {email}",
+  "@disableForUserSuccess": {
+    "description": "Snackbar shown after disabling a feature flag for a specific user",
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  }
 }

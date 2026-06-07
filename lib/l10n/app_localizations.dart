@@ -1567,6 +1567,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Toggle and per-user actions require admin API endpoints (POST /admin/feature_flags/:name/enable|disable|enable_for_user) that are not yet implemented. Use the Flipper UI at /admin/flipper in the meantime.'**
   String get featureFlagsAdminDescription;
+
+  /// State badge label when a feature flag is fully enabled
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get flagOn;
+
+  /// State badge label when a feature flag is fully disabled
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get flagOff;
+
+  /// State badge label when a feature flag is conditionally enabled (actors or percentage)
+  ///
+  /// In en, this message translates to:
+  /// **'Conditional'**
+  String get flagConditional;
+
+  /// Button to enable a feature flag for all users
+  ///
+  /// In en, this message translates to:
+  /// **'Enable globally'**
+  String get enableGlobally;
+
+  /// Button to disable a feature flag for all users
+  ///
+  /// In en, this message translates to:
+  /// **'Disable globally'**
+  String get disableGlobally;
+
+  /// Button that opens the per-user enable/disable sheet for a feature flag
+  ///
+  /// In en, this message translates to:
+  /// **'Manage users'**
+  String get manageFlagActors;
+
+  /// Label before the list of actors a flag is enabled for
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled for users:'**
+  String get enabledForUsers;
+
+  /// Button to disable a feature flag for a specific user
+  ///
+  /// In en, this message translates to:
+  /// **'Disable for user'**
+  String get disableForUser;
+
+  /// Button/dialog title to set the percentage-of-actors gate on a feature flag
+  ///
+  /// In en, this message translates to:
+  /// **'Set % of actors'**
+  String get setPercentage;
+
+  /// Hint text for the percentage input field
+  ///
+  /// In en, this message translates to:
+  /// **'0–100'**
+  String get percentageHint;
+
+  /// Label showing the current percentage-of-actors gate value
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage}% of actors'**
+  String percentageActors(int percentage);
+
+  /// Snackbar message after successfully setting a percentage-of-actors gate
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage updated'**
+  String get percentageUpdated;
+
+  /// Snackbar message after clearing a percentage-of-actors gate
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage gate disabled'**
+  String get percentageDisabled;
+
+  /// Snackbar message after successfully toggling a feature flag globally
+  ///
+  /// In en, this message translates to:
+  /// **'Flag updated'**
+  String get flagUpdated;
+
+  /// Snackbar message when a feature flag update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating flag'**
+  String get errorUpdatingFlag;
+
+  /// Validation error shown when the percentage input is out of range
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value between 0 and 100'**
+  String get invalidPercentage;
+
+  /// Snackbar shown after enabling a feature flag for a specific user
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled for {email}'**
+  String enableForUserSuccess(String email);
+
+  /// Snackbar shown after disabling a feature flag for a specific user
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled for {email}'**
+  String disableForUserSuccess(String email);
 }
 
 class _AppLocalizationsDelegate
