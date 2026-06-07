@@ -1369,6 +1369,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap the button below to allow camera access for scanning.'**
   String get tapToEnableCamera;
+
+  /// Label for the admin panel entry point in the You screen
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Panel'**
+  String get adminPanel;
+
+  /// Section header for admin-related menu items
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminSection;
+
+  /// Title for the admin users list screen
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get adminUsers;
+
+  /// Title for the admin feature flags screen
+  ///
+  /// In en, this message translates to:
+  /// **'Feature Flags'**
+  String get adminFeatureFlags;
+
+  /// Button to suspend a user account
+  ///
+  /// In en, this message translates to:
+  /// **'Suspend'**
+  String get suspend;
+
+  /// Button to unsuspend a user account
+  ///
+  /// In en, this message translates to:
+  /// **'Unsuspend'**
+  String get unsuspend;
+
+  /// Status label for a suspended user account
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get suspended;
+
+  /// Status label for an active user account
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeStatus;
+
+  /// Confirmation dialog message before suspending a user
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to suspend this user? They will lose access to the app.'**
+  String get confirmSuspend;
+
+  /// Confirmation dialog message before unsuspending a user
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to unsuspend this user? They will regain access to the app.'**
+  String get confirmUnsuspend;
+
+  /// Explanation shown when trying to suspend an admin
+  ///
+  /// In en, this message translates to:
+  /// **'Admin accounts cannot be suspended.'**
+  String get cannotSuspendAdmin;
+
+  /// Explanation shown when trying to suspend yourself
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot suspend your own account.'**
+  String get cannotSuspendSelf;
+
+  /// Placeholder for the admin user search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search by email...'**
+  String get searchUsers;
+
+  /// Label before the status filter chips on the admin users screen
+  ///
+  /// In en, this message translates to:
+  /// **'Filter:'**
+  String get filterByStatus;
+
+  /// Title for the admin user detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'User Detail'**
+  String get userDetail;
+
+  /// Section header for the user's library memberships on the admin detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'Library Memberships'**
+  String get libraryMemberships;
+
+  /// Button to enable a feature flag for a specific user
+  ///
+  /// In en, this message translates to:
+  /// **'Enable for user'**
+  String get enableForUser;
+
+  /// Badge/button showing a flag is currently enabled
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get disableFlag;
+
+  /// Badge/button showing a flag is currently disabled
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get enableFlag;
+
+  /// Filter chip label for showing users of all statuses
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allStatuses;
+
+  /// Empty state message on the admin users screen
+  ///
+  /// In en, this message translates to:
+  /// **'No users found'**
+  String get noUsers;
+
+  /// Badge shown on library memberships where the user is the library owner
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get ownerBadge;
+
+  /// Badge shown on library memberships where the user is a member
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get memberBadge;
+
+  /// Title for the suspend user confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Suspend User'**
+  String get suspendUser;
+
+  /// Title for the unsuspend user confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Unsuspend User'**
+  String get unsuspendUser;
+
+  /// Snackbar message after successfully suspending a user
+  ///
+  /// In en, this message translates to:
+  /// **'User suspended'**
+  String get suspendSuccess;
+
+  /// Snackbar message after successfully unsuspending a user
+  ///
+  /// In en, this message translates to:
+  /// **'User unsuspended'**
+  String get unsuspendSuccess;
+
+  /// Error message when suspending a user fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error suspending user'**
+  String get errorSuspending;
+
+  /// Error message when unsuspending a user fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error unsuspending user'**
+  String get errorUnsuspending;
+
+  /// Label for the date a user joined, shown on the admin user detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get joinedOn;
+
+  /// Empty state message on the admin feature flags screen
+  ///
+  /// In en, this message translates to:
+  /// **'No feature flags defined.'**
+  String get noFeatureFlags;
+
+  /// Short note on the feature flags screen explaining backend endpoints are not yet implemented
+  ///
+  /// In en, this message translates to:
+  /// **'Backend endpoints required'**
+  String get featureFlagsAdminNote;
+
+  /// Detailed description on the feature flags screen explaining what is missing from the backend
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle and per-user actions require admin API endpoints (POST /admin/feature_flags/:name/enable|disable|enable_for_user) that are not yet implemented. Use the Flipper UI at /admin/flipper in the meantime.'**
+  String get featureFlagsAdminDescription;
 }
 
 class _AppLocalizationsDelegate

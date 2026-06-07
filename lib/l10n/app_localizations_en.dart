@@ -652,4 +652,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tapToEnableCamera =>
       'Tap the button below to allow camera access for scanning.';
+
+  @override
+  String get adminPanel => 'Admin Panel';
+
+  @override
+  String get adminSection => 'Admin';
+
+  @override
+  String get adminUsers => 'Users';
+
+  @override
+  String get adminFeatureFlags => 'Feature Flags';
+
+  @override
+  String get suspend => 'Suspend';
+
+  @override
+  String get unsuspend => 'Unsuspend';
+
+  @override
+  String get suspended => 'Suspended';
+
+  @override
+  String get activeStatus => 'Active';
+
+  @override
+  String get confirmSuspend =>
+      'Are you sure you want to suspend this user? They will lose access to the app.';
+
+  @override
+  String get confirmUnsuspend =>
+      'Are you sure you want to unsuspend this user? They will regain access to the app.';
+
+  @override
+  String get cannotSuspendAdmin => 'Admin accounts cannot be suspended.';
+
+  @override
+  String get cannotSuspendSelf => 'You cannot suspend your own account.';
+
+  @override
+  String get searchUsers => 'Search by email...';
+
+  @override
+  String get filterByStatus => 'Filter:';
+
+  @override
+  String get userDetail => 'User Detail';
+
+  @override
+  String get libraryMemberships => 'Library Memberships';
+
+  @override
+  String get enableForUser => 'Enable for user';
+
+  @override
+  String get disableFlag => 'Enabled';
+
+  @override
+  String get enableFlag => 'Disabled';
+
+  @override
+  String get allStatuses => 'All';
+
+  @override
+  String get noUsers => 'No users found';
+
+  @override
+  String get ownerBadge => 'Owner';
+
+  @override
+  String get memberBadge => 'Member';
+
+  @override
+  String get suspendUser => 'Suspend User';
+
+  @override
+  String get unsuspendUser => 'Unsuspend User';
+
+  @override
+  String get suspendSuccess => 'User suspended';
+
+  @override
+  String get unsuspendSuccess => 'User unsuspended';
+
+  @override
+  String get errorSuspending => 'Error suspending user';
+
+  @override
+  String get errorUnsuspending => 'Error unsuspending user';
+
+  @override
+  String get joinedOn => 'Joined';
+
+  @override
+  String get noFeatureFlags => 'No feature flags defined.';
+
+  @override
+  String get featureFlagsAdminNote => 'Backend endpoints required';
+
+  @override
+  String get featureFlagsAdminDescription =>
+      'Toggle and per-user actions require admin API endpoints (POST /admin/feature_flags/:name/enable|disable|enable_for_user) that are not yet implemented. Use the Flipper UI at /admin/flipper in the meantime.';
 }

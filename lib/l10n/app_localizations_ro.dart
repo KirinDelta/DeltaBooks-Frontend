@@ -654,4 +654,106 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get tapToEnableCamera =>
       'Apasă butonul de mai jos pentru a permite accesul la cameră.';
+
+  @override
+  String get adminPanel => 'Panou Admin';
+
+  @override
+  String get adminSection => 'Admin';
+
+  @override
+  String get adminUsers => 'Utilizatori';
+
+  @override
+  String get adminFeatureFlags => 'Feature Flags';
+
+  @override
+  String get suspend => 'Suspendă';
+
+  @override
+  String get unsuspend => 'Reactivează';
+
+  @override
+  String get suspended => 'Suspendat';
+
+  @override
+  String get activeStatus => 'Activ';
+
+  @override
+  String get confirmSuspend =>
+      'Sigur vrei să suspendezi acest utilizator? Acesta va pierde accesul la aplicație.';
+
+  @override
+  String get confirmUnsuspend =>
+      'Sigur vrei să reactivezi acest utilizator? Acesta va recăpăta accesul la aplicație.';
+
+  @override
+  String get cannotSuspendAdmin => 'Conturile de admin nu pot fi suspendate.';
+
+  @override
+  String get cannotSuspendSelf => 'Nu îți poți suspenda propriul cont.';
+
+  @override
+  String get searchUsers => 'Caută după email...';
+
+  @override
+  String get filterByStatus => 'Filtru:';
+
+  @override
+  String get userDetail => 'Detalii utilizator';
+
+  @override
+  String get libraryMemberships => 'Membru în biblioteci';
+
+  @override
+  String get enableForUser => 'Activează pentru utilizator';
+
+  @override
+  String get disableFlag => 'Activat';
+
+  @override
+  String get enableFlag => 'Dezactivat';
+
+  @override
+  String get allStatuses => 'Toate';
+
+  @override
+  String get noUsers => 'Niciun utilizator găsit';
+
+  @override
+  String get ownerBadge => 'Proprietar';
+
+  @override
+  String get memberBadge => 'Membru';
+
+  @override
+  String get suspendUser => 'Suspendă utilizator';
+
+  @override
+  String get unsuspendUser => 'Reactivează utilizator';
+
+  @override
+  String get suspendSuccess => 'Utilizator suspendat';
+
+  @override
+  String get unsuspendSuccess => 'Utilizator reactivat';
+
+  @override
+  String get errorSuspending => 'Eroare la suspendarea utilizatorului';
+
+  @override
+  String get errorUnsuspending => 'Eroare la reactivarea utilizatorului';
+
+  @override
+  String get joinedOn => 'Înscris';
+
+  @override
+  String get noFeatureFlags => 'Nu există feature flags definite.';
+
+  @override
+  String get featureFlagsAdminNote => 'Endpoint-uri backend necesare';
+
+  @override
+  String get featureFlagsAdminDescription =>
+      'Acțiunile de activare/dezactivare necesită endpoint-uri admin (POST /admin/feature_flags/:name/enable|disable|enable_for_user) care nu sunt încă implementate. Folosește Flipper UI la /admin/flipper în acest timp.';
 }
