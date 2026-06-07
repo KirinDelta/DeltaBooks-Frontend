@@ -1357,6 +1357,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} pages'**
   String pagesCount(int count);
+
+  /// Button label to trigger the browser camera permission prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Camera Access'**
+  String get enableCameraAccess;
+
+  /// Instruction shown on web before the camera permission prompt is triggered
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the button below to allow camera access for scanning.'**
+  String get tapToEnableCamera;
 }
 
 class _AppLocalizationsDelegate

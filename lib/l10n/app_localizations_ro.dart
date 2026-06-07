@@ -647,4 +647,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String pagesCount(int count) {
     return '$count pagini';
   }
+
+  @override
+  String get enableCameraAccess => 'Activează Camera';
+
+  @override
+  String get tapToEnableCamera =>
+      'Apasă butonul de mai jos pentru a permite accesul la cameră.';
 }

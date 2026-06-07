@@ -213,5 +213,7 @@
   "shared": "Partajată",
   "manageLibraries": "Gestionează bibliotecile",
   "editProfile": "Editează Profilul",
-  "pagesCount": "{count} pagini"
+  "pagesCount": "{count} pagini",
+  "enableCameraAccess": "Activează Camera",
+  "tapToEnableCamera": "Apasă butonul de mai jos pentru a permite accesul la cameră."
 }
