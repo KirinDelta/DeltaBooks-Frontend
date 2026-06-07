@@ -33,6 +33,14 @@
   <link rel="manifest" href="manifest.json">
   <!-- Tesseract.js: on-device OCR for web (used by OcrService on web builds) -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+  <!-- ZXing: pre-loaded so mobile_scanner's maybeLoadLibrary() is a no-op by
+       the time the user taps "Enable Camera". Without this, the network fetch
+       inside start() breaks the browser's user-gesture context before
+       getUserMedia() is called, silently preventing the permission dialog. -->
+  <script id="mobile-scanner-barcode-reader"
+          src="https://unpkg.com/@zxing/library@0.21.3"
+          async
+          crossorigin="anonymous"></script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
