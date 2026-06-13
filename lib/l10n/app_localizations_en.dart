@@ -399,6 +399,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get openSettings => 'Open Settings';
+
+  @override
   String get markAsRead => 'Mark as Read';
 
   @override

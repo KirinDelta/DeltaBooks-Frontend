@@ -131,7 +131,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
     String? errorMessage;
     try {
-      errorMessage = await libraryProvider.removeBook(book.id!);
+      errorMessage = await libraryProvider.removeBook(book.libraryBookId!, book.id!);
     } finally {
       if (mounted) {
         Navigator.pop(context); // Close loading dialog

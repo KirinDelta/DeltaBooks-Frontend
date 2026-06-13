@@ -1057,7 +1057,7 @@ class LibraryScreenState extends State<LibraryScreen> {
 
     String? errorMessage;
     try {
-      errorMessage = await libraryProvider.removeBook(book.id!);
+      errorMessage = await libraryProvider.removeBook(book.libraryBookId!, book.id!);
     } finally {
       Navigator.of(context).pop(); // Close loading dialog
     }
