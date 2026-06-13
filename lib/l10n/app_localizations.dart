@@ -1154,6 +1154,12 @@ abstract class AppLocalizations {
   /// **'Use the mobile app to scan barcodes, or add a book manually below.'**
   String get scannerWebFallbackMessage;
 
+  /// Button label to open device app settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
   /// Wishlist tab label
   ///
   /// In en, this message translates to:
@@ -1687,6 +1693,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'None of these'**
   String get noneOfThese;
+
+  /// Label for the genre field in the book edit form
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get genreLabel;
+
+  /// Title of the genre picker bottom sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Select genres'**
+  String get genrePickerTitle;
+
+  /// Placeholder text in the genre search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search genres…'**
+  String get genreSearchPlaceholder;
+
+  /// Label shown when no genres are selected in the picker
+  ///
+  /// In en, this message translates to:
+  /// **'No genres selected'**
+  String get genreNoneSelected;
+
+  /// Done button in the genre picker
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get genreDone;
+
+  /// Clear button in the genre picker to deselect all genres
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get genreClear;
+
+  /// Error message shown in the genre picker when genres fail to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load genres. Tap to retry.'**
+  String get genreErrorRetry;
 }
 
 class _AppLocalizationsDelegate

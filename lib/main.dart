@@ -6,6 +6,7 @@ import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
 import 'providers/feature_flag_provider.dart';
+import 'providers/genre_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/invitation_provider.dart';
 import 'providers/library_provider.dart';
@@ -28,6 +29,7 @@ class DeltaBooksApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FeatureFlagProvider()),
+        ChangeNotifierProvider(create: (_) => GenreProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => InvitationProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
@@ -40,8 +42,10 @@ class DeltaBooksApp extends StatelessWidget {
           final authProvider = Provider.of<AuthProvider>(context, listen: false);
           final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
           final featureFlagProvider = Provider.of<FeatureFlagProvider>(context, listen: false);
+          final genreProvider = Provider.of<GenreProvider>(context, listen: false);
           authProvider.setLocaleProvider(localeProvider);
           authProvider.setFeatureFlagProvider(featureFlagProvider);
+          authProvider.setGenreProvider(genreProvider);
           
           return Consumer<LocaleProvider>(
             builder: (context, localeProvider, _) {

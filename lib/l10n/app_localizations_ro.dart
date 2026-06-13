@@ -544,6 +544,9 @@ class AppLocalizationsRo extends AppLocalizations {
       'Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos.';
 
   @override
+  String get openSettings => 'Deschide Setările';
+
+  @override
   String get wishlist => 'Listă de dorințe';
 
   @override
@@ -822,4 +825,26 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get noneOfThese => 'Niciuna dintre acestea';
+
+  @override
+  String get genreLabel => 'Gen';
+
+  @override
+  String get genrePickerTitle => 'Selectează genuri';
+
+  @override
+  String get genreSearchPlaceholder => 'Caută genuri…';
+
+  @override
+  String get genreNoneSelected => 'Niciun gen selectat';
+
+  @override
+  String get genreDone => 'Gata';
+
+  @override
+  String get genreClear => 'Șterge';
+
+  @override
+  String get genreErrorRetry =>
+      'Nu s-au putut încărca genurile. Apasă pentru a reîncerca.';
 }

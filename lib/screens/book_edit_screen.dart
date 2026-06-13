@@ -11,7 +11,9 @@ import '../models/library.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
 import '../utils/image_utils.dart';
+import '../providers/genre_provider.dart';
 import '../widgets/barcode_field_button.dart';
+import '../widgets/genre_picker.dart';
 import '../widgets/ocr_field_button.dart';
 
 class BookEditScreen extends StatefulWidget {
@@ -40,7 +42,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
   final TextEditingController _totalPagesController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _libraryPagesController = TextEditingController();
-  final TextEditingController _genreController = TextEditingController();
+  List<String> _selectedGenreSlugs = [];
   final TextEditingController _seriesNameController = TextEditingController();
   final TextEditingController _seriesVolumeController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
@@ -75,7 +77,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
     _coverUrlController.text = book.coverUrl ?? '';
     _descriptionController.text = book.description ?? '';
     _totalPagesController.text = book.totalPages > 0 ? book.totalPages.toString() : '';
-    _genreController.text = book.genre ?? '';
+    _selectedGenreSlugs = book.genreSlugs;
     _seriesNameController.text = book.seriesName ?? '';
     _seriesVolumeController.text = book.seriesVolume ?? '';
     _notesController.text = book.notes ?? '';
@@ -97,7 +99,6 @@ class _BookEditScreenState extends State<BookEditScreen> {
     _totalPagesController.dispose();
     _priceController.dispose();
     _libraryPagesController.dispose();
-    _genreController.dispose();
     _seriesNameController.dispose();
     _seriesVolumeController.dispose();
     _notesController.dispose();
@@ -226,7 +227,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
       final totalPages = int.tryParse(_totalPagesController.text.trim()) ?? 0;
       final price = double.tryParse(_priceController.text.trim());
       final libraryTotalPages = int.tryParse(_libraryPagesController.text.trim());
-      final genre = _genreController.text.trim();
+      final genre = _selectedGenreSlugs.isNotEmpty ? _selectedGenreSlugs.join(',') : null;
       final seriesName = _seriesNameController.text.trim();
 
       final result = await bookProvider.addBookToLibrary(
@@ -237,7 +238,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
         coverUrl: coverUrl.isNotEmpty ? coverUrl : null,
         totalPages: totalPages > 0 ? totalPages : null,
         description: description.isNotEmpty ? description : null,
-        genre: genre.isNotEmpty ? genre : null,
+        genre: genre,
         seriesName: seriesName.isNotEmpty ? seriesName : null,
         price: price,
         libraryTotalPages: libraryTotalPages,
@@ -338,7 +339,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
       final isbn = _isbnController.text.trim();
       final title = _titleController.text.trim();
       final author = _authorController.text.trim();
-      final genre = _genreController.text.trim();
+      final genre = _selectedGenreSlugs.join(',');
       final totalPages = int.tryParse(_totalPagesController.text.trim()) ?? 0;
       final description = _descriptionController.text.trim();
       final coverUrl = _coverUrlController.text.trim();
@@ -352,7 +353,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
       if (isbn.isNotEmpty) updateData['isbn'] = isbn;
       if (title.isNotEmpty) updateData['title'] = title;
       if (author.isNotEmpty) updateData['author'] = author;
-      updateData['genre'] = genre.isNotEmpty ? genre : '';
+      updateData['genre'] = genre;
       if (totalPages > 0) updateData['total_pages'] = totalPages;
       updateData['description'] = description.isNotEmpty ? description : '';
       updateData['cover_url'] = coverUrl.isNotEmpty ? coverUrl : '';
@@ -380,7 +381,7 @@ class _BookEditScreenState extends State<BookEditScreen> {
             totalPages: totalPages > 0 ? totalPages : _currentBook!.totalPages,
             description: description.isNotEmpty ? description : _currentBook!.description,
             source: _currentBook!.source,
-            genre: genre.isNotEmpty ? genre : _currentBook!.genre,
+            genre: genre.isNotEmpty ? genre : _currentBook!.genre ?? '',
             seriesName: seriesName.isNotEmpty ? seriesName : _currentBook!.seriesName,
             seriesVolume: seriesVolume.isNotEmpty ? seriesVolume : _currentBook!.seriesVolume,
             notes: notes.isNotEmpty ? notes : _currentBook!.notes,
@@ -837,31 +838,63 @@ class _BookEditScreenState extends State<BookEditScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Genre
-            TextFormField(
-              controller: _genreController,
-              decoration: InputDecoration(
-                labelText: 'Genre (${l10n.optional.toLowerCase()})',
-                hintText: 'Enter genre',
-                filled: true,
-                fillColor: AppColors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.deltaTeal, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                labelStyle: const TextStyle(color: AppColors.deltaTeal),
-                suffixIcon: OcrFieldButton(controller: _genreController),
-              ),
-              style: const TextStyle(color: AppColors.deltaTeal),
+            // Genre picker
+            Consumer<GenreProvider>(
+              builder: (context, genreProvider, _) {
+                final isRo = Localizations.localeOf(context).languageCode == 'ro';
+                final matched = genreProvider.slugsToGenres(_selectedGenreSlugs);
+                final labels = matched.isNotEmpty
+                    ? matched.map((g) => isRo ? g.nameRo : g.nameEn).join(', ')
+                    : _selectedGenreSlugs.join(', ');
+                return GestureDetector(
+                  onTap: () async {
+                    final result = await showGenrePicker(
+                      context,
+                      initialSlugs: _selectedGenreSlugs,
+                    );
+                    if (result != null) {
+                      setState(() => _selectedGenreSlugs = result);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${l10n.genreLabel} (${l10n.optional.toLowerCase()})',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.deltaTeal,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                labels.isNotEmpty ? labels : l10n.genreNoneSelected,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: labels.isNotEmpty
+                                      ? AppColors.deltaTeal
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
 

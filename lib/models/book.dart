@@ -63,6 +63,11 @@ class Book {
   /// Convenience accessor mirroring [permissions.canRemove].
   bool get canRemove => permissions.canRemove;
 
+  List<String> get genreSlugs {
+    if (genre == null || genre!.isEmpty) return const [];
+    return genre!.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  }
+
   Book({
     this.id,
     this.libraryId,
