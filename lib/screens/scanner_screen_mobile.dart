@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:deltabooks/l10n/app_localizations.dart';
 import '../providers/library_provider.dart';
@@ -27,6 +28,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
   bool _isScanning = false;
   bool _isInitialized = false;
   bool _webStartRequested = false;
+  bool _permanentlyDenied = false;
   String? _initError;
 
   @override
@@ -37,29 +39,50 @@ class _ScannerMobileState extends State<ScannerMobile> {
     }
   }
 
-  // Mobile-only: autoStart: false + manual start() as required by CLAUDE.md.
+  // Mobile-only: request permission, create controller, then start() only after
+  // the MobileScanner widget is built and has attached the controller.
   Future<void> _initializeScanner() async {
     setState(() {
       _isInitialized = false;
       _initError = null;
-    });
-    try {
+      _permanentlyDenied = false;
       _controller?.dispose();
-      _controller = MobileScannerController(autoStart: false);
-      await _controller!.start();
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isInitialized = false;
-          _initError = e.toString();
-        });
-      }
+      _controller = null;
+    });
+
+    final status = await Permission.camera.request();
+
+    if (status.isPermanentlyDenied) {
+      if (mounted) setState(() { _permanentlyDenied = true; _initError = 'permanently_denied'; });
+      return;
     }
+
+    if (status.isDenied) {
+      if (mounted) setState(() { _initError = 'denied'; });
+      return;
+    }
+
+    // Create controller and rebuild so MobileScanner widget attaches it.
+    // start() must be called after the widget is in the tree.
+    _controller = MobileScannerController(autoStart: false);
+    if (!mounted) return;
+    setState(() {});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || _controller == null) return;
+      try {
+        await _controller!.start();
+        if (mounted) setState(() { _isInitialized = true; });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _initError = kDebugMode ? e.toString() : 'error';
+            _controller?.dispose();
+            _controller = null;
+          });
+        }
+      }
+    });
   }
 
   // Web-only: use autoStart: true so the MobileScanner widget calls attach()
@@ -194,8 +217,8 @@ class _ScannerMobileState extends State<ScannerMobile> {
       );
     }
 
-    // Mobile loading or error state (never reached on web).
-    if (!_isInitialized || _controller == null) {
+    // Mobile error state — no controller, permission denied or start() failed.
+    if (_initError != null && _controller == null) {
       return Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.deepSeaBlue,
@@ -213,20 +236,30 @@ class _ScannerMobileState extends State<ScannerMobile> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Text(
-                        l10n.cameraPermissionDenied,
+                        kDebugMode ? (_initError ?? l10n.cameraPermissionDenied) : l10n.cameraPermissionDenied,
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _initializeScanner,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.goldLeaf,
-                        foregroundColor: Colors.white,
+                    if (_permanentlyDenied)
+                      ElevatedButton(
+                        onPressed: () => openAppSettings(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldLeaf,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(l10n.openSettings),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: _initializeScanner,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldLeaf,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(l10n.retry),
                       ),
-                      child: Text(l10n.retry),
-                    ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: _navigateManual,
@@ -240,7 +273,21 @@ class _ScannerMobileState extends State<ScannerMobile> {
       );
     }
 
+    // No controller yet and no error — still waiting for permission response.
+    if (_controller == null) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.deepSeaBlue,
+          foregroundColor: Colors.white,
+          title: Text(l10n.scanBarcode),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     // Scanning state — full-screen camera with overlaid controls.
+    // MobileScanner is always rendered when _controller != null so the widget
+    // attaches the controller before start() is called via addPostFrameCallback.
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -287,6 +334,14 @@ class _ScannerMobileState extends State<ScannerMobile> {
                       )
                   : null,
             ),
+            // Loading overlay while start() completes after widget attaches.
+            if (!_isInitialized)
+              const Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black54,
+                  child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                ),
+              ),
             // Back button top-left.
             Positioned(
               top: 8,
@@ -301,6 +356,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
               ),
             ),
             // Instruction card top-center.
+            if (_isInitialized)
             Positioned(
               top: 16,
               left: 72,
@@ -321,6 +377,7 @@ class _ScannerMobileState extends State<ScannerMobile> {
               ),
             ),
             // Manual entry FAB bottom-center.
+            if (_isInitialized)
             Positioned(
               bottom: 24,
               left: 0,

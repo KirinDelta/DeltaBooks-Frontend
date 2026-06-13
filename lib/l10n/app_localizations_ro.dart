@@ -401,6 +401,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get retry => 'Reîncearcă';
 
   @override
+  String get openSettings => 'Deschide Setările';
+
+  @override
   String get markAsRead => 'Marchează ca Citit';
 
   @override

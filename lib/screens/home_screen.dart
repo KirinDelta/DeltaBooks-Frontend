@@ -493,7 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -507,6 +507,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 2),
               Text(
                 label,
+                textScaler: TextScaler.noScaling,
                 style: TextStyle(
                   fontSize: 11,
                   color: isSelected
@@ -707,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildNavItem(Icons.home_outlined, Icons.home, l10n.home, 0),
             _buildNavItem(
                 Icons.library_books_outlined, Icons.library_books, l10n.shelves, 1),
-            const SizedBox(width: 48), // FAB notch gap
+            const SizedBox(width: 48),
             _buildNavItem(
                 Icons.bookmark_outline, Icons.bookmark, l10n.wishlist, 2),
             _buildNavItem(Icons.person_outline, Icons.person, l10n.you, 3),

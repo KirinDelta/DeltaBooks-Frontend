@@ -676,7 +676,7 @@ class LibraryProvider with ChangeNotifier {
   ///   the removal immediately without requiring a manual refresh.
   ///
   /// Returns `null` on success, or an error message on failure.
-  Future<String?> removeBook(int bookId) async {
+  Future<String?> removeBook(int libraryBookId, int bookId) async {
     final currentLibrary = _selectedLibrary;
     if (currentLibrary == null) {
       return 'No library selected';
@@ -684,7 +684,7 @@ class LibraryProvider with ChangeNotifier {
 
     try {
       final response = await _apiService.delete(
-        '/api/v1/libraries/${currentLibrary.id}/books/$bookId',
+        '/api/v1/libraries/${currentLibrary.id}/library_books/$libraryBookId',
       );
 
       if (response.statusCode == 200 || response.statusCode == 204) {

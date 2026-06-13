@@ -130,6 +130,7 @@
   "addManually": "Adaugă Manual",
   "cameraPermissionDenied": "Accesul la cameră este necesar pentru scanarea codurilor de bare. Activați-l în setările dispozitivului.",
   "retry": "Reîncearcă",
+  "openSettings": "Deschide Setările",
   "markAsRead": "Marchează ca Citit",
   "rating": "Evaluare",
   "selectRating": "Selectează Evaluarea",

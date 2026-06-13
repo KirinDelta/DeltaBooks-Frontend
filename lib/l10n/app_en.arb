@@ -520,6 +520,10 @@
   "@retry": {
     "description": "Button label to retry an action"
   },
+  "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Button label to open device app settings"
+  },
   "markAsRead": "Mark as Read",
   "@markAsRead": {
     "description": "Button to mark a book as read"

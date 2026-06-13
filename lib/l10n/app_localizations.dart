@@ -872,6 +872,12 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// Button label to open device app settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
   /// Button to mark a book as read
   ///
   /// In en, this message translates to:
