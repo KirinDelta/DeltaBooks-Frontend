@@ -542,6 +542,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the mobile app to scan barcodes, or add a book manually below.';
 
   @override
+  String get openSettings => 'Open Settings';
+
+  @override
   String get wishlist => 'Wishlist';
 
   @override
@@ -820,4 +823,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noneOfThese => 'None of these';
+
+  @override
+  String get genreLabel => 'Genre';
+
+  @override
+  String get genrePickerTitle => 'Select genres';
+
+  @override
+  String get genreSearchPlaceholder => 'Search genres…';
+
+  @override
+  String get genreNoneSelected => 'No genres selected';
+
+  @override
+  String get genreDone => 'Done';
+
+  @override
+  String get genreClear => 'Clear';
+
+  @override
+  String get genreErrorRetry => 'Could not load genres. Tap to retry.';
 }

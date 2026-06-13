@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import 'feature_flag_provider.dart';
+import 'genre_provider.dart';
 import 'locale_provider.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -14,6 +15,7 @@ class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   LocaleProvider? _localeProvider;
   FeatureFlagProvider? _featureFlagProvider;
+  GenreProvider? _genreProvider;
 
   User? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
@@ -30,6 +32,10 @@ class AuthProvider with ChangeNotifier {
 
   void setFeatureFlagProvider(FeatureFlagProvider featureFlagProvider) {
     _featureFlagProvider = featureFlagProvider;
+  }
+
+  void setGenreProvider(GenreProvider genreProvider) {
+    _genreProvider = genreProvider;
   }
 
   Future<bool> login(String email, String password) async {
@@ -51,6 +57,7 @@ class AuthProvider with ChangeNotifier {
           final token = authHeader.replaceFirst('Bearer ', '');
           await prefs.setString('auth_token', token);
           _featureFlagProvider?.fetchFlags(token);
+          _genreProvider?.fetchGenres(token);
         }
 
         // Fetch full user profile with settings
@@ -92,6 +99,7 @@ class AuthProvider with ChangeNotifier {
           final token = authHeader.replaceFirst('Bearer ', '');
           await prefs.setString('auth_token', token);
           _featureFlagProvider?.fetchFlags(token);
+          _genreProvider?.fetchGenres(token);
           notifyListeners();
           return true;
         } else {
@@ -192,6 +200,7 @@ class AuthProvider with ChangeNotifier {
     _user = null;
     _isAuthenticated = false;
     _featureFlagProvider?.reset();
+    _genreProvider?.reset();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     notifyListeners();

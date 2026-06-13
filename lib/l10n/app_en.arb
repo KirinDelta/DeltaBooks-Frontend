@@ -716,6 +716,10 @@
   "@retry": {
     "description": "Button label to retry a failed action"
   },
+  "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Button label to open device app settings"
+  },
   "wishlist": "Wishlist",
   "@wishlist": { "description": "Wishlist tab label" },
   "addToWishlist": "Add to Wishlist",
@@ -921,5 +925,19 @@
   "noneOfThese": "None of these",
   "@noneOfThese": {
     "description": "Button shown in LLM-candidates mode to skip all suggestions and enter book details manually"
-  }
+  },
+  "genreLabel": "Genre",
+  "@genreLabel": { "description": "Label for the genre field in the book edit form" },
+  "genrePickerTitle": "Select genres",
+  "@genrePickerTitle": { "description": "Title of the genre picker bottom sheet" },
+  "genreSearchPlaceholder": "Search genres…",
+  "@genreSearchPlaceholder": { "description": "Placeholder text in the genre search field" },
+  "genreNoneSelected": "No genres selected",
+  "@genreNoneSelected": { "description": "Label shown when no genres are selected in the picker" },
+  "genreDone": "Done",
+  "@genreDone": { "description": "Done button in the genre picker" },
+  "genreClear": "Clear",
+  "@genreClear": { "description": "Clear button in the genre picker to deselect all genres" },
+  "genreErrorRetry": "Could not load genres. Tap to retry.",
+  "@genreErrorRetry": { "description": "Error message shown in the genre picker when genres fail to load" }
 }

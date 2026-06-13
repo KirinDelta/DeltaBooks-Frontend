@@ -179,6 +179,7 @@
   "scannerWebFallbackMessage": "Folosește aplicația mobilă pentru a scana coduri de bare sau adaugă o carte manual mai jos.",
   "cameraPermissionDenied": "Accesul la cameră este necesar pentru a scana coduri de bare. Te rugăm să activezi permisiunea pentru cameră în setările dispozitivului.",
   "retry": "Reîncearcă",
+  "openSettings": "Deschide Setările",
   "wishlist": "Listă de dorințe",
   "addToWishlist": "Adaugă la liste",
   "addedToWishlist": "Adăugat la lista de dorințe",
@@ -270,5 +271,12 @@
   "enableForUserSuccess": "Activat pentru {email}",
   "disableForUserSuccess": "Dezactivat pentru {email}",
   "selectTheCorrectBook": "Selectează cartea corectă",
-  "noneOfThese": "Niciuna dintre acestea"
+  "noneOfThese": "Niciuna dintre acestea",
+  "genreLabel": "Gen",
+  "genrePickerTitle": "Selectează genuri",
+  "genreSearchPlaceholder": "Caută genuri…",
+  "genreNoneSelected": "Niciun gen selectat",
+  "genreDone": "Gata",
+  "genreClear": "Șterge",
+  "genreErrorRetry": "Nu s-au putut încărca genurile. Apasă pentru a reîncerca."
 }

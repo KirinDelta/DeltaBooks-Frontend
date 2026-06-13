@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_images.dart';
 import '../providers/auth_provider.dart';
 import '../providers/book_provider.dart';
+import '../providers/genre_provider.dart';
 import '../providers/library_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../utils/image_utils.dart';
@@ -89,7 +90,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Book get book => _currentBook ?? widget.book;
 
   Future<void> _confirmAndRemoveBook(BuildContext context) async {
-    if (!mounted || widget.libraryId == null || book.id == null) return;
+    if (!mounted || widget.libraryId == null || book.libraryBookId == null) return;
 
     final libraryProvider =
         Provider.of<LibraryProvider>(context, listen: false);
@@ -131,7 +132,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
     String? errorMessage;
     try {
-      errorMessage = await libraryProvider.removeBook(book.id!);
+      errorMessage = await libraryProvider.removeBook(book.libraryBookId!, book.id!);
     } finally {
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -496,25 +497,35 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   
-                  // Genre badge (if available)
-                  if (book.genre != null && book.genre!.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.riverMist,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.borderLight,
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        book.genre!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.deltaTeal,
-                          fontSize: 11,
-                        ),
-                      ),
+                  // Genre chips (if available)
+                  if (book.genreSlugs.isNotEmpty) ...[
+                    Consumer<GenreProvider>(
+                      builder: (context, genreProvider, _) {
+                        final isRo = Localizations.localeOf(context).languageCode == 'ro';
+                        final matched = genreProvider.slugsToGenres(book.genreSlugs);
+                        final labels = matched.isNotEmpty
+                            ? matched.map((g) => isRo ? g.nameRo : g.nameEn).toList()
+                            : book.genreSlugs;
+                        return Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: labels.map((label) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.riverMist,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.borderLight, width: 1),
+                            ),
+                            child: Text(
+                              label,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.deltaTeal,
+                                fontSize: 11,
+                              ),
+                            ),
+                          )).toList(),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                   ],
